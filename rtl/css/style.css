@@ -49,6 +49,19 @@ Author URL : https://themeforest.net/user/astylers
 
 */
 
+:root {
+    touch-action: pan-x pan-y;
+    height: 100%  
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    color: #cc0000;
+    height: 100%;
+    overflow-y: hidden;
+  }
+
 @font-face {
     font-family: IRANSansX;
     src: url(https://alimosavi-code.github.io/fonts/IRANSansX.woff2);
@@ -60,12 +73,16 @@ Author URL : https://themeforest.net/user/astylers
     }
       
 /*general*/
+
 body {
     background: #e0e5ec;
     font-size: 13px;
     color: #888;
 	font-family: IRANSansX, Arial, Helvetica, sans-serif;
     direction: rtl;
+    position: absolute;
+    overflow-y: hidden;
+    overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -126,10 +143,6 @@ a {
     padding-top: 0;
 }
 
-.container {
-    padding: 0 15px !important;
-}
-
 .row {
     margin-bottom: 15px;
 }
@@ -171,6 +184,16 @@ img.people {
 
 .segments-page {
     margin-top: 85px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.segments-table {
+    margin-top: 61px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 /* separator */
@@ -1030,7 +1053,8 @@ img.people {
 }
 
 .popup-full.modal-in {
-    overflow: scroll;
+    overflow-y: hidden;
+    overflow-x: hidden;
     padding: 18px;
 }
 
@@ -1315,8 +1339,8 @@ form textarea {
 }
 
 .career .content .text {
-    overflow: hidden;
-}
+    overflow-y: hidden;
+    overflow-x: hidden;}
 
 .career .content .text h6 {
     margin-bottom: 6px;
@@ -1536,7 +1560,8 @@ form textarea {
     background: #0078D7;
     padding: 20px 15px;
     z-index: 1;
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: hidden;  
     border-radius: 12px 12px 0 0;
 }
 
@@ -1612,7 +1637,8 @@ form textarea {
 .services .content .service-title h4 {
     position: relative;
     top: -4px;
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: hidden;
     font-size: 15px;
 }
 
@@ -1628,7 +1654,8 @@ form textarea {
     display: block;
     width: 100%;
     border-radius: 12px;
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: hidden;
     color: #fff;
     text-align: center;
     line-height: 20px;
@@ -2013,3 +2040,85 @@ form textarea {
 .logout .content .buttons-red {
     background: red;
 }
+
+table {
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(38, 40, 51, 0.05);
+}
+
+.table-dark.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(236, 240, 243, 0.05);
+}
+
+.table-striped .datepicker table tr td,
+  .table-striped .datepicker table tr th {
+    background-color: transparent;
+}
+
+@media (max-width: 100%) {
+    .table-responsive-sm {
+        display: block;
+        width: 100%;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive-sm > .table-bordered {
+        border: 0;
+    }
+}
+
+.shadow-inset {
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -3px -3px 7px #FFFFFF !important;
+}
+
+.rounded-sm {
+    border-radius: 0.1rem !important;
+}
+
+.rounded {
+    border-radius: 0.55rem !important;
+}
+
+.rounded-top {
+    border-top-left-radius: 0.55rem !important;
+    border-top-right-radius: 0.55rem !important;
+}
+
+.rounded-right {
+    border-top-right-radius: 0.55rem !important;
+    border-bottom-right-radius: 0.55rem !important;
+}
+
+.rounded-bottom {
+    border-bottom-right-radius: 0.55rem !important;
+    border-bottom-left-radius: 0.55rem !important;
+}
+
+.rounded-left {
+    border-top-left-radius: 0.55rem !important;
+    border-bottom-left-radius: 0.55rem !important;
+}
+
+.rounded-lg {
+    border-radius: 0.3rem !important;
+}
+
+.rounded-circle {
+    border-radius: 50% !important;
+}
+
+.rounded-pill {
+    border-radius: 50rem !important;
+}
+
+.rounded-0 {
+    border-radius: 0 !important;
+}
+
+.about-profile
