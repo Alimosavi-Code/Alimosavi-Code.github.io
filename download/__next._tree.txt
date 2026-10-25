@@ -1,0 +1,10 @@
+:HL["/download/_next/static/chunks/8b2bca46876d9ead.css","style"]
+:HL["/download/_next/static/chunks/fd25f3e7ade7680b.css","style"]
+:HL["/download/_next/static/media/Vazirmatn_Black-s.p.23455a85.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/download/_next/static/media/Vazirmatn_Bold-s.p.af83fa93.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/download/_next/static/media/Vazirmatn_ExtraBold-s.p.5beed80d.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/download/_next/static/media/Vazirmatn_Medium-s.p.b4f84bf0.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/download/_next/static/media/Vazirmatn_Regular-s.p.c2ca23de.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/download/icons/icon-192.png","image"]
+:HL["/download/shots/calendar.webp","image"]
+0:{"buildId":"TtItbUsUtC_k3hTCierSD","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
