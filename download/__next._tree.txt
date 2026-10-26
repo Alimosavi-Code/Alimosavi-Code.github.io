@@ -7,4 +7,4 @@
 :HL["/download/_next/static/media/Vazirmatn_Regular-s.p.c2ca23de.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/download/icons/icon-192.png","image"]
 :HL["/download/shots/calendar.webp","image"]
-0:{"buildId":"TtItbUsUtC_k3hTCierSD","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+0:{"buildId":"1g-DulDhFbglNk7xvJV-K","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
