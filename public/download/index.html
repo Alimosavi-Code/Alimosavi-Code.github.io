@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>دانلود شیفت‌کار — اندروید، ویندوز، مک، لینوکس و وب (PWA)</title>
+  <meta name="description" content="دانلود رسمی اپلیکیشن و نرم‌افزار شیفت‌کار برای اندروید (APK)، ویندوز (EXE/MSI/Portable)، مک (Apple Silicon & Intel DMG)، لینوکس (DEB/RPM/AppImage) و نسخه تحت وب (PWA)." />
+  <meta property="og:title" content="دانلود شیفت‌کار — تقویم هوشمند شیفت کاری" />
+  <meta property="og:description" content="نسخه اندروید، ویندوز، مک، لینوکس و وب‌اپلیکیشن شیفت‌کار — محاسبه دقیق شیفت، لوحه سالانه، تعطیلات رسمی و یادداشت کاری." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shiftkar.ir/download" />
+  <meta property="og:image" content="https://shiftkar.ir/download/icons/icon-512.png" />
+  <meta name="theme-color" content="#090f1d" />
+  <link rel="icon" href="/download/favicon.ico?v=676" sizes="any" />
+  <link rel="apple-touch-icon" href="/download/apple-icon.png?v=676" />
+
+  <style>
+    @font-face {
+      font-family: "IRANSansX";
+      src: url("/fonts/IRANSansX-Regular.woff2") format("woff2"),
+           url("../fonts/IRANSansX-Regular.woff2") format("woff2");
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "IRANSansX";
+      src: url("/fonts/IRANSansX-Bold.woff2") format("woff2"),
+           url("../fonts/IRANSansX-Bold.woff2") format("woff2");
+      font-weight: 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "IRANSansX";
+      src: url("/fonts/IRANSansX-Black.woff2") format("woff2"),
+           url("../fonts/IRANSansX-Black.woff2") format("woff2");
+      font-weight: 900;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #070d19;
+      --bg-2: #0d1629;
+      --surface: rgba(17, 27, 48, 0.72);
+      --surface-strong: rgba(24, 37, 66, 0.88);
+      --surface-hover: rgba(32, 49, 86, 0.92);
+      --border: rgba(148, 179, 248, 0.16);
+      --border-strong: rgba(96, 145, 255, 0.38);
+      --text: #f3f7ff;
+      --text-muted: #9fb0cf;
+      --text-faint: #6e81a6;
+      --primary: #3d6bf5;
+      --primary-2: #6088ff;
+      --primary-soft: rgba(61, 107, 245, 0.16);
+      --emerald: #10b981;
+      --emerald-soft: rgba(16, 185, 129, 0.15);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --purple: #8b5cf6;
+      --purple-soft: rgba(139, 92, 246, 0.16);
+      --cyan: #06b6d4;
+      --cyan-soft: rgba(6, 182, 212, 0.15);
+      --shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.6);
+    }
+
+    html.light {
+      --bg: #f2f6ff;
+      --bg-2: #e5edff;
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-strong: rgba(255, 255, 255, 0.95);
+      --surface-hover: rgba(240, 246, 255, 0.98);
+      --border: rgba(37, 75, 165, 0.14);
+      --border-strong: rgba(45, 95, 230, 0.36);
+      --text: #0d182e;
+      --text-muted: #475878;
+      --text-faint: #6d7f9e;
+      --primary: #2956e8;
+      --primary-2: #3d6bf5;
+      --primary-soft: rgba(41, 86, 232, 0.11);
+      --shadow: 0 18px 42px -15px rgba(24, 52, 117, 0.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+      font-family: "IRANSansX", Tahoma, system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(61, 107, 245, 0.22), transparent 38%),
+        radial-gradient(circle at 85% 18%, rgba(16, 185, 129, 0.14), transparent 36%),
+        radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.13), transparent 42%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 18px; }
+
+    .navbar {
+      position: sticky; top: 12px; z-index: 50; margin: 12px auto 0; max-width: 1144px;
+      padding: 10px 16px; border-radius: 20px; background: var(--surface);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand img { width: 40px; height: 40px; border-radius: 12px; box-shadow: 0 6px 16px rgba(61, 107, 245, 0.32); }
+    .brand-title { font-size: 17px; font-weight: 900; }
+    .brand-sub { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px;
+      border-radius: 12px; font-size: 12.5px; font-weight: 700;
+      background: var(--surface-strong); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-ghost:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+    .btn-web-nav { background: var(--primary-soft); border-color: var(--border-strong); color: var(--primary-2); }
+    html.light .btn-web-nav { color: var(--primary); }
+
+    .hero { padding: 38px 0 28px; text-align: center; }
+    .version-badge {
+      display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px;
+      border-radius: 999px; background: var(--surface-strong); border: 1px solid var(--border-strong);
+      font-size: 12.5px; font-weight: 800; color: var(--text); margin-bottom: 18px;
+    }
+    .version-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 10px var(--emerald); }
+    .hero h1 {
+      font-size: clamp(28px, 4.6vw, 46px); font-weight: 900; line-height: 1.25; margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--text) 30%, var(--primary-2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p.lead { max-width: 680px; margin: 0 auto 26px; font-size: clamp(14.5px, 2vw, 17.5px); color: var(--text-muted); }
+
+    .smart-box {
+      max-width: 780px; margin: 0 auto 22px; padding: 24px 22px; border-radius: 26px;
+      background: linear-gradient(145deg, var(--surface-strong), var(--surface));
+      border: 1.5px solid var(--border-strong);
+      box-shadow: var(--shadow), 0 0 40px -12px rgba(61, 107, 245, 0.28);
+      text-align: right;
+    }
+    .smart-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+    .detected-pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 5px 13px; border-radius: 999px;
+      background: var(--primary-soft); border: 1px solid var(--border-strong);
+      color: var(--primary-2); font-size: 12px; font-weight: 800;
+    }
+    html.light .detected-pill { color: var(--primary); }
+    .smart-main { display: flex; flex-direction: column; gap: 14px; }
+    .smart-title { font-size: 20px; font-weight: 900; color: var(--text); }
+    .smart-desc { font-size: 13.5px; color: var(--text-muted); }
+    .smart-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 4px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 13px 24px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      color: #ffffff; font-size: 15px; font-weight: 900;
+      box-shadow: 0 12px 28px -6px rgba(61, 107, 245, 0.55);
+      transition: all 0.2s ease; border: none; cursor: pointer; flex: 1 1 260px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 20px; border-radius: 16px; background: var(--surface-strong);
+      border: 1px solid var(--border-strong); color: var(--text); font-size: 14px; font-weight: 800;
+      transition: all 0.2s ease; flex: 1 1 200px;
+    }
+    .smart-alt-links {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 12px;
+      border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted);
+    }
+    .chip-link {
+      display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      font-size: 11.5px; font-weight: 700; transition: all 0.18s ease;
+    }
+    .chip-link:hover { border-color: var(--primary-2); background: var(--primary-soft); }
+    .trust-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; font-size: 12.5px; color: var(--text-muted); font-weight: 600; margin-top: 10px; }
+
+    .section { padding: 36px 0; }
+    .section-head { text-align: center; margin-bottom: 26px; }
+    .section-head h2 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 900; margin-bottom: 8px; }
+    .section-head p { font-size: 14px; color: var(--text-muted); max-width: 620px; margin: 0 auto; }
+
+    .platform-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .tab-btn {
+      padding: 9px 16px; border-radius: 13px; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-muted); font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+    }
+    .tab-btn.active, .tab-btn:hover { background: var(--primary-soft); border-color: var(--primary-2); color: var(--text); }
+
+    .platforms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+    .plat-card {
+      border-radius: 22px; background: var(--surface); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); padding: 22px; display: flex; flex-direction: column;
+      justify-content: space-between; gap: 16px; box-shadow: var(--shadow);
+    }
+    .plat-card.is-detected { border: 1.5px solid var(--primary-2); box-shadow: var(--shadow), 0 0 28px -8px rgba(61, 107, 245, 0.35); }
+    .plat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .plat-icon { width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; flex-shrink: 0; }
+    .plat-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--surface-strong); border: 1px solid var(--border); color: var(--text-muted); }
+    .plat-card.is-detected .plat-badge { background: var(--primary-soft); border-color: var(--primary-2); color: var(--primary-2); }
+    .plat-title { font-size: 18px; font-weight: 900; margin-top: 10px; margin-bottom: 4px; }
+    .plat-sub { font-size: 12.5px; color: var(--text-muted); }
+    .dl-list { display: flex; flex-direction: column; gap: 8px; }
+    .dl-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 13px; border-radius: 13px; background: var(--surface-strong); border: 1px solid var(--border);
+    }
+    .dl-item:hover { border-color: var(--primary-2); background: var(--surface-hover); }
+    .dl-item.primary-dl { background: linear-gradient(135deg, rgba(61, 107, 245, 0.22), rgba(61, 107, 245, 0.08)); border-color: var(--border-strong); }
+    .dl-item-info { display: flex; flex-direction: column; gap: 2px; }
+    .dl-item-title { font-size: 13px; font-weight: 800; color: var(--text); }
+    .dl-item-meta { font-size: 11px; color: var(--text-muted); direction: ltr; text-align: right; }
+    .dl-item-btn { padding: 6px 12px; border-radius: 10px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 800; white-space: nowrap; flex-shrink: 0; }
+
+    .shots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+    .shot-card { border-radius: 20px; background: var(--surface); border: 1px solid var(--border); padding: 10px; text-align: center; box-shadow: var(--shadow); }
+    .shot-card img { width: 100%; height: auto; border-radius: 13px; display: block; margin-bottom: 8px; }
+    .shot-card span { font-size: 12px; font-weight: 800; color: var(--text-muted); }
+
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .feat-card { border-radius: 20px; background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+    .feat-card h3 { font-size: 15.5px; font-weight: 900; margin-bottom: 6px; color: var(--text); }
+    .feat-card p { font-size: 13px; color: var(--text-muted); }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+    .step-card { border-radius: 20px; background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 10px; background: var(--primary-soft);
+      border: 1px solid var(--border-strong); color: var(--primary-2); font-weight: 900;
+      font-size: 14px; display: grid; place-items: center; margin-bottom: 10px;
+    }
+
+    footer { margin-top: 40px; padding: 28px 0 44px; border-top: 1px solid var(--border); text-align: center; font-size: 13px; color: var(--text-muted); }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 14px 0; }
+    @media (max-width: 640px) {
+      .navbar { margin: 8px 10px 0; padding: 9px 12px; }
+      .smart-box { padding: 18px 16px; }
+      .shots-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <a href="https://shiftkar.ir" class="brand">
+      <img src="/download/icons/icon-192.png?v=676" alt="آیکون شیفت‌کار" />
+      <div>
+        <div class="brand-title">شیفت‌کار</div>
+        <div class="brand-sub">تقویم هوشمند شیفت کاری</div>
+      </div>
+    </a>
+    <div class="nav-actions">
+      <a href="https://shiftkar.ir" class="btn-ghost btn-web-nav">
+        <span>اجرای نسخهٔ وب (PWA)</span>
+      </a>
+      <button type="button" id="themeToggle" class="btn-ghost" aria-label="تغییر تم روشن و تاریک">
+        <span id="themeLabel">تم روشن</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="version-badge" title="آخرین نسخه منتشرشده در گیت‌هاب">
+        <span class="version-dot"></span>
+        <span id="liveVersionText">نسخهٔ ۶٫۷٫۳ · به‌روزرسانی هماهنگ اندروید، دسکتاپ و وب</span>
+      </div>
+
+      <h1>شیفت‌کار برای همهٔ دستگاه‌های شما</h1>
+      <p class="lead">
+        محاسبهٔ دقیق چرخهٔ شیفت، لوحهٔ سالانه، تعطیلات رسمی، یادداشت‌های کاری و گزارش کارکرد — با پشتیبان‌گیری یکپارچه در اندروید، ویندوز، مک، لینوکس و وب.
+      </p>
+
+      <div class="smart-box" id="smartDetectCard">
+        <div class="smart-header">
+          <div class="detected-pill">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span id="detectedOsBadge">تشخیص خودکار دستگاه شما…</span>
+          </div>
+          <a href="#all-platforms" style="font-size:12px;font-weight:800;color:var(--primary-2);">
+            مشاهدهٔ همهٔ سیستم‌عامل‌ها ↓
+          </a>
+        </div>
+
+        <div class="smart-main">
+          <div>
+            <div class="smart-title" id="smartTitle">پیشنهاد ویژه برای دستگاه شما</div>
+            <div class="smart-desc" id="smartDesc">
+              نسخهٔ متناسب با سیستم‌عامل و معماری پردازندهٔ دستگاه شما به‌صورت خودکار انتخاب شده است.
+            </div>
+          </div>
+
+          <div class="smart-cta-row">
+            <a id="primaryDownloadBtn" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest" class="btn-primary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span id="primaryDownloadLabel">دانلود مستقیم نسخهٔ پیشنهادی</span>
+            </a>
+
+            <a href="https://shiftkar.ir" class="btn-secondary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>اجرای نسخهٔ تحت وب (PWA)</span>
+            </a>
+          </div>
+
+          <div class="smart-alt-links" id="smartAltLinks">
+            <span>گزینه‌های دیگر این پلتفرم:</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="trust-strip">
+        <span>✓ بدون تبلیغات</span>
+        <span>✓ کارکرد ۱۰۰٪ آفلاین</span>
+        <span>✓ انتقال فایل پشتیبان بین اندروید، دسکتاپ و وب</span>
+        <span>✓ بررسی خودکار بروزرسانی</span>
+      </div>
+    </section>
+
+    <section class="section" id="all-platforms">
+      <div class="section-head">
+        <h2>دانلود برای همهٔ پلتفرم‌ها و سیستم‌عامل‌ها</h2>
+        <p>نسخهٔ مخصوص سیستم‌عامل خود را انتخاب کنید؛ تمام نسخه‌ها از یک موتور محاسباتی و فایل پشتیبان مشترک استفاده می‌کنند.</p>
+      </div>
+
+      <div class="platform-tabs" role="tablist">
+        <button type="button" class="tab-btn active" data-filter="all">همهٔ پلتفرم‌ها</button>
+        <button type="button" class="tab-btn" data-filter="android">اندروید (APK)</button>
+        <button type="button" class="tab-btn" data-filter="windows">ویندوز (Windows)</button>
+        <button type="button" class="tab-btn" data-filter="macos">مک (macOS)</button>
+        <button type="button" class="tab-btn" data-filter="linux">لینوکس (Linux)</button>
+        <button type="button" class="tab-btn" data-filter="web">نسخهٔ تحت وب (PWA)</button>
+      </div>
+
+      <div class="platforms-grid">
+        <article class="plat-card" data-plat="android" id="card-android">
+          <div>
+            <div class="plat-top">
+              <div class="plat-icon" style="background:var(--emerald-soft);color:var(--emerald);">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <span class="plat-badge">اندروید ۶.۰ به بالا</span>
+            </div>
+            <h3 class="plat-title">نسخهٔ موبایل اندروید (APK)</h3>
+            <p class="plat-sub">دارای ویجت صفحهٔ اصلی، آلارم و یادآور شیفت، اعلان زنده و بروزرسانی خودکار درون‌برنامه‌ای.</p>
+          </div>
+          <div class="dl-list">
+            <a id="dl-android-apk" data-apk-link href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest" class="dl-item primary-dl">
+              <div class="dl-item-info">
+                <span class="dl-item-title">دانلود مستقیم فایل نصبی اندروید</span>
+                <span class="dl-item-meta">ShiftKar.apk · Universal ARM64 / ARMv7</span>
+              </div>
+              <span class="dl-item-btn">دانلود APK</span>
+            </a>
+            <a href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest" target="_blank" rel="noopener" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">صفحهٔ Releases اندروید در گیت‌هاب</span>
+                <span class="dl-item-meta">github.com/Alimosavi-Code/Shiftkar</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">مشاهده</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="plat-card" data-plat="windows" id="card-windows">
+          <div>
+            <div class="plat-top">
+              <div class="plat-icon" style="background:var(--primary-soft);color:var(--primary-2);">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <span class="plat-badge">Windows 10 / 11 (x64 &amp; ARM64)</span>
+            </div>
+            <h3 class="plat-title">نسخهٔ دسکتاپ ویندوز (Windows)</h3>
+            <p class="plat-sub">دارای ویجت شناور رومیزی (Desktop Widget)، آیکون کنار ساعت (System Tray)، میانبرهای کیبورد و نصاب استاندارد همراه با Uninstaller.</p>
+          </div>
+          <div class="dl-list">
+            <a id="dl-win-x64-exe" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-windows-x64-setup.exe" class="dl-item primary-dl">
+              <div class="dl-item-info">
+                <span class="dl-item-title">نصاب گرافیکی ویندوز ۶۴ بیتی (پیشنهادی)</span>
+                <span class="dl-item-meta">ShiftKar-windows-x64-setup.exe (Inno Setup)</span>
+              </div>
+              <span class="dl-item-btn">دانلود EXE</span>
+            </a>
+            <a id="dl-win-x64-msi" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-windows-x64.msi" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">بستهٔ نصبی MSI ویندوز ۶۴ بیتی</span>
+                <span class="dl-item-meta">ShiftKar-windows-x64.msi</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">دانلود MSI</span>
+            </a>
+            <a id="dl-win-x64-zip" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-windows-x64-portable.zip" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">نسخهٔ بدون نصب (Portable ZIP — x64)</span>
+                <span class="dl-item-meta">ShiftKar-windows-x64-portable.zip</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">دانلود ZIP</span>
+            </a>
+            <a id="dl-win-arm64-exe" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-windows-arm64-setup.exe" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">نصاب ویندوز پردازنده‌های ARM64</span>
+                <span class="dl-item-meta">ShiftKar-windows-arm64-setup.exe</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">ARM64 EXE</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="plat-card" data-plat="macos" id="card-macos">
+          <div>
+            <div class="plat-top">
+              <div class="plat-icon" style="background:var(--purple-soft);color:var(--purple);">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/></svg>
+              </div>
+              <span class="plat-badge">macOS Apple Silicon &amp; Intel</span>
+            </div>
+            <h3 class="plat-title">نسخهٔ دسکتاپ مک (macOS)</h3>
+            <p class="plat-sub">پکیج استاندارد DMG برای مک‌بوک‌ها و آی‌مک‌های جدید (تراشه‌های M1 تا M4 اپل) و مک‌های پردازندهٔ اینتل.</p>
+          </div>
+          <div class="dl-list">
+            <a id="dl-mac-arm64" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-macos-arm64.dmg" class="dl-item primary-dl">
+              <div class="dl-item-info">
+                <span class="dl-item-title">مک Apple Silicon (M1 / M2 / M3 / M4)</span>
+                <span class="dl-item-meta">ShiftKar-macos-arm64.dmg</span>
+              </div>
+              <span class="dl-item-btn">دانلود DMG</span>
+            </a>
+            <a id="dl-mac-x64" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-macos-x64.dmg" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">مک پردازندهٔ اینتل (Intel x64)</span>
+                <span class="dl-item-meta">ShiftKar-macos-x64.dmg</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">Intel DMG</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="plat-card" data-plat="linux" id="card-linux">
+          <div>
+            <div class="plat-top">
+              <div class="plat-icon" style="background:var(--amber-soft);color:var(--amber);">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              </div>
+              <span class="plat-badge">Ubuntu / Debian / Fedora / Arch</span>
+            </div>
+            <h3 class="plat-title">نسخهٔ دسکتاپ لینوکس (Linux)</h3>
+            <p class="plat-sub">ارائه‌شده در ۴ فرمت استاندارد DEB، AppImage (اجرای مستقیم بدون نصب)، RPM و آرشیو Portable برای معماری‌های x64 و ARM64.</p>
+          </div>
+          <div class="dl-list">
+            <a id="dl-linux-x64-deb" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-linux-x64.deb" class="dl-item primary-dl">
+              <div class="dl-item-info">
+                <span class="dl-item-title">بستهٔ اوبونتو و دبیان (DEB — x64)</span>
+                <span class="dl-item-meta">ShiftKar-linux-x64.deb</span>
+              </div>
+              <span class="dl-item-btn">دانلود DEB</span>
+            </a>
+            <a id="dl-linux-x64-appimage" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-linux-x64.AppImage" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">نسخهٔ همه‌کاره بدون نصب (AppImage — x64)</span>
+                <span class="dl-item-meta">ShiftKar-linux-x64.AppImage</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">AppImage</span>
+            </a>
+            <a id="dl-linux-x64-rpm" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-linux-x64.rpm" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">بستهٔ فدورا و ردهت (RPM — x64)</span>
+                <span class="dl-item-meta">ShiftKar-linux-x64.rpm</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">دانلود RPM</span>
+            </a>
+            <a id="dl-linux-arm64-deb" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download/ShiftKar-6.7.3-linux-arm64.deb" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">لینوکس ARM64 (DEB / AppImage در گیت‌هاب)</span>
+                <span class="dl-item-meta">ShiftKar-linux-arm64.deb</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">ARM64 DEB</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="plat-card" data-plat="web" id="card-web">
+          <div>
+            <div class="plat-top">
+              <div class="plat-icon" style="background:var(--cyan-soft);color:var(--cyan);">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </div>
+              <span class="plat-badge">آیفون (iOS)، اندروید و مرورگرها</span>
+            </div>
+            <h3 class="plat-title">نسخهٔ تحت وب (PWA) — shiftkar.ir</h3>
+            <p class="plat-sub">بدون نیاز به دانلود فایل نصبی؛ قابل افزودن به صفحهٔ اصلی آیفون (Add to Home Screen) و کروم با پشتیبانی کامل آفلاین.</p>
+          </div>
+          <div class="dl-list">
+            <a href="https://shiftkar.ir" class="dl-item primary-dl">
+              <div class="dl-item-info">
+                <span class="dl-item-title">ورود مستقیم به وب‌اپلیکیشن شیفت‌کار</span>
+                <span class="dl-item-meta">https://shiftkar.ir</span>
+              </div>
+              <span class="dl-item-btn">اجرای وب‌اپ</span>
+            </a>
+            <a href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest" target="_blank" rel="noopener" class="dl-item">
+              <div class="dl-item-info">
+                <span class="dl-item-title">مشاهدهٔ تمام فایل‌ها و هش‌های SHA-256 دسکتاپ</span>
+                <span class="dl-item-meta">SHA256SUMS.txt · GitHub Releases</span>
+              </div>
+              <span class="dl-item-btn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">Releases</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>یک نگاه به محیط برنامه</h2>
+        <p>طراحی شیشه‌ای، خوانا و یکدست در تمام پلتفرم‌ها به همراه ۶ تم رنگی در دو حالت تاریک و روشن.</p>
+      </div>
+      <div class="shots-grid">
+        <div class="shot-card">
+          <img src="/download/shots/calendar.webp" alt="تقویم ماهانه شیفت‌کار" loading="lazy" />
+          <span>تقویم ماهانه و آمار شیفت</span>
+        </div>
+        <div class="shot-card">
+          <img src="/download/shots/year.webp" alt="لوحه سالانه شیفت‌کار" loading="lazy" />
+          <span>لوحهٔ سالانه و کلاسیک</span>
+        </div>
+        <div class="shot-card">
+          <img src="/download/shots/groups.webp" alt="مدیریت گروه‌ها و ۴۵ الگوی آماده" loading="lazy" />
+          <span>۴۵ الگوی شیفت و الگوی سفارشی</span>
+        </div>
+        <div class="shot-card">
+          <img src="/download/shots/day-note.webp" alt="جزئیات روز، یادداشت و اضافه‌کاری" loading="lazy" />
+          <span>یادداشت، جابجایی و اضافه‌کاری</span>
+        </div>
+        <div class="shot-card">
+          <img src="/download/shots/reminders.webp" alt="یادآور و گزارش کارکرد" loading="lazy" />
+          <span>یادآورها و گزارش کارکرد</span>
+        </div>
+        <div class="shot-card">
+          <img src="/download/shots/services.webp" alt="سامانه‌های سازمانی" loading="lazy" />
+          <span>دسترسی سریع به سامانه‌ها</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>امکانات کامل در تمام نسخه‌ها</h2>
+        <p>همهٔ ابزارهایی که برای مدیریت نوبت‌کاری، مرخصی، جابجایی و کارکرد ماهانه و سالانه نیاز دارید.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feat-card">
+          <h3>تقویم ۴ گروهی + ۴۵ الگوی استاندارد</h3>
+          <p>پشتیبانی پیش‌فرض از الگوی ۲-۲-۴ پتروشیمی بندر امام و ۴۴ الگوی نوبت‌کاری دیگر به همراه امکان ساخت و ویرایش الگوی کاملاً سفارشی.</p>
+        </div>
+        <div class="feat-card">
+          <h3>لوحهٔ سالانه در ۳ نمای کاربردی</h3>
+          <p>نمایش لوحهٔ کلاسیک، لوحهٔ رسمی نوبت‌ها و ماتریس ۴ شیفت در تمام سال‌ها به همراه خروجی تصویر PNG باکیفیت برای اشتراک‌گذاری.</p>
+        </div>
+        <div class="feat-card">
+          <h3>تعطیلات رسمی و بروزرسانی آنلاین تقویم</h3>
+          <p>نمایش دقیق تعطیلات رسمی و مناسبت‌های شمسی، قمری و میلادی با قابلیت همگام‌سازی آنلاین تغییرات استهلال از گیت‌هاب.</p>
+        </div>
+        <div class="feat-card">
+          <h3>ثبت اضافه‌کاری، مرخصی، جابجایی و پرسنل</h3>
+          <p>ثبت ساعت اضافه‌کاری، مرخصی و همکار جایگزین در هر روز، مدیریت لیست پرسنل و دریافت گزارش تحلیلی کارکرد ماهانه و سالانه.</p>
+        </div>
+        <div class="feat-card">
+          <h3>ویجت رومیزی دسکتاپ و ویجت اندروید</h3>
+          <p>ویجت شیشه‌ای شناور روی دسکتاپ ویندوز/مک/لینوکس (با قابلیت Always on Top) و ویجت اختصاصی صفحهٔ اصلی در اندروید.</p>
+        </div>
+        <div class="feat-card">
+          <h3>پشتیبان‌گیری یکپارچه بین همهٔ دستگاه‌ها</h3>
+          <p>فایل پشتیبان (JSON) بین نسخه‌های اندروید، ویندوز، مک، لینوکس و وب کاملاً سازگار است و با یک کلیک بازیابی می‌شود.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>راهنمای سریع نصب در هر پلتفرم</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">۱</div>
+          <h3 style="font-size:15px;font-weight:900;margin-bottom:6px;">اندروید (APK)</h3>
+          <p style="font-size:12.5px;color:var(--text-muted);">
+            فایل APK را دانلود و اجرا کنید. در صورت نمایش پیام امنیتی گوگل‌پلی، گزینهٔ «More details» و سپس «Install anyway» را بزنید. اطلاعات نسخه‌های قبلی حفظ می‌شود.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">۲</div>
+          <h3 style="font-size:15px;font-weight:900;margin-bottom:6px;">ویندوز (EXE / MSI / ZIP)</h3>
+          <p style="font-size:12.5px;color:var(--text-muted);">
+            فایل نصاب `setup.exe` را اجرا کنید تا میانبر دسکتاپ، منوی استارت و Uninstaller ساخته شود؛ یا از نسخهٔ `Portable.zip` بدون نیاز به نصب استفاده کنید.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">۳</div>
+          <h3 style="font-size:15px;font-weight:900;margin-bottom:6px;">مک و لینوکس (DMG / DEB / AppImage)</h3>
+          <p style="font-size:12.5px;color:var(--text-muted);">
+            در مک فایل `.dmg` را باز و به پوشهٔ Applications بکشید. در لینوکس بستهٔ `.deb` یا `.rpm` را نصب کنید یا به فایل `.AppImage` مجوز اجرا (`chmod +x`) بدهید.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">۴</div>
+          <h3 style="font-size:15px;font-weight:900;margin-bottom:6px;">وب‌اپلیکیشن (PWA در آیفون و مرورگر)</h3>
+          <p style="font-size:12.5px;color:var(--text-muted);">
+            وارد آدرس <a href="https://shiftkar.ir" style="color:var(--primary-2);font-weight:800;">shiftkar.ir</a> شوید و از منوی مرورگر گزینهٔ «Add to Home Screen» یا «نصب برنامه» را انتخاب کنید.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div style="font-weight:900;color:var(--text);font-size:14.5px;">
+        طراحی و توسعه: سید حسین موسوی سعیدی — واحد SBR
+      </div>
+      <div class="footer-links">
+        <a href="https://shiftkar.ir" class="chip-link">نسخهٔ تحت وب (shiftkar.ir)</a>
+        <a href="https://chat.whatsapp.com/5HolMMoVnojCdh8GjhSZo2" target="_blank" rel="noopener" class="chip-link">گروه واتساپ</a>
+        <a href="https://t.me/h_mosavi_s" target="_blank" rel="noopener" class="chip-link">تلگرام</a>
+        <a href="https://eitaa.com/joinchat/929104214C56d88e3e24" target="_blank" rel="noopener" class="chip-link">گروه ایتا</a>
+        <a href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest" target="_blank" rel="noopener" class="chip-link">مخزن دسکتاپ در گیت‌هاب</a>
+        <a href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest" target="_blank" rel="noopener" class="chip-link">مخزن اندروید در گیت‌هاب</a>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-faint);">
+        ساخته‌شده برای سهولت در برنامه‌ریزی وقت کارکنان شیفت شاغل در شرکت پتروشیمی بندر امام و سایر صنایع نوبت‌کاری
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var faDigits = "۰۱۲۳۴۵۶۷۸۹";
+      function toFa(str) {
+        return String(str).replace(/[0-9]/g, function (d) { return faDigits[Number(d)]; });
+      }
+
+      var root = document.documentElement;
+      var themeBtn = document.getElementById("themeToggle");
+      var themeLbl = document.getElementById("themeLabel");
+      try {
+        var savedTheme = localStorage.getItem("sk_dl_theme");
+        if (savedTheme === "light") {
+          root.classList.remove("dark");
+          root.classList.add("light");
+          themeLbl.textContent = "تم تاریک";
+        }
+      } catch (e) {}
+      if (themeBtn) {
+        themeBtn.addEventListener("click", function () {
+          var isLight = root.classList.toggle("light");
+          root.classList.toggle("dark", !isLight);
+          themeLbl.textContent = isLight ? "تم تاریک" : "تم روشن";
+          try { localStorage.setItem("sk_dl_theme", isLight ? "light" : "dark"); } catch (e) {}
+        });
+      }
+
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      var platCards = document.querySelectorAll(".plat-card");
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var filter = btn.getAttribute("data-filter");
+          tabBtns.forEach(function (b) { b.classList.remove("active"); });
+          btn.classList.add("active");
+          platCards.forEach(function (card) {
+            if (filter === "all" || card.getAttribute("data-plat") === filter) {
+              card.style.display = "flex";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+      });
+
+      var deskVer = "6.7.3";
+      var deskBase = "https://github.com/Alimosavi-Code/shiftkar-desktop/releases/latest/download";
+      var urls = {
+        androidApk: "https://github.com/Alimosavi-Code/Shiftkar/releases/latest",
+        winX64Exe: deskBase + "/ShiftKar-" + deskVer + "-windows-x64-setup.exe",
+        winX64Msi: deskBase + "/ShiftKar-" + deskVer + "-windows-x64.msi",
+        winX64Zip: deskBase + "/ShiftKar-" + deskVer + "-windows-x64-portable.zip",
+        winArm64Exe: deskBase + "/ShiftKar-" + deskVer + "-windows-arm64-setup.exe",
+        winArm64Msi: deskBase + "/ShiftKar-" + deskVer + "-windows-arm64.msi",
+        winArm64Zip: deskBase + "/ShiftKar-" + deskVer + "-windows-arm64-portable.zip",
+        macArm64Dmg: deskBase + "/ShiftKar-" + deskVer + "-macos-arm64.dmg",
+        macX64Dmg: deskBase + "/ShiftKar-" + deskVer + "-macos-x64.dmg",
+        linuxX64Deb: deskBase + "/ShiftKar-" + deskVer + "-linux-x64.deb",
+        linuxX64AppImage: deskBase + "/ShiftKar-" + deskVer + "-linux-x64.AppImage",
+        linuxX64Rpm: deskBase + "/ShiftKar-" + deskVer + "-linux-x64.rpm",
+        linuxX64Tar: deskBase + "/ShiftKar-" + deskVer + "-linux-x64-portable.tar.gz",
+        linuxArm64Deb: deskBase + "/ShiftKar-" + deskVer + "-linux-arm64.deb",
+        linuxArm64AppImage: deskBase + "/ShiftKar-" + deskVer + "-linux-arm64.AppImage"
+      };
+
+      function rebuildDeskUrls(v) {
+        deskVer = v;
+        urls.winX64Exe = deskBase + "/ShiftKar-" + v + "-windows-x64-setup.exe";
+        urls.winX64Msi = deskBase + "/ShiftKar-" + v + "-windows-x64.msi";
+        urls.winX64Zip = deskBase + "/ShiftKar-" + v + "-windows-x64-portable.zip";
+        urls.winArm64Exe = deskBase + "/ShiftKar-" + v + "-windows-arm64-setup.exe";
+        urls.winArm64Msi = deskBase + "/ShiftKar-" + v + "-windows-arm64.msi";
+        urls.winArm64Zip = deskBase + "/ShiftKar-" + v + "-windows-arm64-portable.zip";
+        urls.macArm64Dmg = deskBase + "/ShiftKar-" + v + "-macos-arm64.dmg";
+        urls.macX64Dmg = deskBase + "/ShiftKar-" + v + "-macos-x64.dmg";
+        urls.linuxX64Deb = deskBase + "/ShiftKar-" + v + "-linux-x64.deb";
+        urls.linuxX64AppImage = deskBase + "/ShiftKar-" + v + "-linux-x64.AppImage";
+        urls.linuxX64Rpm = deskBase + "/ShiftKar-" + v + "-linux-x64.rpm";
+        urls.linuxX64Tar = deskBase + "/ShiftKar-" + v + "-linux-x64-portable.tar.gz";
+        urls.linuxArm64Deb = deskBase + "/ShiftKar-" + v + "-linux-arm64.deb";
+        urls.linuxArm64AppImage = deskBase + "/ShiftKar-" + v + "-linux-arm64.AppImage";
+
+        var map = {
+          "dl-win-x64-exe": urls.winX64Exe,
+          "dl-win-x64-msi": urls.winX64Msi,
+          "dl-win-x64-zip": urls.winX64Zip,
+          "dl-win-arm64-exe": urls.winArm64Exe,
+          "dl-mac-arm64": urls.macArm64Dmg,
+          "dl-mac-x64": urls.macX64Dmg,
+          "dl-linux-x64-deb": urls.linuxX64Deb,
+          "dl-linux-x64-appimage": urls.linuxX64AppImage,
+          "dl-linux-x64-rpm": urls.linuxX64Rpm,
+          "dl-linux-arm64-deb": urls.linuxArm64Deb
+        };
+        Object.keys(map).forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.href = map[id];
+        });
+      }
+
+      var detectedState = { os: "android", arch: "x64" };
+
+      function detectPlatform(archOverride) {
+        var ua = navigator.userAgent || "";
+        var plat = navigator.platform || "";
+        var isAndroid = /Android/i.test(ua);
+        var isIOS = /iPhone|iPad|iPod/i.test(ua) || (plat === "MacIntel" && navigator.maxTouchPoints > 1);
+        var isWin = /Win/i.test(plat) || /Windows/i.test(ua);
+        var isMac = !isIOS && (/Mac/i.test(plat) || /Macintosh|Mac OS X/i.test(ua));
+        var isLinux = !isAndroid && (/Linux/i.test(plat) || /Linux|X11/i.test(ua));
+
+        var isArm = /aarch64|arm64|armv8/i.test(ua + " " + plat);
+        if (archOverride) {
+          isArm = archOverride === "arm";
+        } else if (isMac) {
+          try {
+            var canvas = document.createElement("canvas");
+            var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+            if (gl) {
+              var dbg = gl.getExtension("WEBGL_debug_renderer_info");
+              var renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : "";
+              isArm = !/Intel/i.test(renderer);
+            } else {
+              isArm = true;
+            }
+          } catch (e) {
+            isArm = true;
+          }
+        }
+
+        if (isAndroid) return { os: "android", arch: "arm64" };
+        if (isIOS) return { os: "ios", arch: "arm64" };
+        if (isWin) return { os: "windows", arch: isArm ? "arm64" : "x64" };
+        if (isMac) return { os: "macos", arch: isArm ? "arm64" : "x64" };
+        if (isLinux) return { os: "linux", arch: isArm ? "arm64" : "x64" };
+        return { os: "android", arch: "x64" };
+      }
+
+      function applyDetectedUI(state) {
+        detectedState = state;
+        var badge = document.getElementById("detectedOsBadge");
+        var title = document.getElementById("smartTitle");
+        var desc = document.getElementById("smartDesc");
+        var btn = document.getElementById("primaryDownloadBtn");
+        var btnLbl = document.getElementById("primaryDownloadLabel");
+        var altBox = document.getElementById("smartAltLinks");
+
+        platCards.forEach(function (c) { c.classList.remove("is-detected"); });
+
+        function setAlts(items) {
+          altBox.innerHTML = "<span>گزینه‌های دیگر این پلتفرم:</span>";
+          items.forEach(function (item) {
+            var a = document.createElement("a");
+            a.className = "chip-link";
+            a.href = item.href;
+            a.textContent = item.label;
+            altBox.appendChild(a);
+          });
+        }
+
+        var vFa = toFa(deskVer).replace(/\./g, "٫");
+
+        if (state.os === "windows") {
+          var isArm = state.arch === "arm64";
+          badge.textContent = isArm ? "سیستم تشخیص‌داده‌شده: ویندوز ARM64" : "سیستم تشخیص‌داده‌شده: ویندوز ۶۴ بیتی (x64)";
+          title.textContent = "دانلود شیفت‌کار برای ویندوز شما (نسخهٔ " + vFa + ")";
+          desc.textContent = "نصاب گرافیکی استاندارد ویندوز (Inno Setup) همراه با ویجت رومیزی، آیکون کنار ساعت و قابلیت حذف آسان.";
+          btn.href = isArm ? urls.winArm64Exe : urls.winX64Exe;
+          btnLbl.textContent = isArm ? "دانلود نصاب ویندوز ARM64 (.exe)" : "دانلود نصاب ویندوز ۶۴ بیتی (.exe)";
+          setAlts([
+            { label: "بستهٔ نصبی MSI", href: isArm ? urls.winArm64Msi : urls.winX64Msi },
+            { label: "نسخهٔ بدون نصب (Portable ZIP)", href: isArm ? urls.winArm64Zip : urls.winX64Zip },
+            { label: isArm ? "نسخهٔ ویندوز x64" : "نسخهٔ ویندوز ARM64", href: isArm ? urls.winX64Exe : urls.winArm64Exe }
+          ]);
+          var wCard = document.getElementById("card-windows");
+          if (wCard) wCard.classList.add("is-detected");
+        } else if (state.os === "macos") {
+          var isMacArm = state.arch === "arm64";
+          badge.textContent = isMacArm ? "سیستم تشخیص‌داده‌شده: مک Apple Silicon (M1–M4)" : "سیستم تشخیص‌داده‌شده: مک پردازندهٔ Intel";
+          title.textContent = "دانلود شیفت‌کار برای مک شما (نسخهٔ " + vFa + ")";
+          desc.textContent = "فایل نصبی استاندارد DMG مخصوص macOS با پشتیبانی از ویجت رومیزی و تم شیشه‌ای.";
+          btn.href = isMacArm ? urls.macArm64Dmg : urls.macX64Dmg;
+          btnLbl.textContent = isMacArm ? "دانلود برای مک Apple Silicon (.dmg)" : "دانلود برای مک Intel (.dmg)";
+          setAlts([
+            { label: isMacArm ? "دانلود نسخهٔ مک Intel (.dmg)" : "دانلود نسخهٔ مک Apple Silicon (.dmg)", href: isMacArm ? urls.macX64Dmg : urls.macArm64Dmg }
+          ]);
+          var mCard = document.getElementById("card-macos");
+          if (mCard) mCard.classList.add("is-detected");
+        } else if (state.os === "linux") {
+          var isLinArm = state.arch === "arm64";
+          badge.textContent = isLinArm ? "سیستم تشخیص‌داده‌شده: لینوکس ARM64" : "سیستم تشخیص‌داده‌شده: لینوکس ۶۴ بیتی (x64)";
+          title.textContent = "دانلود شیفت‌کار برای لینوکس شما (نسخهٔ " + vFa + ")";
+          desc.textContent = "بستهٔ نصبی استاندارد DEB برای اوبونتو/دبیان به همراه نسخهٔ بدون نصب AppImage و بستهٔ RPM.";
+          btn.href = isLinArm ? urls.linuxArm64Deb : urls.linuxX64Deb;
+          btnLbl.textContent = isLinArm ? "دانلود بستهٔ DEB لینوکس (ARM64)" : "دانلود بستهٔ DEB لینوکس (x64)";
+          setAlts([
+            { label: "نسخهٔ بدون نصب (.AppImage)", href: isLinArm ? urls.linuxArm64AppImage : urls.linuxX64AppImage },
+            { label: "بستهٔ فدورا/ردهت (.rpm)", href: urls.linuxX64Rpm },
+            { label: "آرشیو قابل حمل (.tar.gz)", href: urls.linuxX64Tar }
+          ]);
+          var lCard = document.getElementById("card-linux");
+          if (lCard) lCard.classList.add("is-detected");
+        } else if (state.os === "ios") {
+          badge.textContent = "دستگاه تشخیص‌داده‌شده: آیفون / آیپد (iOS)";
+          title.textContent = "اجرای وب‌اپلیکیشن شیفت‌کار برای آیفون و آیپد";
+          desc.textContent = "در سافاری وارد shiftkar.ir شوید، دکمهٔ Share و سپس Add to Home Screen را بزنید تا کاملاً آفلاین و تمام‌صفحه نصب شود.";
+          btn.href = "https://shiftkar.ir";
+          btnLbl.textContent = "ورود و نصب نسخهٔ وب (PWA)";
+          setAlts([
+            { label: "دانلود نسخهٔ اندروید (APK)", href: urls.androidApk },
+            { label: "دانلود نسخهٔ ویندوز (.exe)", href: urls.winX64Exe },
+            { label: "دانلود نسخهٔ مک (.dmg)", href: urls.macArm64Dmg }
+          ]);
+          var webCard = document.getElementById("card-web");
+          if (webCard) webCard.classList.add("is-detected");
+        } else {
+          badge.textContent = "دستگاه تشخیص‌داده‌شده: موبایل اندروید";
+          title.textContent = "دانلود مستقیم اپلیکیشن اندروید شیفت‌کار";
+          desc.textContent = "فایل نصبی رسمی اندروید (APK) با ویجت صفحهٔ اصلی، یادآور شیفت و بروزرسانی خودکار درون‌برنامه‌ای.";
+          btn.href = urls.androidApk;
+          btnLbl.textContent = "دانلود مستقیم نسخهٔ اندروید (APK)";
+          setAlts([
+            { label: "نسخهٔ ویندوز (.exe)", href: urls.winX64Exe },
+            { label: "نسخهٔ مک (.dmg)", href: urls.macArm64Dmg },
+            { label: "نسخهٔ لینوکس (.deb)", href: urls.linuxX64Deb }
+          ]);
+          var aCard = document.getElementById("card-android");
+          if (aCard) aCard.classList.add("is-detected");
+        }
+      }
+
+      applyDetectedUI(detectPlatform());
+
+      if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === "function") {
+        navigator.userAgentData.getHighEntropyValues(["architecture", "platform"]).then(function (uaData) {
+          var archStr = String(uaData.architecture || "").toLowerCase();
+          if (archStr.indexOf("arm") !== -1) {
+            applyDetectedUI(detectPlatform("arm"));
+          } else if (archStr.indexOf("x86") !== -1) {
+            applyDetectedUI(detectPlatform("x86"));
+          }
+        }).catch(function () {});
+      }
+
+      var verBadge = document.getElementById("liveVersionText");
+      function updateBadgeText() {
+        var vFa = toFa(deskVer).replace(/\./g, "٫");
+        if (verBadge) {
+          verBadge.textContent = "نسخهٔ " + vFa + " · اندروید، ویندوز، مک، لینوکس و وب";
+        }
+      }
+
+      fetch("https://raw.githubusercontent.com/Alimosavi-Code/Shiftkar/refs/heads/main/update.json", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (data) {
+          if (data && typeof data.downloadUrl === "string" && data.downloadUrl.trim()) {
+            urls.androidApk = data.downloadUrl.trim();
+            document.querySelectorAll("a[data-apk-link]").forEach(function (el) {
+              el.href = urls.androidApk;
+            });
+            applyDetectedUI(detectedState);
+          }
+        })
+        .catch(function () {});
+
+      fetch("https://api.github.com/repos/Alimosavi-Code/shiftkar-desktop/releases/latest", { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (rel) {
+          if (rel && typeof rel.tag_name === "string") {
+            var cleanVer = rel.tag_name.trim().replace(/^v/i, "");
+            if (cleanVer) {
+              rebuildDeskUrls(cleanVer);
+              updateBadgeText();
+              applyDetectedUI(detectedState);
+            }
+          }
+        })
+        .catch(function () {});
+    })();
+  </script>
+</body>
+</html>

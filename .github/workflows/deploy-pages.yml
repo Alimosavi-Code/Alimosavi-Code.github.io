@@ -31,7 +31,6 @@ jobs:
         run: |
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           OWNER="${GITHUB_REPOSITORY%%/*}"
-          # If public/CNAME exists (custom domain like shiftkar.ir) or repo is <user>.github.io, serve at root ""
           if [ -f "public/CNAME" ] || [ "$REPO_NAME" = "${OWNER}.github.io" ]; then
             BASE=""
           else
@@ -43,7 +42,11 @@ jobs:
         run: rm -rf src/app/api
 
       - name: Static export build
-        run: NEXT_EXPORT=1 NEXT_PUBLIC_BASE_PATH="$BASE_PATH" bun run build:gh
+        run: |
+          NEXT_EXPORT=1 NEXT_PUBLIC_BASE_PATH="$BASE_PATH" bun run build:gh
+          mkdir -p out/download
+          cp -rf public/download/* out/download/
+          if [ -f "public/CNAME" ]; then cp -f public/CNAME out/CNAME; fi
 
       - uses: actions/upload-pages-artifact@v3
         with:

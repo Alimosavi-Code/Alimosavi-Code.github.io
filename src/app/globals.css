@@ -889,3 +889,38 @@ body.sk-sheet-open {
   opacity: 0.75;
   margin-bottom: 2px;
 }
+
+
+/* =========================================================================
+   Mobile Landscape Optimization (side-by-side Calendar/Table + Controls)
+   ========================================================================= */
+@media (orientation: landscape) and (max-height: 600px) {
+  .sk-cal-root {
+    flex-direction: row !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-top: 8px !important;
+  }
+  .sk-cal-sidebar {
+    width: 248px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    overflow-y: auto !important;
+    padding-bottom: 72px !important;
+  }
+  .sk-cal-main {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    padding-bottom: 72px !important;
+  }
+  .sk-hide-in-landscape {
+    display: none !important;
+  }
+  .sk-show-in-landscape {
+    display: grid !important;
+  }
+}

@@ -38,7 +38,7 @@ import {
   importFullBackupJson,
 } from "@/lib/notes-store";
 import { toPersianDigits, todayJalaali } from "@/lib/jalali";
-import { getInstallState } from "@/lib/install";
+import { getInstallState, openExternalBrowser } from "@/lib/install";
 import {
   GroupIcon,
   PaletteIcon,
@@ -246,6 +246,7 @@ export function SettingsView({
   const [notesCount, setNotesCount] = useState(0);
   const [syncingCal, setSyncingCal] = useState(false);
   const [installed, setInstalled] = useState(false);
+  const [installing, setInstalling] = useState(false);
 
   const pat = getActivePattern();
   const activeGroups = getActiveGroups(pat);
@@ -260,7 +261,11 @@ export function SettingsView({
   }, []);
 
   useEffect(() => {
-    const sync = () => setInstalled(getInstallState().installed);
+    const sync = () => {
+      const st = getInstallState();
+      setInstalled(st.installed);
+      setInstalling(st.installing);
+    };
     sync();
     window.addEventListener("shiftkar:install-state", sync);
     window.addEventListener("appinstalled", sync);
@@ -596,12 +601,24 @@ export function SettingsView({
             className={`w-full py-3 rounded-2xl text-[13.5px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
               installed
                 ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] border border-[var(--sk-rest)]/30"
-                : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
+                : installing
+                  ? "bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] border border-[var(--sk-primary)]/40"
+                  : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
             }`}
           >
-            {installed ? <CheckIcon size={16} /> : <DownloadIcon size={16} />}
+            {installed ? (
+              <CheckIcon size={16} />
+            ) : installing ? (
+              <RefreshIcon size={16} className="animate-spin" />
+            ) : (
+              <DownloadIcon size={16} />
+            )}
             <span>
-              {installed ? "وب‌اپلیکیشن نصب شده است" : "نصب وب‌اپلیکیشن روی دستگاه"}
+              {installed
+                ? "وب‌اپلیکیشن نصب شده است"
+                : installing
+                  ? "در حال نصب و افزودن به صفحهٔ اصلی…"
+                  : "نصب وب‌اپلیکیشن روی دستگاه"}
             </span>
           </button>
 
@@ -639,7 +656,10 @@ export function SettingsView({
           <a
             href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer external"
+            onClick={(e) =>
+              openExternalBrowser("https://github.com/Alimosavi-Code/Shiftkar/releases/latest", e)
+            }
             className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99]"
           >
             <span className="size-[34px] rounded-[11px] bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] grid place-items-center shrink-0">
@@ -734,7 +754,10 @@ export function SettingsView({
               key={c.id}
               href={c.href}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer external"
+              onClick={(e) => {
+                if (c.href.startsWith("http")) openExternalBrowser(c.href, e);
+              }}
               role="listitem"
               aria-label={c.fa}
               className="group rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)] px-3.5 py-2.5 flex items-center gap-3 transition-all active:scale-[0.99]"

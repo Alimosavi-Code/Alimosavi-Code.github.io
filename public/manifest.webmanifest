@@ -1,35 +1,38 @@
 {
   "name": "شیفت‌کار وب",
-  "short_name": "شیفت‌کار وب",
+  "short_name": "شیفت‌کار",
   "description": "تقویم هوشمند شیفت کاری — محاسبه خودکار شیفت‌های صبح‌کار، عصرکار، شب‌کار و استراحت برای گروه‌های کاری",
   "dir": "rtl",
   "lang": "fa",
-  "start_url": "./",
-  "scope": "./",
-  "id": "./",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
   "orientation": "any",
   "background_color": "#090f1d",
-  "theme_color": "#3d6bf5",
+  "theme_color": "#090f1d",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://shiftkar.ir/manifest.webmanifest"
+    }
+  ],
   "icons": [
     {
-      "src": "./assets/icon-192.png?v=673",
+      "src": "/assets/icon-192.png?v=676",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/icon-512.png?v=673",
+      "src": "/assets/icon-512.png?v=676",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/icon-maskable-512.png?v=673",
+      "src": "/assets/icon-maskable-512.png?v=676",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

@@ -1,32 +1,22 @@
 "use client";
 /**
- * PWA install engine — faithful port of the original install-prompt.js.
- *
- *  - Chrome/Edge/Android/desktop: captures `beforeinstallprompt` and shows
- *    the native install UI when asked. Chrome only fires the event AFTER
- *    its service worker is ACTIVE, so on a cold visit we register the SW
- *    and wait briefly for the event instead of claiming "unsupported".
- *  - iOS Safari: no install event — "Add to Home Screen" instructions.
- *  - Firefox: no `beforeinstallprompt` — short manual guide instead.
- *  - Any other browser: generic "use your browser menu" guide.
- *  - Already installed (standalone) or after `appinstalled`: reported as
- *    installed; a previously-installed PWA later running in a normal tab
- *    means it was deleted — the install UI is offered again.
+ * PWA install engine + External Browser launcher:
+ *  - Tracks `installing` (WebAPK building/downloading in background after prompt acceptance)
+ *    separately from `installed` (confirmed via `appinstalled` event, `getInstalledRelatedApps()`,
+ *    or `display-mode: standalone`).
+ *  - Provides `openExternalBrowser(url, e)` so links in `سامانه‌ها` and `دانلود مستقیم از گیت‌هاب`
+ *    open in a real external browser tab outside the standalone PWA window.
  */
 
-const FLAG_KEY = "shiftkar.install.v1";
+const FLAG_KEY = "shiftkar.install.v2";
 const WAIT_FOR_PROMPT_MS = 6000;
 
 const ua = () => (typeof navigator !== "undefined" ? navigator.userAgent || "" : "");
 
-/* ---- per-browser detection (for the manual guides + sheet copy) ---- */
-
-/** Firefox never fires `beforeinstallprompt`. */
 export function isFirefox() {
   return /Firefox\//.test(ua());
 }
 
-/** Xiaomi Mi Browser (Chromium-based, but often WITHOUT the native prompt). */
 export function isMiBrowser() {
   return /MiuiBrowser|Mi\s?Browser/i.test(ua());
 }
@@ -47,21 +37,19 @@ export function isVivaldi() {
   return /Vivaldi/i.test(ua());
 }
 
-/** Chromium browsers (Chrome/Edge/Brave/Vivaldi/Opera/Samsung/Mi…) support
- *  the native prompt in principle; a few builds (Mi, old Opera) never fire it
- *  — the sheet falls back to a browser-specific manual guide instead. */
 export function isChromium() {
   return !isIOSDevice() && !isFirefox() && /Chrome|Chromium|Edg\//.test(ua());
 }
 
 let deferredPrompt: (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null = null;
 let installedFlag = false;
+let installingFlag = false;
+let installPollTimer: ReturnType<typeof setInterval> | null = null;
+let installFallbackTimer: ReturnType<typeof setTimeout> | null = null;
 let notifyInstallReady: (() => void) | null = null;
 const installReadyPromise = new Promise<boolean>((resolve) => {
   notifyInstallReady = () => resolve(true);
 });
-
-/* ---------------- helpers ---------------- */
 
 function loadFlag(): { installed?: boolean; lastStandalone?: number; autoShown?: boolean } {
   try {
@@ -83,22 +71,60 @@ export function isStandalone() {
   return (
     (typeof window !== "undefined" &&
       window.matchMedia &&
-      window.matchMedia("(display-mode: standalone)").matches) ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+      (window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia("(display-mode: fullscreen)").matches)) ||
+    (typeof window !== "undefined" && (window.navigator as unknown as { standalone?: boolean }).standalone === true)
   );
 }
 
 function isIOSDevice() {
-  const ua = navigator.userAgent || "";
-  const iPadOS13 = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
-  return /iPhone|iPad|iPod/.test(ua) || iPadOS13;
+  const u = ua();
+  const iPadOS13 = /Macintosh/.test(u) && typeof navigator !== "undefined" && navigator.maxTouchPoints > 1;
+  return /iPhone|iPad|iPod/.test(u) || iPadOS13;
 }
 
 function emitState() {
-  window.dispatchEvent(new CustomEvent("shiftkar:install-state"));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("shiftkar:install-state"));
+  }
 }
 
-/* ---------------- boot ---------------- */
+async function checkRelatedAppsInstalled(): Promise<boolean | null> {
+  if (typeof navigator === "undefined" || !("getInstalledRelatedApps" in navigator)) {
+    return null;
+  }
+  try {
+    const fn = (navigator as unknown as { getInstalledRelatedApps: () => Promise<unknown[]> }).getInstalledRelatedApps;
+    const apps = await fn.call(navigator);
+    return Array.isArray(apps) && apps.length > 0;
+  } catch {
+    return null;
+  }
+}
+
+function clearInstallTimers() {
+  if (installPollTimer) {
+    clearInterval(installPollTimer);
+    installPollTimer = null;
+  }
+  if (installFallbackTimer) {
+    clearTimeout(installFallbackTimer);
+    installFallbackTimer = null;
+  }
+}
+
+function finalizeInstalled() {
+  clearInstallTimers();
+  const wasInstalling = installingFlag;
+  installingFlag = false;
+  installedFlag = true;
+  deferredPrompt = null;
+  saveFlag({ installed: true, lastStandalone: Date.now() });
+  emitState();
+  if (wasInstalling && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("shiftkar:install-completed"));
+  }
+}
 
 export function initInstallPrompt() {
   if (typeof window === "undefined") return;
@@ -106,56 +132,64 @@ export function initInstallPrompt() {
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e as typeof deferredPrompt;
+    /* If browser fires beforeinstallprompt while not in standalone, the app is NOT currently installed! */
+    if (!isStandalone() && !installingFlag) {
+      installedFlag = false;
+      saveFlag({ installed: false });
+    }
     emitState();
     notifyInstallReady?.();
     window.dispatchEvent(new CustomEvent("shiftkar:install-ready"));
   });
 
   window.addEventListener("appinstalled", () => {
-    installedFlag = true;
-    deferredPrompt = null;
-    saveFlag({ installed: true, lastStandalone: Date.now() });
-    emitState();
+    finalizeInstalled();
   });
 
-  if (loadFlag().installed) installedFlag = true;
-
-  /* One-time migration: the improved install engine (per-browser guides +
-   * install-ready listener) deserves ONE more auto-prompt for users whose
-   * earlier `autoShown` was burned on the broken sheet. Reset it exactly once. */
-  const flag0 = loadFlag();
-  if (flag0.autoShown === true && flag0.installed !== true && (flag0 as { autoShownV2?: boolean }).autoShownV2 !== true) {
-    saveFlag({ autoShown: false, autoShownV2: true });
-  }
-
-  /* PWA deletion detection (original behavior) */
   if (isStandalone()) {
     installedFlag = true;
-    saveFlag({ lastStandalone: Date.now() });
-  } else {
-    const flag = loadFlag();
-    const lastStandalone = flag.lastStandalone || 0;
-    if (flag.installed === true && lastStandalone > 0 && Date.now() - lastStandalone > 60_000) {
-      saveFlag({ installed: false, lastStandalone: 0, autoShown: false });
-      installedFlag = false;
-      emitState();
-    }
+    installingFlag = false;
+    saveFlag({ installed: true, lastStandalone: Date.now() });
+    emitState();
+    return;
   }
+
+  /* Verify real installation status via getInstalledRelatedApps() if available */
+  checkRelatedAppsInstalled().then((relInstalled) => {
+    if (relInstalled === true) {
+      installedFlag = true;
+      saveFlag({ installed: true });
+      emitState();
+    } else if (relInstalled === false) {
+      installedFlag = false;
+      saveFlag({ installed: false });
+      emitState();
+    } else {
+      const flag = loadFlag();
+      if (flag.installed) {
+        const lastStandalone = flag.lastStandalone || 0;
+        if (lastStandalone > 0 && Date.now() - lastStandalone > 60_000) {
+          saveFlag({ installed: false, lastStandalone: 0, autoShown: false });
+          installedFlag = false;
+        } else {
+          installedFlag = true;
+        }
+        emitState();
+      }
+    }
+  });
 }
 
 export function getInstallState() {
   return {
     installed: isStandalone() || installedFlag,
+    installing: installingFlag,
     canPrompt: !!deferredPrompt,
     isIOS: isIOSDevice(),
     isFirefox: isFirefox(),
   };
 }
 
-/* ---------------- the install flow ---------------- */
-
-/** Make sure the SW is active BEFORE waiting for the event (Chrome only
- *  offers installability once a service worker controls the page). */
 async function ensureServiceWorkerReady() {
   if (!("serviceWorker" in navigator)) return;
   try {
@@ -168,13 +202,14 @@ async function ensureServiceWorkerReady() {
       new Promise((r) => setTimeout(r, 4000)),
     ]);
   } catch {
-    /* fall through to the manual guide */
+    /* ignore */
   }
 }
 
-export async function promptInstall(): Promise<"installed" | "dismissed" | "instructions" | "unavailable"> {
+export async function promptInstall(): Promise<"installed" | "installing" | "dismissed" | "instructions" | "unavailable"> {
   const st = getInstallState();
   if (st.installed) return "installed";
+  if (st.installing) return "installing";
 
   if (!deferredPrompt && isChromium()) {
     window.dispatchEvent(new CustomEvent("shiftkar:install-waiting"));
@@ -194,10 +229,31 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
       await prompt.prompt();
       const choice = await prompt.userChoice;
       if (choice && choice.outcome === "accepted") {
-        installedFlag = true;
-        saveFlag({ installed: true });
+        /* User accepted the prompt; now Chrome/Google Play is building & installing the WebAPK!
+         * Wait for the real `appinstalled` event or `getInstalledRelatedApps()` confirmation. */
+        installingFlag = true;
         emitState();
-        return "installed";
+
+        clearInstallTimers();
+        installPollTimer = setInterval(async () => {
+          if (isStandalone()) {
+            finalizeInstalled();
+            return;
+          }
+          const rel = await checkRelatedAppsInstalled();
+          if (rel === true) {
+            finalizeInstalled();
+          }
+        }, 1200);
+
+        /* Safety fallback after 14s for desktop/browsers that don't support getInstalledRelatedApps */
+        installFallbackTimer = setTimeout(() => {
+          if (installingFlag) {
+            finalizeInstalled();
+          }
+        }, 14000);
+
+        return "installing";
       }
       return "dismissed";
     } catch {
@@ -207,17 +263,14 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
   return "instructions";
 }
 
-/** One-time automatic prompt: opens the install sheet as soon as Chromium
- *  hands us the native prompt (even if that arrives LATE), with a short
- *  timeout fallback — never while the tour runs, never twice. */
 export function maybeAutoPromptInstall(openInstallSheet: () => void, isTourActive: () => boolean) {
-  if (getInstallState().installed) return;
+  if (getInstallState().installed || getInstallState().installing) return;
   if (loadFlag().autoShown) return;
 
   let opened = false;
   const open = () => {
     if (opened) return;
-    if (getInstallState().installed) return;
+    if (getInstallState().installed || getInstallState().installing) return;
     if (isTourActive()) return;
     opened = true;
     saveFlag({ autoShown: true });
@@ -226,13 +279,48 @@ export function maybeAutoPromptInstall(openInstallSheet: () => void, isTourActiv
   };
   const onReady = () => setTimeout(open, 600);
 
-  /* Chromium fires `beforeinstallprompt` whenever it decides the page is
-   * installable — sometimes seconds after load. Listen for it instead of
-   * relying only on a fixed timer, so the sheet appears WITH the native
-   * prompt ready (Chrome/Edge/Brave/Vivaldi/Opera/Samsung…). */
   window.addEventListener("shiftkar:install-ready", onReady);
-  /* fallback for engines that never fire it (Mi Browser, iOS, Firefox) */
   setTimeout(open, 5000);
+}
+
+/**
+ * Opens an external URL or `/download` in a real external browser tab outside the standalone PWA.
+ * On Android when running inside an installed WebAPK (`isStandalone()`), uses an explicit Chrome/Browser
+ * `intent://` URI with fallback so Android launches a real browser tab instead of trapping the user
+ * inside the PWA window or an in-app Custom Tab.
+ */
+export function openExternalBrowser(url: string, e?: React.MouseEvent) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  if (typeof window === "undefined") return;
+
+  const isAndroid = /Android/i.test(navigator.userAgent || "");
+  if (isStandalone() && isAndroid && /^https?:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      const scheme = parsed.protocol.replace(":", "");
+      const hostAndPath = parsed.host + parsed.pathname + parsed.search + parsed.hash;
+      const fallback = encodeURIComponent(url);
+      /* If user is on Samsung Internet, don't force com.android.chrome package */
+      const pkgPart = isSamsung()
+        ? "package=com.sec.android.app.sbrowser;"
+        : isFirefox()
+          ? "package=org.mozilla.firefox;"
+          : "package=com.android.chrome;";
+      const intentUrl = `intent://${hostAndPath}#Intent;scheme=${scheme};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;${pkgPart}S.browser_fallback_url=${fallback};end`;
+      window.location.href = intentUrl;
+      return;
+    } catch {
+      /* fallback below */
+    }
+  }
+
+  const win = window.open(url, "_blank", "noopener,noreferrer");
+  if (!win) {
+    window.location.assign(url);
+  }
 }
 
 export const initInstallCapture = initInstallPrompt;

@@ -1,24 +1,33 @@
 "use client";
-/**
- * Install sheet — the single install UI used by Settings, Onboarding and the
- * one-time auto prompt. Shows the CTA first; if no native prompt is available
- * at tap-time it swaps in the exact manual guide for the user's browser.
- */
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { Sheet } from "./sheet";
-import { getInstallState, promptInstall, isFirefox, isMiBrowser, isSamsung, isOpera, isEdge } from "@/lib/install";
+import {
+  getInstallState,
+  promptInstall,
+  isFirefox,
+  isMiBrowser,
+  isSamsung,
+  isOpera,
+  isEdge,
+} from "@/lib/install";
 import { useShiftKar, haptic } from "@/lib/store";
-import { DownloadIcon } from "./icons";
+import { DownloadIcon, RefreshIcon, CheckIcon } from "./icons";
 
 function subscribeInstallState(cb: () => void) {
-  const events = ["shiftkar:install-state", "shiftkar:install-ready", "appinstalled"] as const;
+  const events = [
+    "shiftkar:install-state",
+    "shiftkar:install-ready",
+    "shiftkar:install-completed",
+    "appinstalled",
+  ] as const;
   for (const e of events) window.addEventListener(e, cb);
   return () => {
     for (const e of events) window.removeEventListener(e, cb);
   };
 }
 const readInstalled = () => getInstallState().installed;
+const readInstalling = () => getInstallState().installing;
 const readCanPrompt = () => getInstallState().canPrompt;
 const readServerFalse = () => false;
 
@@ -32,7 +41,6 @@ function Steps({ items }: { items: string[] }) {
   );
 }
 
-/** The exact menu path per browser — so no user ever hits a dead end. */
 function browserGuide(): { label: string; items: string[] } {
   const android = /Android/.test(navigator.userAgent || "");
 
@@ -97,7 +105,6 @@ function browserGuide(): { label: string; items: string[] } {
           ],
     };
   }
-  /* Chrome / Brave / Vivaldi / سایر مرورگرها */
   return {
     label: "کروم و مرورگرهای مشابه",
     items: [
@@ -161,7 +168,16 @@ export function InstallSheet({
 }) {
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const installed = useSyncExternalStore(subscribeInstallState, readInstalled, readServerFalse);
+  const installing = useSyncExternalStore(subscribeInstallState, readInstalling, readServerFalse);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const onDone = () => {
+      toast.success("نصب وب‌اپلیکیشن شیفت‌کار کامل شد و به صفحهٔ اصلی اضافه گردید 🎉");
+    };
+    window.addEventListener("shiftkar:install-completed", onDone);
+    return () => window.removeEventListener("shiftkar:install-completed", onDone);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -175,7 +191,9 @@ export function InstallSheet({
     try {
       const res = await promptInstall();
       if (res === "installed") {
-        toast("شیفت‌کار نصب شد 🎉");
+        toast.success("شیفت‌کار روی دستگاه شما نصب است 🎉");
+      } else if (res === "installing") {
+        toast("در حال ساخت و نصب وب‌اپلیکیشن در پس‌زمینه…");
       } else if (res === "dismissed") {
         toast("برای نصب، از منوی مرورگر «نصب برنامه» را انتخاب کنید");
       } else if (res === "unavailable") {
@@ -191,8 +209,18 @@ export function InstallSheet({
       <div className="px-4 pb-8 pt-3">
         {installed ? (
           <div className="rounded-2xl bg-[var(--sk-rest-soft)] border-2 border-[var(--sk-rest)]/30 px-4 py-4 flex items-center gap-2.5 text-[13.5px] font-bold text-[var(--sk-rest-ink)]">
-            <DownloadIcon size={18} />
-            شیفت‌کار روی دستگاه شما نصب است.
+            <CheckIcon size={18} />
+            شیفت‌کار روی دستگاه شما نصب شده است.
+          </div>
+        ) : installing ? (
+          <div className="rounded-2xl bg-[var(--sk-primary-soft)] border-2 border-[var(--sk-primary)]/40 px-4 py-4 flex items-center gap-3 text-[13px] font-bold text-[var(--sk-primary)]">
+            <RefreshIcon size={18} className="animate-spin shrink-0" />
+            <div>
+              <div>در حال نصب و افزودن به صفحهٔ اصلی…</div>
+              <div className="text-[11px] font-normal text-[var(--sk-text-muted)] mt-0.5">
+                سیستم در حال ساخت وب‌اپلیکیشن است؛ لطفاً چند ثانیه صبر کنید.
+              </div>
+            </div>
           </div>
         ) : (
           <>

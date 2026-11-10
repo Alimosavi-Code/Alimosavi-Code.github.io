@@ -1,9 +1,9 @@
 "use client";
 /**
- * Systems view (`SystemsView`) — 100% parity with Android `SystemsScreen.kt` (v6.7.2)
- * + Responsive multi-column grid across phones (`grid-cols-2`), tablets (`sm:grid-cols-3`),
- *   and desktops (`lg:grid-cols-4`).
+ * Systems view (`SystemsView`) — opens every portal & download link in a new external browser tab
+ * outside the standalone PWA window (`openExternalBrowser`).
  */
+import { openExternalBrowser } from "@/lib/install";
 import {
   ClinicIcon,
   CardIcon,
@@ -40,7 +40,7 @@ const SYSTEMS: System[] = [
   { icon: FoodIcon, fa: "رزرو غذا", desc: "سامانه رزرو غذا", href: "https://pooneh.bipc.ir/" },
   { icon: ChartIcon, fa: "سهام", desc: "سامانه سهام", href: "https://sahamfasl.bipc.ir/" },
   { icon: GlobeIcon, fa: "شیفت‌کار تحت وب", desc: "نسخه تحت وب نرم‌افزار", href: "https://shiftkar.ir" },
-  { icon: DownloadIcon, fa: "شیفت‌کار موبایل", desc: "دانلود نسخه موبایل", href: "https://shiftkar.ir/download" },
+  { icon: DownloadIcon, fa: "شیفت‌کار موبایل", desc: "دانلود نسخه موبایل و دسکتاپ", href: "https://shiftkar.ir/download/" },
 ];
 
 export function SystemsView() {
@@ -49,7 +49,7 @@ export function SystemsView() {
       <div className="mb-4">
         <h1 className="text-[22px] md:text-[24px] font-black">سامانه‌ها</h1>
         <p className="text-[13px] text-[var(--sk-text-muted)] mt-1">
-          دسترسی سریع به پرتال‌ها و سامانه‌های پرکاربرد کاری
+          دسترسی سریع به پرتال‌ها و سامانه‌های پرکاربرد کاری (باز شدن در تب جدید مرورگر)
         </p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
@@ -58,7 +58,8 @@ export function SystemsView() {
             key={s.fa}
             href={s.href}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer external"
+            onClick={(e) => openExternalBrowser(s.href, e)}
             className="sk-rise glass rounded-3xl p-4 flex flex-col gap-3 hover:border-[var(--sk-primary)] active:scale-[0.98] transition-all"
             style={{ animationDelay: `${i * 35}ms` }}
           >
