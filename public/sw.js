@@ -4,14 +4,14 @@
  * The base path is derived from the SW scope, so the SAME file works on
  * the root domain (""), GitHub Pages user sites ("") and project sites
  * ("/<repo>") without any rebuild-time rewriting. */
-const CACHE = "shiftkar-web-v681";
+const CACHE = "shiftkar-web-v682";
 const BASE = new URL(self.registration.scope).pathname.replace(/\/+$/, "");
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll([`${BASE}/`, `${BASE}/manifest.webmanifest`]))
+      .then((cache) => cache.addAll([`${BASE}/`]))
       .then(() => self.skipWaiting()),
   );
 });
@@ -31,7 +31,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
   const p = url.pathname;
-  if (p === `${BASE}/download` || p.startsWith(`${BASE}/download/`)) return;
+  if (p === `${BASE}/download` || p.startsWith(`${BASE}/download/`) || p.endsWith("/manifest.webmanifest")) return;
   const immutableFont = p.startsWith(`${BASE}/fonts/`);
 
   /* Immutable font files: cache-first */

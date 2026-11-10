@@ -14,7 +14,7 @@
  *    means it was deleted — the install UI is offered again.
  */
 
-const FLAG_KEY = "shiftkar-neo.install.v1";
+const FLAG_KEY = "shiftkar-neo.install.v682";
 const WAIT_FOR_PROMPT_MS = 6000;
 
 const ua = () => (typeof navigator !== "undefined" ? navigator.userAgent || "" : "");
@@ -106,6 +106,10 @@ export function initInstallPrompt() {
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e as typeof deferredPrompt;
+    if (!isStandalone()) {
+      installedFlag = false;
+      saveFlag({ installed: false });
+    }
     emitState();
     notifyInstallReady?.();
     window.dispatchEvent(new CustomEvent("shiftkar-neo:install-ready"));
@@ -135,7 +139,7 @@ export function initInstallPrompt() {
   } else {
     const flag = loadFlag();
     const lastStandalone = flag.lastStandalone || 0;
-    if (flag.installed === true && lastStandalone > 0 && Date.now() - lastStandalone > 60_000) {
+    if (flag.installed === true && (lastStandalone === 0 || Date.now() - lastStandalone > 60_000)) {
       saveFlag({ installed: false, lastStandalone: 0, autoShown: false });
       installedFlag = false;
       emitState();
@@ -195,7 +199,7 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
       const choice = await prompt.userChoice;
       if (choice && choice.outcome === "accepted") {
         installedFlag = true;
-        saveFlag({ installed: true });
+        saveFlag({ installed: true, lastStandalone: Date.now() });
         emitState();
         return "installed";
       }
