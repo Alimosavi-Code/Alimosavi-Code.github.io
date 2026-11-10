@@ -1233,15 +1233,16 @@ function TableView(props: {
         )}
       </div>
 
-      <table className="w-full table-fixed border-collapse text-[12.5px]">
+      <div className="overflow-x-auto sk-scroll touch-pan-x overscroll-x-contain">
+      <table className="w-max min-w-full border-collapse text-[12.5px]">
         <thead>
           <tr className="h-[38px] text-[11px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
-            <th className="w-[42px] sm:w-[50px] font-bold text-center">روز</th>
-            <th className="w-[62px] sm:w-[74px] font-bold text-center">هفته</th>
+            <th className="w-[44px] sm:w-[52px] px-1.5 font-bold text-center whitespace-nowrap">روز</th>
+            <th className="w-[64px] sm:w-[76px] px-1.5 font-bold text-center whitespace-nowrap">هفته</th>
             <th
               className={`${
-                all ? "w-[106px] sm:w-[124px]" : "w-[94px] sm:w-[112px]"
-              } font-bold text-center`}
+                all ? "w-[110px] sm:w-[126px]" : "w-[96px] sm:w-[114px]"
+              } px-1.5 font-bold text-center whitespace-nowrap`}
             >
               {all
                 ? "شیفت گروه‌ها"
@@ -1249,7 +1250,7 @@ function TableView(props: {
                   ? `شیفت ${getGroupLetter(activeSingleGroup, pat)}`
                   : "شیفت"}
             </th>
-            <th className="font-bold text-start ps-2.5 pe-3">مناسبت و یادداشت</th>
+            <th className="font-bold text-start ps-2.5 pe-4 whitespace-nowrap">مناسبت و یادداشت</th>
           </tr>
         </thead>
         <tbody>
@@ -1322,8 +1323,8 @@ function TableView(props: {
                     </span>
                   )}
                 </td>
-                <td className="h-[46px] py-0 ps-2.5 pe-3 text-start align-middle overflow-hidden">
-                  <div className="w-full truncate text-[11.5px] leading-[46px]">
+                <td className="h-[46px] py-0 ps-2.5 pe-4 text-start align-middle whitespace-nowrap">
+                  <div className="whitespace-nowrap text-[11.5px] leading-[46px]">
                     {renderRowDetailLine(info)}
                   </div>
                 </td>
@@ -1332,6 +1333,7 @@ function TableView(props: {
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -1463,16 +1465,16 @@ function TableFullscreen(props: {
       </div>
 
       <div className="relative z-10 flex-1 min-h-0 flex px-4 pb-[max(env(safe-area-inset-bottom),16px)]">
-        <div className="card-soft rounded-2xl w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden sk-scroll overscroll-contain">
-          <table className="w-full table-fixed border-collapse text-[12.5px]">
+        <div className="card-soft rounded-2xl w-full flex-1 min-h-0 overflow-auto touch-pan-x touch-pan-y sk-scroll overscroll-contain">
+          <table className="w-max min-w-full border-collapse text-[12.5px]">
             <thead className="sticky top-0 z-10 backdrop-blur-md">
               <tr className="h-[38px] text-[11px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
-                <th className="w-[42px] sm:w-[50px] font-bold text-center">روز</th>
-                <th className="w-[62px] sm:w-[74px] font-bold text-center">هفته</th>
+                <th className="w-[44px] sm:w-[52px] px-1.5 font-bold text-center whitespace-nowrap">روز</th>
+                <th className="w-[64px] sm:w-[76px] px-1.5 font-bold text-center whitespace-nowrap">هفته</th>
                 <th
                   className={`${
-                    all ? "w-[106px] sm:w-[124px]" : "w-[94px] sm:w-[112px]"
-                  } font-bold text-center`}
+                    all ? "w-[110px] sm:w-[126px]" : "w-[96px] sm:w-[114px]"
+                  } px-1.5 font-bold text-center whitespace-nowrap`}
                 >
                   {all
                     ? "شیفت گروه‌ها"
@@ -1480,7 +1482,7 @@ function TableFullscreen(props: {
                       ? `شیفت ${getGroupLetter(activeSingleGroup, pat)}`
                       : "شیفت"}
                 </th>
-                <th className="font-bold text-start ps-2.5 pe-3">مناسبت و یادداشت</th>
+                <th className="font-bold text-start ps-2.5 pe-4 whitespace-nowrap">مناسبت و یادداشت</th>
               </tr>
             </thead>
             <tbody>
@@ -1551,8 +1553,8 @@ function TableFullscreen(props: {
                         </span>
                       )}
                     </td>
-                    <td className="h-[46px] py-0 ps-2.5 pe-3 text-start align-middle overflow-hidden">
-                      <div className="w-full truncate text-[11.5px] leading-[46px]">
+                    <td className="h-[46px] py-0 ps-2.5 pe-4 text-start align-middle whitespace-nowrap">
+                      <div className="whitespace-nowrap text-[11.5px] leading-[46px]">
                         {renderRowDetailLine(info)}
                       </div>
                     </td>

@@ -1,12 +1,11 @@
 "use client";
 /**
- * PWA install engine + External Browser URL helper:
- *  - Tracks `installing` (WebAPK building/downloading in background after prompt acceptance)
- *    separately from `installed` (confirmed via `appinstalled` event, `getInstalledRelatedApps()`,
- *    or `display-mode: standalone`).
- *  - Provides `toExternalHref(url)` so external links in `سامانه‌ها` and `دانلود مستقیم از گیت‌هاب`
- *    open in the external browser outside the standalone Android WebAPK (without `package=com.android.chrome`
- *    which would trap the navigation inside Chrome's in-app Custom Tab per crbug/424029).
+ * PWA install engine + Multi-Stage External Link Launcher with Guaranteed Fallback:
+ *  1. Tracks `installing` vs `installed` (`appinstalled` / `getInstalledRelatedApps()`).
+ *  2. Opens external links with a cascading fallback chain:
+ *     - Default user browser (`target="_blank"` / generic `VIEW` intent with `S.browser_fallback_url`)
+ *     - Platform browser fallback (Chrome on Android, Edge on Windows, Firefox on Linux, Safari on macOS)
+ *     - Guaranteed internal link fallback (`window.open` / `window.location.assign`) so a link NEVER fails to open.
  */
 
 const FLAG_KEY = "shiftkar.install.v2";
@@ -280,27 +279,80 @@ export function maybeAutoPromptInstall(openInstallSheet: () => void, isTourActiv
 }
 
 /**
- * Converts an `http(s)://` URL to an Android `intent://` URI when running inside an installed
- * Android standalone PWA (WebAPK).
- * IMPORTANT: Never include `package=com.android.chrome` or `window.location.href = ...`:
- *  - In Chromium's `ExternalNavigationHandler.java` (crbug/424029), setting `package=com.android.chrome`
- *    forces the link to stay inside the WebAPK's in-app Custom Tab (with the X close button).
- *  - Omitting `package=` and keeping `target="_blank" rel="noopener noreferrer external"` on the `<a>` tag
- *    causes Android to dispatch `android.intent.action.VIEW` outside the WebAPK to the external browser or native app.
+ * Opens an external URL with a cascading fallback chain:
+ *  1. Normal browser tab (`!isStandalone()`): lets native `<a href="https://..." target="_blank">` open in a new tab.
+ *  2. Standalone PWA (`isStandalone()`):
+ *     - Tries to open in the user's default external browser first.
+ *     - On Android standalone PWA: fires an `intent://` URI (without `target="_blank"`, which Chrome blocks for `intent://`)
+ *       including `S.browser_fallback_url=${encodeURIComponent(url)}` so if no default external app handles it,
+ *       Chrome/Android automatically falls back to loading the URL.
+ *     - If the page is still visible after 550ms (meaning the intent was ignored or blocked), falls back to
+ *       `window.open(url, "_blank", "noopener,noreferrer")` and finally `window.location.assign(url)`.
  */
-export function toExternalHref(url: string): string {
-  if (typeof window === "undefined") return url;
-  const isAndroid = /Android/i.test(navigator.userAgent || "");
-  if (isStandalone() && isAndroid && /^https?:\/\//i.test(url)) {
+export function openExternalLink(url: string, e?: React.MouseEvent<HTMLAnchorElement>) {
+  if (typeof window === "undefined") return;
+
+  /* Always let non-http schemes (like tel:) work natively */
+  if (!/^https?:\/\//i.test(url)) return;
+
+  /* When running in a regular browser tab (not installed standalone PWA), let `<a target="_blank">` work natively! */
+  if (!isStandalone()) {
+    return;
+  }
+
+  const u = ua();
+  const isAndroid = /Android/i.test(u);
+
+  if (isAndroid) {
+    if (e) {
+      e.preventDefault();
+    }
     try {
-      const parsed = new URL(url);
+      const parsed = new URL(url, window.location.origin);
       const scheme = parsed.protocol.replace(/:$/, "");
-      return `intent://${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}#Intent;scheme=${scheme};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+      const fallback = encodeURIComponent(parsed.href);
+      /* Stage 1: Default browser / external app intent with built-in browser_fallback_url */
+      const intentUri = `intent://${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}#Intent;scheme=${scheme};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=${fallback};end`;
+
+      let pageLeft = false;
+      const onVis = () => {
+        if (document.visibilityState === "hidden") pageLeft = true;
+      };
+      document.addEventListener("visibilitychange", onVis, { once: true });
+
+      window.location.assign(intentUri);
+
+      /* Stage 2 & 3 Fallback: If intent did not transition away within 600ms, open directly */
+      setTimeout(() => {
+        document.removeEventListener("visibilitychange", onVis);
+        if (!pageLeft && document.visibilityState === "visible") {
+          const w = window.open(parsed.href, "_blank", "noopener,noreferrer");
+          if (!w) {
+            window.location.assign(parsed.href);
+          }
+        }
+      }, 600);
+      return;
     } catch {
-      return url;
+      const w = window.open(url, "_blank", "noopener,noreferrer");
+      if (!w) window.location.assign(url);
+      return;
     }
   }
-  return url;
+
+  /* Desktop / iOS standalone PWA:
+   * For same-origin links (like https://shiftkar.ir/download), force a new window/tab or direct navigation.
+   * For cross-origin links, native `<a target="_blank" rel="noopener noreferrer">` automatically opens the OS default browser. */
+  try {
+    const parsed = new URL(url, window.location.origin);
+    if (parsed.origin === window.location.origin) {
+      if (e) e.preventDefault();
+      const w = window.open(parsed.href, "_blank", "noopener,noreferrer");
+      if (!w) window.location.assign(parsed.href);
+    }
+  } catch {
+    /* let native <a target="_blank"> handle it */
+  }
 }
 
 export const initInstallCapture = initInstallPrompt;

@@ -3,11 +3,9 @@
  * Systems view (`SystemsView`) — 100% parity with Android `SystemsScreen.kt`
  * + Responsive multi-column grid across phones (`grid-cols-2`), tablets (`sm:grid-cols-3`),
  *   and desktops (`lg:grid-cols-4`).
- * + Uses `toExternalHref` with `target="_blank" rel="noopener noreferrer external"` (without `e.preventDefault()`)
- *   so links open in the external browser outside the PWA.
+ * + Keeps clean `https://` `href` on every `<a>` tag and uses `openExternalLink` for cascading fallback.
  */
-import { useEffect, useState } from "react";
-import { toExternalHref } from "@/lib/install";
+import { openExternalLink } from "@/lib/install";
 import {
   ClinicIcon,
   CardIcon,
@@ -48,11 +46,6 @@ const SYSTEMS: System[] = [
 ];
 
 export function SystemsView() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <div className="h-full overflow-y-auto sk-scroll overscroll-contain px-4 md:px-6 pt-3.5 pb-[calc(env(safe-area-inset-bottom)+104px)]">
       <div className="mb-4">
@@ -62,32 +55,30 @@ export function SystemsView() {
         </p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-3.5">
-        {SYSTEMS.map((s, i) => {
-          const finalHref = mounted ? toExternalHref(s.href) : s.href;
-          return (
-            <a
-              key={s.fa}
-              href={finalHref}
-              target="_blank"
-              rel="noopener noreferrer external"
-              className="sk-rise glass rounded-3xl p-4 flex flex-col gap-3 hover:border-[var(--sk-primary)] active:scale-[0.98] transition-all"
-              style={{ animationDelay: `${i * 35}ms` }}
-            >
-              <div className="flex items-start justify-between">
-                <span className="size-11 rounded-[14px] grid place-items-center bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] shadow-[inset_0_1px_0_var(--sk-specular)]">
-                  <s.icon size={21} />
-                </span>
-                <ExternalIcon size={15} className="text-[var(--sk-text-faint)]" />
+        {SYSTEMS.map((s, i) => (
+          <a
+            key={s.fa}
+            href={s.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => openExternalLink(s.href, e)}
+            className="sk-rise glass rounded-3xl p-4 flex flex-col gap-3 hover:border-[var(--sk-primary)] active:scale-[0.98] transition-all"
+            style={{ animationDelay: `${i * 35}ms` }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="size-11 rounded-[14px] grid place-items-center bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] shadow-[inset_0_1px_0_var(--sk-specular)]">
+                <s.icon size={21} />
+              </span>
+              <ExternalIcon size={15} className="text-[var(--sk-text-faint)]" />
+            </div>
+            <div>
+              <div className="text-[14px] font-bold">{s.fa}</div>
+              <div className="text-[11.5px] text-[var(--sk-text-muted)] mt-0.5 leading-5">
+                {s.desc}
               </div>
-              <div>
-                <div className="text-[14px] font-bold">{s.fa}</div>
-                <div className="text-[11.5px] text-[var(--sk-text-muted)] mt-0.5 leading-5">
-                  {s.desc}
-                </div>
-              </div>
-            </a>
-          );
-        })}
+            </div>
+          </a>
+        ))}
       </div>
     </div>
   );
