@@ -47,20 +47,18 @@ const KIND_CHIP: Record<ShiftKind, { bg: string; icon: React.ReactNode; fa: stri
 };
 
 function subscribeInstall(cb: () => void) {
-  const events = ["shiftkar:install-state", "shiftkar:install-completed", "appinstalled"] as const;
+  const events = ["shiftkar-neo:install-state", "appinstalled"] as const;
   for (const e of events) window.addEventListener(e, cb);
   return () => {
     for (const e of events) window.removeEventListener(e, cb);
   };
 }
 const readInstalled = () => getInstallState().installed;
-const readInstalling = () => getInstallState().installing;
 const readServerFalse = () => false;
 
 function InstallCta({ compact }: { compact?: boolean }) {
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const installed = useSyncExternalStore(subscribeInstall, readInstalled, readServerFalse);
-  const installing = useSyncExternalStore(subscribeInstall, readInstalling, readServerFalse);
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
 
@@ -79,19 +77,6 @@ function InstallCta({ compact }: { compact?: boolean }) {
       >
         <CheckIcon size={compact ? 15 : 17} />
         برنامه روی دستگاه شما نصب است
-      </div>
-    );
-  }
-
-  if (installing) {
-    return (
-      <div
-        className={`rounded-2xl bg-[var(--sk-primary-soft)] border border-[var(--sk-primary)]/45 flex items-center justify-center gap-2 text-[var(--sk-primary)] font-bold ${
-          compact ? "h-11 text-[12px] px-4" : "h-13 text-[13.5px] px-4"
-        }`}
-      >
-        <DownloadIcon size={compact ? 15 : 17} className="animate-bounce" />
-        در حال نصب و افزودن به صفحهٔ اصلی…
       </div>
     );
   }

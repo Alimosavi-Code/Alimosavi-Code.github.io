@@ -246,7 +246,6 @@ export function SettingsView({
   const [notesCount, setNotesCount] = useState(0);
   const [syncingCal, setSyncingCal] = useState(false);
   const [installed, setInstalled] = useState(false);
-  const [installing, setInstalling] = useState(false);
 
   const pat = getActivePattern();
   const activeGroups = getActiveGroups(pat);
@@ -261,16 +260,12 @@ export function SettingsView({
   }, []);
 
   useEffect(() => {
-    const sync = () => {
-      const st = getInstallState();
-      setInstalled(st.installed);
-      setInstalling(st.installing);
-    };
+    const sync = () => setInstalled(getInstallState().installed);
     sync();
-    window.addEventListener("shiftkar:install-state", sync);
+    window.addEventListener("shiftkar-neo:install-state", sync);
     window.addEventListener("appinstalled", sync);
     return () => {
-      window.removeEventListener("shiftkar:install-state", sync);
+      window.removeEventListener("shiftkar-neo:install-state", sync);
       window.removeEventListener("appinstalled", sync);
     };
   }, []);
@@ -601,24 +596,12 @@ export function SettingsView({
             className={`w-full py-3 rounded-2xl text-[13.5px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
               installed
                 ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] border border-[var(--sk-rest)]/30"
-                : installing
-                  ? "bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] border border-[var(--sk-primary)]/40"
-                  : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
+                : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
             }`}
           >
-            {installed ? (
-              <CheckIcon size={16} />
-            ) : installing ? (
-              <RefreshIcon size={16} className="animate-spin" />
-            ) : (
-              <DownloadIcon size={16} />
-            )}
+            {installed ? <CheckIcon size={16} /> : <DownloadIcon size={16} />}
             <span>
-              {installed
-                ? "وب‌اپلیکیشن نصب شده است"
-                : installing
-                  ? "در حال نصب و افزودن به صفحهٔ اصلی…"
-                  : "نصب وب‌اپلیکیشن روی دستگاه"}
+              {installed ? "وب‌اپلیکیشن نصب شده است" : "نصب وب‌اپلیکیشن روی دستگاه"}
             </span>
           </button>
 
