@@ -1,0 +1,60 @@
+name: Deploy ShiftKar Web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Compute base path
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          # If public/CNAME exists (custom domain like shiftkar.ir) or repo is <user>.github.io, serve at root ""
+          if [ -f "public/CNAME" ] || [ "$REPO_NAME" = "${OWNER}.github.io" ]; then
+            BASE=""
+          else
+            BASE="/${REPO_NAME}"
+          fi
+          echo "BASE_PATH=${BASE}" >> "$GITHUB_ENV"
+
+      - name: Remove server-only API routes for the static build
+        run: rm -rf src/app/api
+
+      - name: Static export build
+        run: NEXT_EXPORT=1 NEXT_PUBLIC_BASE_PATH="$BASE_PATH" bun run build:gh
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

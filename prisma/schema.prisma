@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ShiftKar Neo — per-date personal notes (reimagined: real backend persistence
+// instead of the original's IndexedDB, enabling sync across devices).
+model Note {
+  id        String   @id @default(cuid())
+  dateKey   String   @unique // "1405-07-30" (Jalali, lexicographically sortable)
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dateKey])
+}
