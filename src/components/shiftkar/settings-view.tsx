@@ -38,7 +38,7 @@ import {
   importFullBackupJson,
 } from "@/lib/notes-store";
 import { toPersianDigits, todayJalaali } from "@/lib/jalali";
-import { getInstallState, openExternalLink } from "@/lib/install";
+import { getInstallState } from "@/lib/install";
 import {
   GroupIcon,
   PaletteIcon,
@@ -76,7 +76,7 @@ const CONTACTS = [
   {
     id: "phone",
     fa: "تماس تلفنی",
-    sub: "۰۹۱۶۳۵۴۸۵۷۸ — سید حسین موسوی سعیدی",
+    sub: "برقراری تماس مستقیم تلفنی",
     badgeBg: "var(--sk-primary-soft)",
     badgeBorder: "color-mix(in srgb, var(--sk-primary) 40%, transparent)",
     badgeInk: "var(--sk-primary)",
@@ -106,7 +106,7 @@ const CONTACTS = [
   {
     id: "telegram",
     fa: "تلگرام",
-    sub: "ارتباط از طریق تلگرام (@h_mosavi_s)",
+    sub: "ارتباط از طریق تلگرام",
     badgeBg: "rgba(56, 189, 248, 0.16)",
     badgeBorder: "rgba(56, 189, 248, 0.36)",
     badgeInk: "#38BDF8",
@@ -656,10 +656,7 @@ export function SettingsView({
           <a
             href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest"
             target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) =>
-              openExternalLink("https://github.com/Alimosavi-Code/Shiftkar/releases/latest", e)
-            }
+            rel="noopener noreferrer" 
             className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99]"
           >
             <span className="size-[34px] rounded-[11px] bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] grid place-items-center shrink-0">
@@ -755,7 +752,6 @@ export function SettingsView({
               href={c.href}
               target={c.href.startsWith("tel:") ? undefined : "_blank"}
               rel={c.href.startsWith("tel:") ? undefined : "noopener noreferrer"}
-              onClick={(e) => openExternalLink(c.href, e)}
               role="listitem"
               aria-label={c.fa}
               className="group rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)] px-3.5 py-2.5 flex items-center gap-3 transition-all active:scale-[0.99]"

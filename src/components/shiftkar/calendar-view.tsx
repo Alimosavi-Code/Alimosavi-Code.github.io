@@ -673,7 +673,8 @@ export function CalendarView({
         onTouchEnd={viewType === "grid" ? handleTouchFinish : undefined}
         onTouchCancel={viewType === "grid" ? handleTouchFinish : undefined}
         onWheel={viewType === "grid" ? handleWheel : undefined}
-        className={`sk-cal-body touch-pan-y flex-1 min-h-0 ${
+        style={{ touchAction: viewType === "table" ? "pan-x pan-y" : "pan-y" }}
+        className={`sk-cal-body flex-1 min-h-0 ${
           viewType === "grid"
             ? "flex flex-col overflow-hidden pb-[calc(env(safe-area-inset-bottom)+72px)]"
             : "overflow-y-auto sk-scroll overscroll-contain pb-[calc(env(safe-area-inset-bottom)+90px)]"
@@ -1233,7 +1234,7 @@ function TableView(props: {
         )}
       </div>
 
-      <div className="overflow-x-auto sk-scroll touch-pan-x overscroll-x-contain">
+      <div className="overflow-x-auto sk-scroll" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
       <table className="w-max min-w-full border-collapse text-[12.5px]">
         <thead>
           <tr className="h-[38px] text-[11px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
@@ -1465,7 +1466,7 @@ function TableFullscreen(props: {
       </div>
 
       <div className="relative z-10 flex-1 min-h-0 flex px-4 pb-[max(env(safe-area-inset-bottom),16px)]">
-        <div className="card-soft rounded-2xl w-full flex-1 min-h-0 overflow-auto touch-pan-x touch-pan-y sk-scroll overscroll-contain">
+        <div className="card-soft rounded-2xl w-full flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
           <table className="w-max min-w-full border-collapse text-[12.5px]">
             <thead className="sticky top-0 z-10 backdrop-blur-md">
               <tr className="h-[38px] text-[11px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">

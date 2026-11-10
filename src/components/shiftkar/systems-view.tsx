@@ -3,9 +3,8 @@
  * Systems view (`SystemsView`) — 100% parity with Android `SystemsScreen.kt`
  * + Responsive multi-column grid across phones (`grid-cols-2`), tablets (`sm:grid-cols-3`),
  *   and desktops (`lg:grid-cols-4`).
- * + Keeps clean `https://` `href` on every `<a>` tag and uses `openExternalLink` for cascading fallback.
+ * + Uses standard `<a href={s.href} target="_blank" rel="noopener noreferrer">` without JS interception.
  */
-import { openExternalLink } from "@/lib/install";
 import {
   ClinicIcon,
   CardIcon,
@@ -61,7 +60,6 @@ export function SystemsView() {
             href={s.href}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => openExternalLink(s.href, e)}
             className="sk-rise glass rounded-3xl p-4 flex flex-col gap-3 hover:border-[var(--sk-primary)] active:scale-[0.98] transition-all"
             style={{ animationDelay: `${i * 35}ms` }}
           >

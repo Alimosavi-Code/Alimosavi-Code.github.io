@@ -19,12 +19,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: `${BASE_PATH}/favicon.ico?v=676`, sizes: "any" },
-      { url: `${BASE_PATH}/assets/icon-192.png?v=676`, sizes: "192x192", type: "image/png" },
-      { url: `${BASE_PATH}/assets/icon-512.png?v=676`, sizes: "512x512", type: "image/png" },
+      { url: `${BASE_PATH}/favicon.ico?v=679`, sizes: "any" },
+      { url: `${BASE_PATH}/assets/icon-192.png?v=679`, sizes: "192x192", type: "image/png" },
+      { url: `${BASE_PATH}/assets/icon-512.png?v=679`, sizes: "512x512", type: "image/png" },
     ],
-    shortcut: `${BASE_PATH}/favicon.ico?v=676`,
-    apple: `${BASE_PATH}/assets/apple-touch-icon.png?v=676`,
+    shortcut: `${BASE_PATH}/favicon.ico?v=679`,
+    apple: `${BASE_PATH}/assets/apple-touch-icon.png?v=679`,
   },
   other: {
     "color-scheme": "dark light",

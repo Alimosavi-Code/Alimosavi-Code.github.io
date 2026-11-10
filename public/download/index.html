@@ -750,56 +750,72 @@
       line-height: 1.65;
     }
 
-    /* ============ Footer ============ */
+    /* ============ Footer (Exact Original Layout) ============ */
     .footer {
+      padding: 0 0 calc(30px + env(safe-area-inset-bottom));
       margin-top: 44px;
-      padding-bottom: calc(28px + env(safe-area-inset-bottom));
     }
-    .footer-card {
-      padding: 16px 20px;
-      border-radius: 22px;
-      display: flex;
+    .footer-inner {
+      border-radius: 26px;
       flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      align-items: center;
+      gap: 14px 26px;
+      padding: 20px 26px;
+      display: flex;
     }
-    .footer-author {
-      font-size: 12.5px;
-      font-weight: 700;
+    .footer-credit {
       color: var(--sk-text-muted);
+      font-size: 13px;
+      font-weight: 600;
     }
     .footer-links {
-      display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      justify-content: center;
+      gap: 9px;
+      display: flex;
     }
-    .footer-chip {
-      height: 34px;
-      padding: 0 12px;
-      border-radius: 10px;
-      background: var(--sk-surface);
-      border: 1px solid var(--sk-border);
-      font-size: 12px;
-      font-weight: 700;
+    .footer-link {
       color: var(--sk-text-muted);
-      display: inline-flex;
+      border: 1px solid var(--sk-border);
+      background: var(--sk-surface);
+      border-radius: 12px;
       align-items: center;
-      gap: 6px;
-      transition: all 0.15s ease;
+      gap: 7px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform 0.2s, border-color 0.2s, color 0.2s, background 0.2s;
+      display: inline-flex;
     }
-    .footer-chip:hover {
-      color: var(--sk-primary);
+    .footer-link svg {
+      width: 16px;
+      height: 16px;
+    }
+    .footer-link:hover {
+      color: var(--sk-text);
       border-color: var(--sk-primary);
+      transform: translateY(-2px);
     }
-    .footer-chip svg {
-      width: 14px;
-      height: 14px;
+    .footer-love {
+      color: var(--sk-text-muted);
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
     }
-    @media (max-width: 600px) {
-      .footer-card {
-        flex-direction: column;
+    .footer-love svg {
+      width: 15px;
+      height: 15px;
+      color: #ff6b8d;
+      fill: #ff6b8d;
+    }
+    @media (max-width: 860px) {
+      .footer-inner {
         text-align: center;
+        flex-direction: column;
+        padding: 22px 18px;
       }
     }
 
@@ -1131,16 +1147,25 @@
       </div>
     </section>
 
-    <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER (Exact Original Layout) ================= -->
     <footer class="footer">
-      <div class="glass footer-card">
-        <div class="footer-author">طراحی و توسعه: سید حسین موسوی سعیدی — واحد SBR</div>
-        <div class="footer-links">
-          <a class="footer-chip" href="https://shiftkar.ir">وب‌اپلیکیشن</a>
-          <a class="footer-chip" href="https://chat.whatsapp.com/5HolMMoVnojCdh8GjhSZo2" target="_blank" rel="noopener noreferrer">گروه واتساپ</a>
-          <a class="footer-chip" href="https://eitaa.com/joinchat/929104214C56d88e3e24" target="_blank" rel="noopener noreferrer">گروه ایتا</a>
-          <a class="footer-chip" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest" target="_blank" rel="noopener noreferrer">مخزن گیت‌هاب</a>
-        </div>
+      <div class="glass footer-inner">
+        <p class="footer-credit">ساخت سید حسین موسوی سعیدی — واحد SBR</p>
+        <nav class="footer-links" aria-label="لینک‌های ارتباطی">
+          <a class="footer-link" href="https://chat.whatsapp.com/5HolMMoVnojCdh8GjhSZo2" target="_blank" rel="noopener noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+            واتساپ
+          </a>
+          <a class="footer-link" href="https://eitaa.com/joinchat/929104214C56d88e3e24" target="_blank" rel="noopener noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+            ایتا
+          </a>
+        </nav>
+        <p class="footer-love">
+          ساخته شده با
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          برای همکاران پتروشیمی
+        </p>
       </div>
     </footer>
   </div>
