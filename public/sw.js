@@ -4,7 +4,7 @@
  * The base path is derived from the SW scope, so the SAME file works on
  * the root domain (""), GitHub Pages user sites ("") and project sites
  * ("/<repo>") without any rebuild-time rewriting. */
-const CACHE = 'shiftkar-web-v680';
+const CACHE = "shiftkar-web-v681";
 const BASE = new URL(self.registration.scope).pathname.replace(/\/+$/, "");
 
 self.addEventListener("install", (event) => {
@@ -31,8 +31,6 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
   const p = url.pathname;
-
-  /* Do not intercept the standalone /download page or its assets */
   if (p === `${BASE}/download` || p.startsWith(`${BASE}/download/`)) return;
   const immutableFont = p.startsWith(`${BASE}/fonts/`);
 

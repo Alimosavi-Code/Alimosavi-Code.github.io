@@ -106,10 +106,6 @@ export function initInstallPrompt() {
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e as typeof deferredPrompt;
-    if (!isStandalone()) {
-      installedFlag = false;
-      saveFlag({ installed: false });
-    }
     emitState();
     notifyInstallReady?.();
     window.dispatchEvent(new CustomEvent("shiftkar-neo:install-ready"));

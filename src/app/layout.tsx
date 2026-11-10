@@ -18,13 +18,8 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   icons: {
-    icon: [
-      { url: `${BASE_PATH}/favicon.ico?v=680`, sizes: "any" },
-      { url: `${BASE_PATH}/assets/icon-192.png?v=680`, sizes: "192x192", type: "image/png" },
-      { url: `${BASE_PATH}/assets/icon-512.png?v=680`, sizes: "512x512", type: "image/png" },
-    ],
-    shortcut: `${BASE_PATH}/favicon.ico?v=680`,
-    apple: `${BASE_PATH}/assets/apple-touch-icon.png?v=680`,
+    icon: `${BASE_PATH}/assets/icon-192.png?v=681`,
+    apple: `${BASE_PATH}/assets/apple-touch-icon.png?v=681`,
   },
   other: {
     "color-scheme": "dark light",
@@ -91,7 +86,7 @@ const FONT_FACE_CSS = `
 const THEME_INIT_SCRIPT = `
 (function() {
   try {
-    var raw = localStorage.getItem("shiftkar-prefs-v3");
+    var raw = localStorage.getItem("shiftkar-neo-prefs-v3");
     var theme = "blue";
     var mode = "system";
     if (raw) {

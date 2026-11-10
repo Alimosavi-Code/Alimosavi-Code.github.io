@@ -275,7 +275,7 @@ export const useShiftKar = create<ShiftKarState>()(
       };
     },
     {
-      name: "shiftkar-prefs-v3",
+      name: "shiftkar-neo-prefs-v3",
       partialize: (s) => ({
         myGroup: s.myGroup,
         viewType: s.viewType,

@@ -1,9 +1,8 @@
 "use client";
 /**
- * Systems view (`SystemsView`) — 100% parity with Android `SystemsScreen.kt`
+ * Systems view (`SystemsView`) — 100% parity with Android `SystemsScreen.kt` (v6.7.2)
  * + Responsive multi-column grid across phones (`grid-cols-2`), tablets (`sm:grid-cols-3`),
  *   and desktops (`lg:grid-cols-4`).
- * + Uses standard `<a href={s.href} target="_blank" rel="noopener noreferrer">` without JS interception.
  */
 import {
   ClinicIcon,
