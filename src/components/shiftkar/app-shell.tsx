@@ -158,7 +158,7 @@ export function AppShell() {
         />
       ) : (
         <>
-          <main className="relative z-10 mx-auto h-full w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl overflow-hidden">
+          <main className="relative z-10 mx-auto h-full w-full max-w-md sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl overflow-hidden">
             <div key={activeTab} className="sk-tab-in h-full">
               {activeTab === "calendar" && (
                 <CalendarView
@@ -216,7 +216,7 @@ export function AppShell() {
                         }}
                         data-tour={t.tour}
                         aria-current={active ? "page" : undefined}
-                        className={`relative h-14 rounded-[20px] flex flex-col items-center justify-center gap-1 transition-colors duration-150 ${
+                        className={`sk-bottom-nav-btn relative h-14 rounded-[20px] flex flex-col items-center justify-center gap-1 transition-colors duration-150 ${
                           active ? "text-[var(--sk-primary)]" : "text-[var(--sk-text-faint)]"
                         }`}
                       >

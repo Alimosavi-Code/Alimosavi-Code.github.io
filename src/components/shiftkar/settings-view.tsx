@@ -38,7 +38,7 @@ import {
   importFullBackupJson,
 } from "@/lib/notes-store";
 import { toPersianDigits, todayJalaali } from "@/lib/jalali";
-import { getInstallState, openExternalBrowser } from "@/lib/install";
+import { getInstallState, toExternalHref } from "@/lib/install";
 import {
   GroupIcon,
   PaletteIcon,
@@ -654,12 +654,9 @@ export function SettingsView({
 
           {/* دانلود مستقیم از گیت‌هاب */}
           <a
-            href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest"
+            href={toExternalHref("https://github.com/Alimosavi-Code/Shiftkar/releases/latest")}
             target="_blank"
-            rel="noopener noreferrer external"
-            onClick={(e) =>
-              openExternalBrowser("https://github.com/Alimosavi-Code/Shiftkar/releases/latest", e)
-            }
+            rel="noopener noreferrer external" 
             className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99]"
           >
             <span className="size-[34px] rounded-[11px] bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] grid place-items-center shrink-0">
@@ -753,11 +750,8 @@ export function SettingsView({
             <a
               key={c.id}
               href={c.href}
-              target="_blank"
-              rel="noopener noreferrer external"
-              onClick={(e) => {
-                if (c.href.startsWith("http")) openExternalBrowser(c.href, e);
-              }}
+              target={c.href.startsWith("tel:") ? undefined : "_blank"}
+              rel={c.href.startsWith("tel:") ? undefined : "noopener noreferrer external"}
               role="listitem"
               aria-label={c.fa}
               className="group rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)] px-3.5 py-2.5 flex items-center gap-3 transition-all active:scale-[0.99]"

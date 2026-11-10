@@ -891,36 +891,38 @@ body.sk-sheet-open {
 }
 
 
+
 /* =========================================================================
-   Mobile Landscape Optimization (side-by-side Calendar/Table + Controls)
+   Mobile Landscape Optimization (Full-Width Unified Scroll + 2-Column Top Bar)
    ========================================================================= */
-@media (orientation: landscape) and (max-height: 600px) {
+@media (orientation: landscape) and (max-height: 580px) {
   .sk-cal-root {
-    flex-direction: row !important;
-    align-items: stretch !important;
-    gap: 12px !important;
-    padding-top: 8px !important;
-  }
-  .sk-cal-sidebar {
-    width: 248px !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
     overflow-y: auto !important;
-    padding-bottom: 72px !important;
+    overflow-x: hidden !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 74px) !important;
   }
-  .sk-cal-main {
-    flex: 1 1 0% !important;
-    min-width: 0 !important;
-    height: 100% !important;
-    overflow-y: auto !important;
-    padding-bottom: 72px !important;
-  }
-  .sk-hide-in-landscape {
-    display: none !important;
-  }
-  .sk-show-in-landscape {
+  .sk-cal-top-pair {
     display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+  }
+  .sk-cal-top-pair > * {
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+  .sk-cal-body {
+    overflow: visible !important;
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+    padding-bottom: 0 !important;
+  }
+  .sk-cal-grid-wrap {
+    max-height: none !important;
+    min-height: 292px !important;
+    flex: 0 0 auto !important;
+  }
+  .sk-bottom-nav-btn {
+    height: 44px !important;
   }
 }

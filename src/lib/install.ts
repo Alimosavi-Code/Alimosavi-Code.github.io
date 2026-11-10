@@ -1,11 +1,12 @@
 "use client";
 /**
- * PWA install engine + External Browser launcher:
+ * PWA install engine + External Browser URL helper:
  *  - Tracks `installing` (WebAPK building/downloading in background after prompt acceptance)
  *    separately from `installed` (confirmed via `appinstalled` event, `getInstalledRelatedApps()`,
  *    or `display-mode: standalone`).
- *  - Provides `openExternalBrowser(url, e)` so links in `سامانه‌ها` and `دانلود مستقیم از گیت‌هاب`
- *    open in a real external browser tab outside the standalone PWA window.
+ *  - Provides `toExternalHref(url)` so external links in `سامانه‌ها` and `دانلود مستقیم از گیت‌هاب`
+ *    open in the external browser outside the standalone Android WebAPK (without `package=com.android.chrome`
+ *    which would trap the navigation inside Chrome's in-app Custom Tab per crbug/424029).
  */
 
 const FLAG_KEY = "shiftkar.install.v2";
@@ -132,7 +133,6 @@ export function initInstallPrompt() {
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e as typeof deferredPrompt;
-    /* If browser fires beforeinstallprompt while not in standalone, the app is NOT currently installed! */
     if (!isStandalone() && !installingFlag) {
       installedFlag = false;
       saveFlag({ installed: false });
@@ -154,7 +154,6 @@ export function initInstallPrompt() {
     return;
   }
 
-  /* Verify real installation status via getInstalledRelatedApps() if available */
   checkRelatedAppsInstalled().then((relInstalled) => {
     if (relInstalled === true) {
       installedFlag = true;
@@ -229,8 +228,6 @@ export async function promptInstall(): Promise<"installed" | "installing" | "dis
       await prompt.prompt();
       const choice = await prompt.userChoice;
       if (choice && choice.outcome === "accepted") {
-        /* User accepted the prompt; now Chrome/Google Play is building & installing the WebAPK!
-         * Wait for the real `appinstalled` event or `getInstalledRelatedApps()` confirmation. */
         installingFlag = true;
         emitState();
 
@@ -246,7 +243,6 @@ export async function promptInstall(): Promise<"installed" | "installing" | "dis
           }
         }, 1200);
 
-        /* Safety fallback after 14s for desktop/browsers that don't support getInstalledRelatedApps */
         installFallbackTimer = setTimeout(() => {
           if (installingFlag) {
             finalizeInstalled();
@@ -284,43 +280,27 @@ export function maybeAutoPromptInstall(openInstallSheet: () => void, isTourActiv
 }
 
 /**
- * Opens an external URL or `/download` in a real external browser tab outside the standalone PWA.
- * On Android when running inside an installed WebAPK (`isStandalone()`), uses an explicit Chrome/Browser
- * `intent://` URI with fallback so Android launches a real browser tab instead of trapping the user
- * inside the PWA window or an in-app Custom Tab.
+ * Converts an `http(s)://` URL to an Android `intent://` URI when running inside an installed
+ * Android standalone PWA (WebAPK).
+ * IMPORTANT: Never include `package=com.android.chrome` or `window.location.href = ...`:
+ *  - In Chromium's `ExternalNavigationHandler.java` (crbug/424029), setting `package=com.android.chrome`
+ *    forces the link to stay inside the WebAPK's in-app Custom Tab (with the X close button).
+ *  - Omitting `package=` and keeping `target="_blank" rel="noopener noreferrer external"` on the `<a>` tag
+ *    causes Android to dispatch `android.intent.action.VIEW` outside the WebAPK to the external browser or native app.
  */
-export function openExternalBrowser(url: string, e?: React.MouseEvent) {
-  if (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  if (typeof window === "undefined") return;
-
+export function toExternalHref(url: string): string {
+  if (typeof window === "undefined") return url;
   const isAndroid = /Android/i.test(navigator.userAgent || "");
   if (isStandalone() && isAndroid && /^https?:\/\//i.test(url)) {
     try {
       const parsed = new URL(url);
-      const scheme = parsed.protocol.replace(":", "");
-      const hostAndPath = parsed.host + parsed.pathname + parsed.search + parsed.hash;
-      const fallback = encodeURIComponent(url);
-      /* If user is on Samsung Internet, don't force com.android.chrome package */
-      const pkgPart = isSamsung()
-        ? "package=com.sec.android.app.sbrowser;"
-        : isFirefox()
-          ? "package=org.mozilla.firefox;"
-          : "package=com.android.chrome;";
-      const intentUrl = `intent://${hostAndPath}#Intent;scheme=${scheme};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;${pkgPart}S.browser_fallback_url=${fallback};end`;
-      window.location.href = intentUrl;
-      return;
+      const scheme = parsed.protocol.replace(/:$/, "");
+      return `intent://${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}#Intent;scheme=${scheme};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
     } catch {
-      /* fallback below */
+      return url;
     }
   }
-
-  const win = window.open(url, "_blank", "noopener,noreferrer");
-  if (!win) {
-    window.location.assign(url);
-  }
+  return url;
 }
 
 export const initInstallCapture = initInstallPrompt;
