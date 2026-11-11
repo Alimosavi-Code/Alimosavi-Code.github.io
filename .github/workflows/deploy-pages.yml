@@ -45,7 +45,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Remove server-only API routes for the static build
-        run: rm -rf src/app/api
+        run: rm -rf src/app/api src/lib/db.ts prisma
 
       - name: Rewrite manifest & download-page URLs for the Pages origin
         run: |

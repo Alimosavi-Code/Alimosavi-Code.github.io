@@ -22,8 +22,7 @@ export interface NoteRow {
 }
 
 const LS_KEY = "shiftkar_notes_v1";
-let apiMode: "unknown" | "up" | "down" =
-  process.env.NEXT_PUBLIC_STATIC === "1" ? "down" : "unknown";
+let apiMode: "unknown" | "up" | "down" = "down";
 
 function readLocal(): Record<string, string> {
   if (typeof window === "undefined") return {};
