@@ -107,11 +107,7 @@ const CONTACTS = [
     badgeInk: "#38BDF8",
     icon: <TelegramIcon size={20} />,
     href: "https://t.me/h_mosavi_s",
-  },
-  {
-    title: "میانبرهای صفحه‌کلید دسکتاپ و اسکرول افقی (Shift + Scroll)",
-    body: "در نسخهٔ دسکتاپ و وب می‌توانید بدون نیاز به ماوس، با کلیدهای میانبر در برنامه جابه‌جا شوید:\n• فلش راست و چپ (ArrowRight / ArrowLeft): رفتن به ماه قبل و ماه بعد در تقویم و جدول (یا سال قبل و بعد در تب لوحه).\n• فلش بالا و پایین (ArrowUp / ArrowDown) و PageUp / PageDown: اسکرول عمودی سریع در نمای جدولی و لوحه.\n• نگه‌داشتن کلید Shift + چرخ اسکرول ماوس (Shift + Scroll): اسکرول افقی نرم در جدول‌ها، لوحهٔ سالانه و نوارهای افقی در دسکتاپ.\n• کلید V: تغییر سریع بین نمای تقویم (شبکه‌ای) و نمای جدولی.\n• کلید F: باز و بسته کردن حالت تمام‌صفحه در نمای جدولی.\n• کلید T: پرش سریع به تاریخ امروز.\n• کلید N: باز کردن پنجرهٔ همهٔ یادداشت‌ها.\n• کلیدهای ۱ تا ۵: جابه‌جایی سریع بین ۵ تب اصلی برنامه (تقویم، سامانه‌ها، لوحه، مدیریت شیفت و تنظیمات).\n• کلید Esc: بستن پنجره‌های باز یا خروج از حالت تمام‌صفحه.",
-  },
+  }
 ];
 
 const HELP_ITEMS: { title: string; body: string }[] = [
@@ -1025,7 +1021,7 @@ export function SettingsView({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 items-stretch" role="list">
           {CONTACTS.map((c, idx) => (
             <a
-              key={c.id}
+              key={c.id ?? idx}
               href={c.href}
               target="_blank"
               rel="noopener noreferrer"
