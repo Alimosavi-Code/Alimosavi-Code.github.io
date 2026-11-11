@@ -31,12 +31,14 @@ import { isHoliday, getDayEvents } from "./holidays";
 import {
   calculateShift,
   getShiftCode,
+  getShiftCodeForPattern,
   getAllGroupsForDate,
   getActivePattern,
   getActiveGroups,
   getGroupLetter,
   getGroupTitle,
   jalaliToJdn,
+  resolvePattern,
 } from "./shift-engine";
 import {
   APP,
@@ -528,10 +530,33 @@ function createHiDpiCanvas(w: number, h: number): {
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("امکان ایجاد بوم تصویر (Canvas 2D) در این مرورگر فراهم نیست");
+  }
   ctx.direction = "rtl";
   ctx.textBaseline = "middle";
   return { canvas, ctx };
+}
+
+/** Effective kind helper — a personal swap/overtime record only applies to the
+ * user's OWN group (parity with the on-screen calendar views). */
+function effectiveKindForExport(
+  group: ShiftGroup,
+  code: ShiftCode,
+  rec: DayWorkRecord | undefined,
+): ShiftKind {
+  const myGrp = useShiftKar.getState().myGroup || "A";
+  if (group === myGrp && rec?.swapKind) return rec.swapKind;
+  return codeToKind(code);
+}
+
+/** Resolve the pattern an employee actually follows ("ACTIVE" = the active one). */
+function employeePatternForExport(emp: EmployeeProfile) {
+  const { customPatterns } = useShiftKar.getState();
+  return emp.patternId && emp.patternId !== "ACTIVE"
+    ? resolvePattern(emp.patternId, customPatterns)
+    : getActivePattern();
 }
 
 /**
@@ -562,7 +587,7 @@ function drawMonthlySummaryRow(
     if (isHoliday(jy, jm, d)) officialHolCount += 1;
     const dk = makeDateKey(jy, jm, d);
     const code = getShiftCode(dk, effGroup);
-    const effK = dayRecords[dk]?.swapKind ?? codeToKind(code);
+    const effK = effectiveKindForExport(effGroup, code, dayRecords[dk]);
     if (effK === "DAY") dayCount += 1;
     else if (effK === "EVENING") eveCount += 1;
     else if (effK === "NIGHT") nightCount += 1;
@@ -1212,7 +1237,9 @@ export function renderMonthGridCanvas(
   const cellsTop = calTop + 78;
   const availH = calTop + calH - 24 - cellsTop;
   const cellH = (availH - cellGap * (numRows - 1)) / Math.max(numRows, 5);
-  const groups = getActiveGroups(pat).slice(0, 4);
+  /* Show ALL active groups (up to 6, like the on-screen GridView) — patterns
+   * with 5-8 groups must not silently lose groups E-H in the exported PNG. */
+  const groups = getActiveGroups(pat).slice(0, 6);
 
   const holidaySummaries: string[] = [];
 
@@ -1249,8 +1276,9 @@ export function renderMonthGridCanvas(
     ctx.textAlign = "center";
     ctx.fillText(toPersianDigits(d), cellLeft + cellW / 2, cellTop + cellH * 0.28);
 
-    // Overtime badge in top-left corner if present
-    if ((rec?.overtimeHours ?? 0) > 0) {
+    // Overtime badge in top-left corner if present (only for the user's own group,
+    // matching the on-screen DayCell guard `targetGroup === myGroup`)
+    if (effGroup === (state.myGroup || "A") && (rec?.overtimeHours ?? 0) > 0) {
       ctx.fillStyle = sk.primary;
       ctx.font = `800 13px ${FONT}`;
       ctx.textAlign = "left";
@@ -1258,21 +1286,25 @@ export function renderMonthGridCanvas(
     }
 
     if (filterGroup === "ALL") {
-      // 2x2 mini gradient pills inside the bottom half of the cell
+      // Mini gradient pills inside the bottom half of the cell (2 or 3 columns,
+      // mirroring the on-screen `grid-cols-2 / grid-cols-3` layout)
       const bGap = 5;
-      const bw = (cellW - 22 - bGap) / 2;
-      const bh = (cellH * 0.48 - bGap) / 2;
+      const bCols = groups.length > 4 ? 3 : 2;
+      const bRows = Math.ceil(groups.length / bCols);
+      const bw = (cellW - 22 - bGap * (bCols - 1)) / bCols;
+      const bh = (cellH * 0.48 - bGap * (bRows - 1)) / bRows;
       const bStartTop = cellTop + cellH * 0.46;
       groups.forEach((g, gi) => {
-        const gr = Math.floor(gi / 2);
-        const gc = gi % 2;
+        const gr = Math.floor(gi / bCols);
+        const gc = gi % bCols;
         const bRight = cellRight - 11 - gc * (bw + bGap);
         const bLeft = bRight - bw;
         const bTop = bStartTop + gr * (bh + bGap);
         const code = getShiftCode(dk, g);
-        const ink = drawShiftGradientChip(ctx, bLeft, bTop, bw, bh, 8, codeToKind(code), dark, false);
+        const gKind = effectiveKindForExport(g, code, rec);
+        const ink = drawShiftGradientChip(ctx, bLeft, bTop, bw, bh, 8, gKind, dark, false);
         ctx.fillStyle = ink;
-        ctx.font = `900 14.5px ${FONT}`;
+        ctx.font = `900 ${bw < 45 ? 12.5 : 14.5}px ${FONT}`;
         ctx.textAlign = "center";
         ctx.fillText(
           `${getGroupLetter(g, pat)}${toPersianDigits(shiftCodeIndex(code))}`,
@@ -1283,14 +1315,13 @@ export function renderMonthGridCanvas(
     } else {
       // Inner rounded gradient pill in the bottom half of the glass cell!
       const code = getShiftCode(dk, effGroup);
-      const kind = rec?.swapKind ?? codeToKind(code);
+      const kind = effectiveKindForExport(effGroup, code, rec);
+      const mySwap = effGroup === (state.myGroup || "A") ? rec?.swapKind : undefined;
       const pillLeft = cellLeft + 12;
       const pillTop = cellTop + cellH * 0.52;
       const pillW = cellW - 24;
       const pillH = cellH * 0.48 - 12;
-      const labelText = rec?.swapKind
-        ? `${SHIFT_KIND_FA[rec.swapKind]}*`
-        : CODE_NUM_FA[code];
+      const labelText = mySwap ? `${SHIFT_KIND_FA[mySwap]}*` : CODE_NUM_FA[code];
       const ink = drawShiftGradientChip(ctx, pillLeft, pillTop, pillW, pillH, 14, kind, dark, true);
       ctx.fillStyle = ink;
       ctx.font = `800 17px ${FONT}`;
@@ -1406,7 +1437,8 @@ export function renderMonthTableCanvas(
   const rowsBottom = tableBottom - 12;
   const rowCount = Math.max(mLen, 29);
   const rowH = (rowsBottom - rowsTop) / rowCount;
-  const groups = getActiveGroups(pat).slice(0, 4);
+  /* Show ALL active groups (patterns support up to 8 groups A-H). */
+  const groups = getActiveGroups(pat);
 
   for (let d = 1; d <= mLen; d++) {
     const idx = d - 1;
@@ -1460,18 +1492,23 @@ export function renderMonthTableCanvas(
     ctx.fillText(WEEKDAYS[wd], colWdCenter, rCy);
 
     if (isAll) {
-      const bW = 54;
-      const bH = Math.min(rowH - 16, 38);
+      /* Shrink the per-group badge so 5-8 groups still fit inside the shift
+       * column (~295px) without colliding with the weekday/events columns. */
       const bGap = 6;
+      const bW = Math.min(54, (295 - bGap * (groups.length - 1)) / groups.length);
+      const bH = Math.min(rowH - 16, 38);
       const totalBW = bW * groups.length + bGap * (groups.length - 1);
       const startRight = colShiftCenter + totalBW / 2;
       groups.forEach((g, gi) => {
         const bRight = startRight - gi * (bW + bGap);
         const bLeft = bRight - bW;
         const code = getShiftCode(dk, g);
-        const ink = drawShiftGradientChip(ctx, bLeft, rCy - bH / 2, bW, bH, 10, codeToKind(code), dark, false);
+        /* Apply the user's own swap to their group's badge (parity with MiniBadge
+         * `kindOverride` in the on-screen TableView ALL mode). */
+        const gKind = effectiveKindForExport(g, code, rec);
+        const ink = drawShiftGradientChip(ctx, bLeft, rCy - bH / 2, bW, bH, 10, gKind, dark, false);
         ctx.fillStyle = ink;
-        ctx.font = `900 16px ${FONT}`;
+        ctx.font = `900 ${bW < 45 ? 13 : 16}px ${FONT}`;
         ctx.textAlign = "center";
         ctx.fillText(
           `${getGroupLetter(g, pat)}${toPersianDigits(shiftCodeIndex(code))}`,
@@ -1481,12 +1518,13 @@ export function renderMonthTableCanvas(
       });
     } else {
       const code = getShiftCode(dk, effGroup);
-      const kind = rec?.swapKind ?? codeToKind(code);
+      const kind = effectiveKindForExport(effGroup, code, rec);
+      const mySwap = effGroup === (state.myGroup || "A") ? rec?.swapKind : undefined;
       const pW = 210;
       const pH = Math.min(rowH - 14, 40);
       const pLeft = colShiftCenter - pW / 2;
-      const pLabel = rec?.swapKind
-        ? `جابه‌جایی: ${SHIFT_KIND_FA[rec.swapKind]}`
+      const pLabel = mySwap
+        ? `جابه‌جایی: ${SHIFT_KIND_FA[mySwap]}`
         : `${CODE_FA[code]} (${code})`;
       const ink = drawShiftGradientChip(ctx, pLeft, rCy - pH / 2, pW, pH, 13, kind, dark, true);
       ctx.fillStyle = ink;
@@ -1584,12 +1622,23 @@ export function renderDayCanvas(
   const hasEvents = holidays.length > 0 || occasions.length > 0;
   const hasNote = Boolean(noteText?.trim()) || (dayRecord?.overtimeHours ?? 0) > 0;
   const extraEmpH = employees.length > 0 ? 74 + employees.length * 56 : 0;
+  const pat = getActivePattern();
+  /* Group cards grid: 2 columns × ceil(n/2) rows — grow the canvas height for
+   * patterns with 5-8 groups so the extra rows never overflow the footer. */
+  const groups = getActiveGroups(pat);
+  const cardH = 148;
+  const gGap = 20;
+  const extraGroupRows = Math.max(0, Math.ceil(groups.length / 2) - 2);
 
   const W = 1080;
-  const H = 920 + (hasEvents ? 190 : 0) + (hasNote ? 210 : 0) + extraEmpH;
+  const H =
+    920 +
+    (hasEvents ? 190 : 0) +
+    (hasNote ? 210 : 0) +
+    extraGroupRows * (cardH + gGap) +
+    extraEmpH;
   const { canvas, ctx } = createHiDpiCanvas(W, H);
   const sk = getCanvasPalette(dark);
-  const pat = getActivePattern();
 
   drawAuroraBackdrop(ctx, W, H, sk);
 
@@ -1676,10 +1725,7 @@ export function renderDayCanvas(
   ctx.fillText("وضعیت شیفت گروه‌ها", innerRight, curY + 24);
   curY += 48;
 
-  const gGap = 20;
   const cardW = (innerRight - innerLeft - gGap) / 2;
-  const cardH = 148;
-  const groups = getActiveGroups(pat).slice(0, 4);
 
   groups.forEach((grp, idx) => {
     const r = Math.floor(idx / 2);
@@ -1689,6 +1735,11 @@ export function renderDayCanvas(
     const cTop = curY + r * (cardH + gGap);
     const shift = calculateShift(dateKey, grp);
     const isMine = grp === myGroup;
+    /* The user's own card must respect a recorded swap (parity with the
+     * on-screen DaySheet `displayKind`), otherwise the card contradicts the
+     * header badge above. */
+    const mySwap = isMine ? dayRecord?.swapKind : undefined;
+    const displayKind = mySwap ?? shift.type;
 
     drawGlassCard(ctx, cLeft, cTop, cardW, cardH, 26, sk, {
       tintColor: isMine ? sk.primarySoft : null,
@@ -1706,17 +1757,21 @@ export function renderDayCanvas(
 
     ctx.fillStyle = sk.textMuted;
     ctx.font = `700 21px ${FONT}`;
-    ctx.fillText(`${shift.code}  •  ${CODE_FA[shift.code]}`, cRight - 26, cTop + 102);
+    ctx.fillText(
+      mySwap ? `جابه‌جایی: ${SHIFT_KIND_FA[mySwap]}` : `${shift.code}  •  ${CODE_FA[shift.code]}`,
+      cRight - 26,
+      cTop + 102,
+    );
 
     const kPillLeft = cLeft + 22;
     const kPillTop = cTop + 38;
     const kPillW = 114;
     const kPillH = cardH - 76;
-    const ink = drawShiftGradientChip(ctx, kPillLeft, kPillTop, kPillW, kPillH, 18, shift.type, dark, true);
+    const ink = drawShiftGradientChip(ctx, kPillLeft, kPillTop, kPillW, kPillH, 18, displayKind, dark, true);
     ctx.fillStyle = ink;
     ctx.font = `900 19px ${FONT}`;
     ctx.textAlign = "center";
-    ctx.fillText(SHIFT_KIND_FA[shift.type], kPillLeft + kPillW / 2, kPillTop + kPillH / 2);
+    ctx.fillText(SHIFT_KIND_FA[displayKind], kPillLeft + kPillW / 2, kPillTop + kPillH / 2);
   });
 
   curY += Math.ceil(groups.length / 2) * cardH + gGap + 34;
@@ -1755,7 +1810,10 @@ export function renderDayCanvas(
     ctx.fillText(`وضعیت پرسنل (${toPersianDigits(employees.length)} نفر)`, innerRight, curY + 18);
     curY += 44;
     for (const emp of employees) {
-      const s = calculateShift(dateKey, emp.group);
+      /* Use the employee's OWN pattern (parity with ManagerView / DaySheet). */
+      const empPat = employeePatternForExport(emp);
+      const empCode = getShiftCodeForPattern(dateKey, emp.group, empPat);
+      const s = { code: empCode, type: codeToKind(empCode) };
       const log = emp.dayLogs?.[dateKey];
       const statusFa =
         log && log.status !== "AS_SCHEDULED"
@@ -1767,7 +1825,7 @@ export function renderDayCanvas(
       ctx.fillStyle = sk.text;
       ctx.font = `700 19px ${FONT}`;
       ctx.textAlign = "right";
-      ctx.fillText(`${emp.name} (${getGroupTitle(emp.group, pat)})`, innerRight - 20, curY + 23);
+      ctx.fillText(`${emp.name} (${getGroupTitle(emp.group, empPat)})`, innerRight - 20, curY + 23);
       ctx.fillStyle = sk.primary;
       ctx.textAlign = "left";
       ctx.fillText(statusFa, innerLeft + 20, curY + 23);

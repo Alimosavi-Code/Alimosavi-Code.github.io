@@ -10,7 +10,7 @@
  */
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useShiftKar, applyThemeToDom, haptic, type ViewType } from "@/lib/store";
-import { THEMES, type Group, type ThemeId, type ThemeMode, type ShiftKind } from "@/lib/models";
+import { APP, THEMES, type Group, type ThemeId, type ThemeMode, type ShiftKind } from "@/lib/models";
 import {
   calculateShift,
   getActiveGroups,
@@ -125,7 +125,9 @@ function InstallCta({ compact }: { compact?: boolean }) {
               ? `راهنمای نصب در ${guide.browserName}`
               : "نصب برنامه روی دستگاه"}
       </button>
-      {(!compact || showGuide) && (
+      {/* Auto-show the manual install steps for browsers without a native
+           prompt (iOS Safari / Firefox) instead of waiting for a failed tap. */}
+      {shouldShowGuideCard && (
         <BrowserInstallGuideBox busy={busy} forceShowSteps={showGuide || !canPrompt} />
       )}
     </div>
@@ -133,6 +135,16 @@ function InstallCta({ compact }: { compact?: boolean }) {
 }
 
 const TOTAL = 6;
+
+/* Short titles for the desktop side-panel stepper (lg+). */
+const STEP_TITLES = [
+  "تقویم هوشمند شیفت",
+  "شیفت شما کدام است؟",
+  "شخصی‌سازی نمایش",
+  "رنگ دلخواه را انتخاب کنید",
+  "نصب برنامه",
+  "همه‌چیز آماده است!",
+];
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const { set, hapticOn } = useShiftKar();
@@ -243,25 +255,92 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="aurora-bg" aria-hidden />
 
       <div
-        className="relative z-10 flex-1 flex flex-col max-w-md md:max-w-lg mx-auto w-full min-h-0"
+        className="relative z-10 flex-1 flex flex-col max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-5xl mx-auto w-full min-h-0 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-stretch lg:gap-10 xl:gap-12 lg:px-6"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         onTouchCancel={onTouchEnd}
       >
-        {/* Step counter — TOP */}
-        <div className="flex items-center justify-center pt-8 shrink-0">
+        {/* Desktop side panel (lg+): brand + step stepper — fills the wide
+            screen beside the slide card instead of dead empty margins. */}
+        <aside className="hidden lg:flex flex-col justify-center gap-5 min-h-0 py-6">
+          <div className="flex items-center gap-3.5">
+            <ShiftKarAppEmblem size={56} />
+            <div className="min-w-0">
+              <div className="text-[22px] font-black leading-tight text-gradient">{APP.name}</div>
+              <div className="text-[11.5px] font-bold text-[var(--sk-text-muted)] mt-0.5 truncate">
+                {APP.tagline}
+              </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-[var(--sk-border-soft)]" aria-hidden />
+
+          <ol className="flex flex-col gap-1.5" aria-label="مراحل راه‌اندازی">
+            {STEP_TITLES.map((t, i) => {
+              const done = i < step;
+              const current = i === step;
+              return (
+                <li
+                  key={t}
+                  className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition-colors ${
+                    current ? "bg-[var(--sk-primary-soft)]" : ""
+                  }`}
+                  style={{
+                    border: current
+                      ? "1px solid color-mix(in srgb, var(--sk-primary) 40%, transparent)"
+                      : "1px solid transparent",
+                  }}
+                >
+                  <span
+                    className={`size-6 rounded-full grid place-items-center text-[11px] font-black shrink-0 ${
+                      current
+                        ? "bg-[var(--sk-primary)] text-white"
+                        : done
+                          ? "bg-[var(--sk-surface-strong)] text-[var(--sk-primary)]"
+                          : "bg-[var(--sk-surface-strong)] text-[var(--sk-text-faint)]"
+                    }`}
+                  >
+                    {done ? <CheckIcon size={12} /> : toPersianDigits(i + 1)}
+                  </span>
+                  <span
+                    className={`text-[12.5px] truncate ${
+                      current
+                        ? "font-black text-[var(--sk-primary)]"
+                        : done
+                          ? "font-bold text-[var(--sk-text-muted)]"
+                          : "font-bold text-[var(--sk-text-faint)]"
+                    }`}
+                  >
+                    {t}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+
+          <p className="text-[11px] leading-5 text-[var(--sk-text-faint)] px-1">
+            بین مراحل با دکمه‌های «قبلی / بعدی» جابه‌جا شوید؛ همهٔ انتخاب‌ها بعداً هم از تب «تنظیمات» قابل تغییر است.
+          </p>
+        </aside>
+
+        {/* Main column: slide card + navigation */}
+        <div className="flex flex-col h-full min-h-0 w-full">
+        {/* Step counter — TOP (mobile / tablet) */}
+        <div className="flex items-center justify-center pt-8 shrink-0 lg:hidden">
           <span className="text-[12px] font-bold bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] px-3.5 py-1.5 rounded-full">
             گام {toPersianDigits(step + 1)} از {toPersianDigits(TOTAL)}
           </span>
         </div>
 
-        {/* Slide content */}
-        <div className="flex-1 flex flex-col justify-center px-7 py-4 overflow-y-auto sk-scroll min-h-0">
-          <div key={step} className="sk-onb-in my-auto">
+        {/* Slide content — the child's `my-auto` centers it when short and
+            keeps the whole slide scrollable when tall (justify-center on a
+            scroll container used to clip the install guide at both ends). */}
+        <div className="flex-1 flex flex-col px-7 py-4 overflow-y-auto sk-scroll min-h-0 lg:px-0 lg:py-8">
+          <div key={step} className="sk-onb-in my-auto onb-card-lg">
             {step === 0 && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 lg:hidden">
                   <ShiftKarAppEmblem size={92} />
                 </div>
                 <h2 className="text-[26px] font-black text-center leading-snug">
@@ -689,7 +768,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         </div>
 
         {/* Navigation buttons */}
-        <div className="px-7 flex items-center gap-3 shrink-0">
+        <div className="px-7 flex items-center gap-3 shrink-0 lg:px-0 lg:pb-7">
           {step > 0 && (
             <button
               type="button"
@@ -712,9 +791,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </button>
         </div>
 
-        {/* Progress dots — BOTTOM */}
+        {/* Progress dots — BOTTOM (mobile / tablet; desktop uses the stepper) */}
         <div
-          className="flex items-center justify-center gap-2 pt-5 pb-7 shrink-0"
+          className="flex items-center justify-center gap-2 pt-5 pb-7 shrink-0 lg:hidden"
           role="tablist"
           aria-label="مراحل راهنما"
         >
@@ -741,6 +820,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               />
             );
           })}
+        </div>
         </div>
       </div>
     </div>

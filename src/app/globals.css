@@ -73,17 +73,17 @@
   --input: rgba(23, 19, 38, 0.12);
   --ring: var(--sk-primary);
 
-  /* Glass tokens — light */
+  /* Glass tokens — light (translucent frost: the backdrop blur in .glass does the heavy lifting) */
   --sk-bg: #f5f4fc;
   --sk-surface: rgba(255, 255, 255, 0.86);
   --sk-surface-strong: rgba(255, 255, 255, 0.96);
   --sk-border: rgba(23, 19, 38, 0.11);
   --sk-border-soft: rgba(23, 19, 38, 0.06);
   --sk-border-strong: rgba(23, 19, 38, 0.16);
-  --sk-glass-hi: rgba(255, 255, 255, 0.90);
-  --sk-glass-lo: rgba(255, 255, 255, 0.78);
-  --sk-nav-hi: rgba(255, 255, 255, 0.72);
-  --sk-nav-lo: rgba(255, 255, 255, 0.54);
+  --sk-glass-hi: rgba(255, 255, 255, 0.82);
+  --sk-glass-lo: rgba(255, 255, 255, 0.64);
+  --sk-nav-hi: rgba(255, 255, 255, 0.60);
+  --sk-nav-lo: rgba(255, 255, 255, 0.42);
   --sk-specular: rgba(255, 255, 255, 0.95);
   --sk-sheen: rgba(255, 255, 255, 0.55);
   --sk-sheet-bg: rgba(250, 249, 255, 0.96);
@@ -270,8 +270,8 @@
   --sk-border: rgba(255, 255, 255, 0.15);
   --sk-border-soft: rgba(255, 255, 255, 0.08);
   --sk-border-strong: rgba(255, 255, 255, 0.22);
-  --sk-glass-hi: rgba(255, 255, 255, 0.115);
-  --sk-glass-lo: rgba(255, 255, 255, 0.05);
+  --sk-glass-hi: rgba(255, 255, 255, 0.11);
+  --sk-glass-lo: rgba(255, 255, 255, 0.045);
   --sk-nav-hi: rgba(22, 29, 52, 0.68);
   --sk-nav-lo: rgba(15, 20, 38, 0.56);
   --sk-specular: rgba(255, 255, 255, 0.18);
@@ -383,17 +383,22 @@
   opacity: 0.09;
 }
 
-/* ============ Glass & Card surfaces (matching Android Glass.kt: zero Chrome backdrop-filter tile glitch!) ============ */
+/* ============ Glass & Card surfaces (matching Android Glass.kt) ============ */
 .glass {
   background: linear-gradient(155deg, var(--sk-glass-hi), var(--sk-glass-lo));
   border: 1px solid var(--sk-border);
-  box-shadow: inset 0 1px 0 var(--sk-specular);
+  box-shadow:
+    var(--sk-shadow),
+    inset 0 1px 0 var(--sk-specular),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .glass .glass {
   background: var(--sk-surface);
   border: 1px solid var(--sk-border-soft);
   box-shadow: inset 0 1px 0 var(--sk-specular);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .glass-strong {
@@ -425,7 +430,9 @@
 .card-soft {
   background: linear-gradient(160deg, var(--sk-glass-hi), var(--sk-glass-lo));
   border: 1px solid var(--sk-border);
-  box-shadow: inset 0 1px 0 var(--sk-specular);
+  box-shadow:
+    var(--sk-shadow),
+    inset 0 1px 0 var(--sk-specular);
 }
 
 /* 2-stop Shift Gradient surfaces */
@@ -557,6 +564,26 @@
 .sk-onb-in {
   animation: sk-fade 0.26s ease-out both;
 }
+
+/* ============ Onboarding slide card (desktop lg+) ============
+   On phones the slide floats directly over the aurora background; on desktop
+   (lg+) each slide sits in a glass card beside the brand/stepper side panel,
+   so wide screens are used instead of a narrow centered column. */
+.onb-card-lg {
+  border-radius: 0;
+}
+@media (min-width: 64rem) {
+  .onb-card-lg {
+    border-radius: 28px;
+    padding: 26px 28px 30px;
+    background: linear-gradient(155deg, var(--sk-glass-hi), var(--sk-glass-lo));
+    border: 1px solid var(--sk-border);
+    box-shadow:
+      inset 0 1px 0 var(--sk-specular),
+      0 26px 60px -32px rgba(3, 7, 18, 0.6);
+  }
+}
+
 .sk-scrim-in {
   animation: sk-fade 0.18s ease-out both;
 }
@@ -804,15 +831,29 @@ body.sk-sheet-open {
   box-shadow: 0 8px 22px -12px var(--sk-glow-a);
 }
 
+/* Segmented control — fully-rounded frosted glass pill. The active segment is
+ * a solid elevated pill (primary gradient + white text in dark mode, solid
+ * white + primary ring in light mode) so it stays perfectly readable even on
+ * the blue & purple themes where the translucent style used to melt into the
+ * aurora background. */
 .sk-seg {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 5px;
-  padding: 5px;
-  background: var(--sk-surface);
-  border: 1px solid var(--sk-border-soft);
-  border-radius: 20px;
+  gap: 4px;
+  padding: 4px;
+  background: linear-gradient(155deg, var(--sk-glass-hi), var(--sk-glass-lo));
+  border: 1px solid var(--sk-border);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 var(--sk-specular),
+    0 8px 22px -14px rgba(0, 0, 0, 0.5);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .sk-seg {
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    backdrop-filter: blur(20px) saturate(1.8);
+  }
 }
 .sk-seg-item {
   display: inline-flex;
@@ -820,7 +861,7 @@ body.sk-sheet-open {
   justify-content: center;
   gap: 6px;
   min-height: 40px;
-  border-radius: 15px;
+  border-radius: 999px;
   font-weight: 700;
   font-size: 13px;
   color: var(--sk-text-muted);
@@ -838,6 +879,16 @@ body.sk-sheet-open {
   box-shadow:
     0 3px 10px -4px rgba(0, 0, 0, 0.25),
     inset 0 0 0 1.5px var(--sk-primary);
+}
+/* Dark mode: solid primary-gradient pill with white text — high contrast on
+ * every theme (especially blue & purple) instead of a translucent wash. */
+.dark .sk-seg-item.is-active {
+  background: linear-gradient(180deg, var(--sk-primary), var(--sk-primary-strong));
+  color: #ffffff;
+  box-shadow:
+    0 6px 18px -6px var(--sk-glow-a),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .sk-swatch {

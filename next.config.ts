@@ -17,7 +17,9 @@ const nextConfig: NextConfig = {
         },
       }),
   typescript: {
-    ignoreBuildErrors: true,
+    /* tsc --noEmit is clean now — let the build fail fast on type regressions
+     * (this is how bugs like the empty CONTACTS card slipped through before). */
+    ignoreBuildErrors: false,
   },
   reactStrictMode: false,
   devIndicators: false,

@@ -60,7 +60,15 @@ export function NotesSheet({
 
   useEffect(() => {
     if (!open) return;
-    listNotes().then(setRows);
+    /* Guard against out-of-order resolutions when the sheet is rapidly
+     * re-opened or `refreshKey` bumps while a previous fetch is in flight. */
+    let cancelled = false;
+    listNotes().then((r) => {
+      if (!cancelled) setRows(r);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [open, refreshKey]);
 
   const combinedItems = useMemo(() => {

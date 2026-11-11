@@ -7,9 +7,10 @@
  *  - Positions the tooltip card above, below, or beside the spotlight so it never overlaps
  *    the highlighted element on either desktop or mobile.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toPersianDigits } from "@/lib/jalali";
 import { useShiftKar, haptic } from "@/lib/store";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 
 interface Step {
   target: string;
@@ -74,6 +75,10 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 768);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  /* Keep Tab focus inside the tour (spotlight + tooltip buttons). */
+  useFocusTrap(overlayRef, open);
 
   const step = STEPS[idx] ?? STEPS[0];
 
@@ -97,6 +102,17 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
       window.removeEventListener("scroll", update, true);
     };
   }, [open, idx, step.target]);
+
+  /* Focus the primary action of each step so Enter/Space works on keyboards. */
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => {
+      overlayRef.current
+        ?.querySelector<HTMLElement>("[data-tour-next]")
+        ?.focus({ preventScroll: true });
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [open, idx]);
 
   if (!open) return null;
 
@@ -154,7 +170,9 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
 
   return (
     <div
-      className="fixed inset-0 z-[95] select-none"
+      ref={overlayRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-[95] select-none outline-none"
       role="dialog"
       aria-modal="true"
       aria-label="تور راهنمای برنامه"
@@ -203,6 +221,7 @@ export function Tour({ open, onClose }: { open: boolean; onClose: () => void }) 
 
         <button
           type="button"
+          data-tour-next
           onClick={next}
           className="mt-3.5 w-full h-11 rounded-2xl bg-[var(--sk-primary)] text-white text-[14px] font-bold flex items-center justify-center active:scale-[0.98] transition-transform"
         >

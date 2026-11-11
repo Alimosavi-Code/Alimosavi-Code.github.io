@@ -71,3 +71,6 @@ server.log
 /worklog.md
 /agent-ctx/
 /.zscripts/
+
+# static-pages build backup
+/.api-backup/

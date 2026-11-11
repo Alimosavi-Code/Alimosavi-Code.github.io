@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
  *
  * GET  /api/notes              → all notes (newest updated first)
  * GET  /api/notes?jy=&jm=      → notes of one Jalali month
+ * GET  /api/notes?dateKey=     → single note { note } (used by getNote)
  * POST /api/notes              → upsert { dateKey, text } (empty text deletes)
  * DELETE /api/notes?dateKey=   → delete one note
  */
@@ -15,6 +16,13 @@ export async function GET(req: NextRequest) {
   try {
     const jy = req.nextUrl.searchParams.get("jy");
     const jm = req.nextUrl.searchParams.get("jm");
+    const dateKey = req.nextUrl.searchParams.get("dateKey");
+
+    /* Single-note lookup: GET /api/notes?dateKey=1405-08-12 → { note } | { note: null } */
+    if (dateKey) {
+      const note = await db.note.findUnique({ where: { dateKey } });
+      return NextResponse.json({ note: note ?? null });
+    }
 
     if (jy && jm) {
       const mm = String(Number(jm)).padStart(2, "0");

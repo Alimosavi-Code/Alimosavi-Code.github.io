@@ -26,11 +26,11 @@ import {
   jalaaliWeekday,
   makeDateKey,
   parseDateKey,
-  todayJalaali,
   toPersianDigits,
   formatJalali,
   formatWeekday,
 } from "@/lib/jalali";
+import { useToday } from "@/lib/use-today";
 import {
   PRESET_PATTERNS,
   getActivePattern,
@@ -188,7 +188,7 @@ function PatternsSubTab() {
   const restoreAllPresetsToDefault = useShiftKar((s) => s.restoreAllPresetsToDefault);
   const hapticOn = useShiftKar((s) => s.hapticOn);
 
-  const today = useMemo(() => todayJalaali(), []);
+  const today = useToday();
   const todayKey = useMemo(() => makeDateKey(today.jy, today.jm, today.jd), [today]);
 
   const activePattern = useMemo(
@@ -1014,7 +1014,10 @@ function PatternCard({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onActivate();
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onActivate();
+        }
       }}
       className={`glass rounded-[18px] p-3 space-y-2 cursor-pointer transition-all ${
         isActive
@@ -1139,7 +1142,7 @@ function PersonnelSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }
   const set = useShiftKar((s) => s.set);
   const hapticOn = useShiftKar((s) => s.hapticOn);
 
-  const today = useMemo(() => todayJalaali(), []);
+  const today = useToday();
   const [dayOffset, setDayOffset] = useState(0);
 
   const targetDate = useMemo(
@@ -1293,7 +1296,9 @@ function PersonnelSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }
             gradCls="sk-grad-day"
           />
           {(onEveningShift.length > 0 ||
-            evaluated.some((x) => x.scheduledKind === "EVENING")) && (
+            evaluated.some(
+              (x) => x.scheduledKind === "EVENING" || (x.empPat.eveningCount ?? 0) > 0,
+            )) && (
             <TeamBucketRow
               icon={<SunsetIcon size={15} />}
               title={`عصرکار (${toPersianDigits(onEveningShift.length)} نفر)`}
@@ -1371,9 +1376,11 @@ function PersonnelSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }
               set({ showEmployeesOnCalendar: !showEmployeesOnCalendar });
             }}
             className={`w-12 h-7 rounded-full p-0.5 transition-colors flex items-center ${
+              /* RTL: justify-start = right edge, justify-end = left edge.
+               * Persian platform convention: OFF knob at start (right), ON slides to end (left). */
               showEmployeesOnCalendar
-                ? "bg-[var(--sk-primary)] justify-start"
-                : "bg-[var(--sk-border-strong)] justify-end"
+                ? "bg-[var(--sk-primary)] justify-end"
+                : "bg-[var(--sk-border-strong)] justify-start"
             }`}
           >
             <span className="size-6 rounded-full bg-white shadow" />
@@ -1727,7 +1734,9 @@ function EmployeeEditDialog({
   const [name, setName] = useState(initial?.name ?? "");
   const [role, setRole] = useState(initial?.role ?? "");
   const [group, setGroup] = useState<ShiftGroup>(
-    initial?.group ?? activeGroups[1] ?? "B",
+    /* Prefer the "other" group for a NEW colleague (usually not your own group),
+     * but fall back to the first existing group — never a group the pattern lacks. */
+    initial?.group ?? activeGroups[1] ?? activeGroups[0] ?? "A",
   );
   const [patternId, setPatternId] = useState(initial?.patternId ?? "ACTIVE");
   const [patternQuery, setPatternQuery] = useState("");
@@ -1768,6 +1777,12 @@ function EmployeeEditDialog({
     () => (selectedPatObj.hasGroups ? getActiveGroups(selectedPatObj) : activeGroups),
     [selectedPatObj, activeGroups],
   );
+
+  /* Keep the selected group valid against the chosen pattern's group list
+   * (derived during render — no effect needed). If the saved/stale `group` is
+   * not offered by the selected pattern, fall back to its first group so we
+   * never save a "phantom" group that silently follows another group's schedule. */
+  const effGroup = dialogGroups.includes(group) ? group : (dialogGroups[0] ?? "A");
 
   return createPortal(
     <div
@@ -1844,7 +1859,7 @@ function EmployeeEditDialog({
                     haptic(hapticOn);
                     setGroup(g);
                   }}
-                  className={`sk-seg-item !text-[12px] ${group === g ? "is-active" : ""}`}
+                  className={`sk-seg-item !text-[12px] ${effGroup === g ? "is-active" : ""}`}
                 >
                   {getGroupTitle(g, selectedPatObj)}
                 </button>
@@ -1922,7 +1937,7 @@ function EmployeeEditDialog({
                 id: initial?.id ?? `emp_${Date.now()}`,
                 name: cleanName,
                 role: role.trim(),
-                group,
+                group: effGroup,
                 patternId,
                 dayLogs: initial?.dayLogs ?? {},
               });
@@ -2002,7 +2017,7 @@ function ReportSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }) {
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const calendarSyncRev = useShiftKar((s) => s.calendarSyncRev);
 
-  const today = useMemo(() => todayJalaali(), []);
+  const today = useToday();
   const [yearlyScope, setYearlyScope] = useState(false);
   const [reportYear, setReportYear] = useState(viewYear);
   const [reportMonth, setReportMonth] = useState(viewMonth);
@@ -2417,13 +2432,19 @@ function ReportSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }) {
             const empSwaps = periodLogs.filter(
               (l) => l.status !== "AS_SCHEDULED" && l.status !== "LEAVE",
             ).length;
+            /* Resolve the group title against the employee's OWN pattern (not the
+             * active one) so custom group labels / group counts stay correct. */
+            const empTitlePat =
+              emp.patternId && emp.patternId !== "ACTIVE"
+                ? resolvePattern(emp.patternId, customPatterns)
+                : activePattern;
             return (
               <div
                 key={emp.id}
                 className="rounded-xl bg-[var(--sk-surface)] px-2.5 py-2 flex items-center justify-between gap-2"
               >
                 <span className="text-[12px] font-bold truncate">
-                  {emp.name} ({getGroupTitle(emp.group, activePattern)})
+                  {emp.name} ({getGroupTitle(emp.group, empTitlePat)})
                 </span>
                 <span className="text-[10.5px] font-extrabold text-[var(--sk-primary)] shrink-0">
                   اضافه‌کاری: {toPersianDigits(empOt)}س · مرخصی: {toPersianDigits(empLeaves)} · جابه‌جایی: {toPersianDigits(empSwaps)}

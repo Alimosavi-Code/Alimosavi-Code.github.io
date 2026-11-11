@@ -20,6 +20,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { isTopModal, popModalStack, pushModalStack } from "@/lib/modal-stack";
 import {
   JALALI_MONTHS,
   HIJRI_MONTHS,
@@ -27,13 +28,13 @@ import {
   WEEKDAYS,
   jalaaliMonthLength,
   jalaaliWeekday,
-  todayJalaali,
   makeDateKey,
   toPersianDigits,
   toGregorian,
   formatJalali,
   formatWeekday,
 } from "@/lib/jalali";
+import { useToday } from "@/lib/use-today";
 import { gregorianToJdn, jdnToIslamic } from "@/lib/islamic-calendar";
 import {
   calculateShift,
@@ -43,6 +44,8 @@ import {
   getActiveGroupFilters,
   getGroupLetter,
   getGroupTitle,
+  getShiftCodeForPattern,
+  resolvePattern,
   type ShiftGroup,
   type ShiftCode,
 } from "@/lib/shift-engine";
@@ -220,7 +223,7 @@ export function CalendarView({
     return () => set({ isTableFullscreen: false });
   }, [tableFs, set]);
 
-  const today = useMemo(() => todayJalaali(), []);
+  const today = useToday();
   const todayKey = makeDateKey(today.jy, today.jm, today.jd);
   const isCurrentMonth = viewYear === today.jy && viewMonth === today.jm;
 
@@ -398,7 +401,13 @@ export function CalendarView({
           ? employees
               .map((emp) => {
                 const log = emp.dayLogs?.[key];
-                const empCode = calculateShift(key, emp.group).code;
+                /* Use the employee's OWN pattern (parity with ManagerView) so the
+                 * calendar summary matches the Manager tab for the same day. */
+                const empPat =
+                  emp.patternId && emp.patternId !== "ACTIVE"
+                    ? resolvePattern(emp.patternId, customPatterns)
+                    : pat;
+                const empCode = getShiftCodeForPattern(key, emp.group, empPat);
                 const eKind: ShiftKind | null =
                   !log || log.status === "AS_SCHEDULED"
                     ? codeToKind(empCode)
@@ -455,6 +464,7 @@ export function CalendarView({
     compareGroup,
     showEmployeesOnCalendar,
     employees,
+    customPatterns,
     calendarSyncRev,
   ]);
 
@@ -560,8 +570,8 @@ export function CalendarView({
           />
         </div>
 
-        {/* Month navigation row */}
-        <div className="glass rounded-[16px] p-[5px] flex items-center gap-1 shrink-0" data-tour="month-nav">
+        {/* Month navigation row — Mobile/Tablet (< lg): compact icon buttons */}
+        <div className="glass rounded-[16px] p-[5px] flex items-center gap-1 shrink-0 lg:hidden" data-tour="month-nav">
           <button
             onClick={() => goMonth(-1)}
             className="sk-sheet-btn !size-10 !rounded-[12px] shrink-0"
@@ -606,6 +616,94 @@ export function CalendarView({
           <button
             onClick={() => goMonth(1)}
             className="sk-sheet-btn !size-10 shrink-0"
+            aria-label="ماه بعد"
+            title="ماه بعد (فلش چپ کیبورد)"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        </div>
+
+        {/* Month navigation row — Desktop (>= lg): SAME arrangement as mobile —
+            prev/next arrows pinned to the OUTER edges, the month/year title pill
+            stretching flex-1 in the CENTER, and the two desktop extras hugging it:
+            the labelled notes pill on the right side and the compact glass dual
+            view switcher (تقویم | جدول) on the left side. */}
+        <div className="hidden lg:flex glass rounded-[18px] px-2 py-1.5 items-center gap-2 shrink-0" data-tour="month-nav">
+          <button
+            onClick={() => goMonth(-1)}
+            className="sk-sheet-btn !size-10 !rounded-[13px] shrink-0"
+            aria-label="ماه قبل"
+            title="ماه قبل (فلش راست کیبورد)"
+          >
+            <ChevronRight size={18} />
+          </button>
+          <button
+            onClick={onOpenNotes}
+            className="!h-10 !rounded-full !px-3.5 gap-1.5 !text-[12.5px] font-bold shrink-0 inline-flex items-center justify-center glass !text-[var(--sk-primary)] active:scale-[0.98] transition-transform"
+            aria-label="همه یادداشت‌ها"
+            title="یادداشت‌ها (کلید N)"
+            data-tour="notes-btn"
+          >
+            <NotesIcon size={17} />
+            <span>یادداشت‌ها</span>
+          </button>
+          <button
+            onClick={onOpenMonthPicker}
+            className="sk-title-btn"
+            aria-label="انتخاب ماه و سال"
+          >
+            <span className="truncate">
+              {JALALI_MONTHS[viewMonth - 1]} {toPersianDigits(viewYear)}
+            </span>
+            <span className="sk-title-caret">
+              <ChevronDown size={15} />
+            </span>
+          </button>
+          {/* Compact glass dual view switcher (calendar | table) */}
+          <div
+            className="sk-seg !flex-none !p-[4px] !gap-[4px] !rounded-full"
+            role="group"
+            aria-label="حالت نمایش تقویم"
+            data-tour="view-toggle"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                if (viewType !== "grid") {
+                  haptic(hapticOn);
+                  set({ viewType: "grid" });
+                }
+              }}
+              aria-pressed={viewType === "grid"}
+              title="نمای تقویمی (کلید V)"
+              className={`sk-seg-item !min-h-8 !px-3.5 !text-[12px] !rounded-full ${
+                viewType === "grid" ? "is-active" : ""
+              }`}
+            >
+              <GridIcon size={14} />
+              <span>تقویم</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (viewType !== "table") {
+                  haptic(hapticOn);
+                  set({ viewType: "table" });
+                }
+              }}
+              aria-pressed={viewType === "table"}
+              title="نمای جدولی (کلید V)"
+              className={`sk-seg-item !min-h-8 !px-3.5 !text-[12px] !rounded-full ${
+                viewType === "table" ? "is-active" : ""
+              }`}
+            >
+              <TableIcon size={14} />
+              <span>جدول</span>
+            </button>
+          </div>
+          <button
+            onClick={() => goMonth(1)}
+            className="sk-sheet-btn !size-10 !rounded-[13px] shrink-0"
             aria-label="ماه بعد"
             title="ماه بعد (فلش چپ کیبورد)"
           >
@@ -859,7 +957,7 @@ function TodayBanner({
   dayRecord?: DayWorkRecord;
   onOpenDay: (k: string) => void;
 }) {
-  const today = todayJalaali();
+  const today = useToday();
   const pat = getActivePattern();
   const weekday = formatWeekday(today.jy, today.jm, today.jd);
   const dateLine = `${weekday} ${toPersianDigits(today.jd)} ${JALALI_MONTHS[today.jm - 1]}`;
@@ -913,7 +1011,8 @@ function TodayBanner({
     );
   }
 
-  const g = (filterGroup === "ALL" ? myGroup : filterGroup) as ShiftGroup;
+  /* filterGroup !== "ALL" here — the ALL branch has already returned above. */
+  const g: ShiftGroup = filterGroup;
   const shift = calculateShift(todayKey, g);
   const isMine = g === myGroup;
   const swapped = isMine ? dayRecord?.swapKind : null;
@@ -1584,10 +1683,12 @@ function TableFullscreen(props: {
   const pat = getActivePattern();
   const fsScrollRef = useRef<HTMLDivElement>(null);
 
-  /* Keyboard navigation inside Fullscreen Table (Escape to close, Up/Down to scroll) */
+  /* Keyboard navigation inside Fullscreen Table (Escape to close, Up/Down to scroll).
+   * Esc only reacts when the fullscreen table is the topmost modal layer. */
   useEffect(() => {
+    const modalId = pushModalStack();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && isTopModal(modalId)) {
         onClose();
       } else if (e.key === "ArrowDown" || e.key === "PageDown") {
         if (fsScrollRef.current) {
@@ -1608,7 +1709,10 @@ function TableFullscreen(props: {
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      popModalStack(modalId);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [onClose]);
 
   /* Always start at the top (Day 1) when opening Fullscreen Table or changing months! */

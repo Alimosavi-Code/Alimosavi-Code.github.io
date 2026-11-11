@@ -13,8 +13,8 @@
   <meta property="og:url" content="https://alimosavi-code.github.io/download" />
   <meta property="og:image" content="https://alimosavi-code.github.io/download/icons/icon-512.png" />
   <meta name="theme-color" content="#070a16" />
-  <link rel="icon" href="./favicon.ico?v=673" sizes="any" />
-  <link rel="apple-touch-icon" href="./apple-icon.png?v=673" />
+  <link rel="icon" href="./favicon.ico?v=701" sizes="any" />
+  <link rel="apple-touch-icon" href="./apple-icon.png?v=701" />
 
   <style>
     @font-face {
@@ -435,6 +435,12 @@
       border-color: var(--sk-border-hover);
       transform: translateY(-1px);
     }
+    /* The live version text mixes digits, dots, slashes and an interpunct — without
+       LTR isolation the RTL bidi algorithm scrambles it (e.g. ۶/۴/۲۰۲۵۰/۵/۱۴). */
+    .version-pill strong {
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
     .version-dot {
       border-radius: 999px;
       width: 8px;
@@ -478,6 +484,16 @@
       flex-direction: column;
       gap: 20px;
     }
+    @media (max-width: 640px) {
+      .smart-box {
+        padding: 16px 14px;
+        border-radius: 22px;
+        gap: 14px;
+      }
+      .plat-card {
+        padding: 16px 14px;
+      }
+    }
     .os-tabs {
       display: flex;
       align-items: center;
@@ -486,6 +502,16 @@
       padding-bottom: 10px;
       border-bottom: 1px solid var(--sk-border);
       scrollbar-width: thin;
+    }
+    /* On desktop there is plenty of width — wrap the tabs into visible rows
+       instead of a clipped horizontal scroll that can cut the active tab. */
+    @media (min-width: 861px) {
+      .os-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+        overflow-x: visible;
+        row-gap: 8px;
+      }
     }
     .os-tab {
       display: inline-flex;
@@ -608,17 +634,16 @@
 
     .smart-cta-group {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: stretch;
       gap: 10px;
-      flex-wrap: wrap;
       flex-shrink: 0;
+      min-width: 250px;
     }
     @media (max-width: 680px) {
       .smart-cta-group {
         width: 100%;
-      }
-      .smart-cta-group .btn-cta-main {
-        flex: 1;
+        min-width: 0;
       }
     }
     .btn-cta-main {
@@ -641,24 +666,57 @@
       filter: saturate(1.1) brightness(1.05);
       box-shadow: 0 18px 40px -6px var(--sk-primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.45);
     }
-    .btn-cta-share {
+    /* x64-style double-cell rows: [download button][square share icon] */
+    .smart-cta-row {
+      display: flex;
+      align-items: stretch;
+      gap: 9px;
+    }
+    .smart-cta-row .btn-cta-main,
+    .smart-cta-row .btn-cta-alt {
+      flex: 1;
+      min-width: 0;
+    }
+    .btn-cta-alt {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      padding: 13px 16px;
+      gap: 10px;
+      padding: 12px 18px;
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid var(--sk-border);
       color: var(--sk-text);
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 800;
       transition: all 0.2s ease;
     }
-    .btn-cta-share:hover {
+    .btn-cta-alt:hover {
       border-color: var(--sk-border-hover);
       background: var(--sk-glass-2);
       transform: translateY(-2px);
+    }
+    .btn-cta-sq {
+      flex-shrink: 0;
+      width: 50px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--sk-border);
+      color: var(--sk-muted);
+      display: grid;
+      place-items: center;
+      transition: all 0.2s ease;
+    }
+    .btn-cta-sq:hover {
+      color: var(--sk-text);
+      border-color: var(--sk-border-hover);
+      background: var(--sk-glass-2);
+      transform: translateY(-2px);
+    }
+    @media (max-width: 480px) {
+      .btn-cta-sq {
+        width: 46px;
+      }
     }
 
     /* All Formats & Architectures Matrix inside Smart Box */
@@ -733,9 +791,12 @@
       font-size: 10.5px;
       color: var(--sk-muted);
       margin-top: 1px;
-      white-space: nowrap;
+      line-height: 1.7;
+      /* Up to two lines, then a clean clamp — no more mid-word truncation. */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
     .variant-actions {
       display: flex;
@@ -958,6 +1019,17 @@
       font-size: 11px;
       color: var(--sk-muted);
       margin-top: 2px;
+    }
+    /* Very narrow phones: label on top, buttons on their own row below — never squeezed. */
+    @media (max-width: 560px) {
+      .dl-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .dl-btns {
+        justify-content: flex-start;
+      }
     }
     .dl-btns {
       display: flex;
@@ -1284,7 +1356,10 @@
         <!-- Hero Header -->
         <header class="hero">
           <div class="app-icon-wrap">
-            <img class="app-icon" src="./icons/icon-192.png?v=673" alt="آیکون برنامهٔ شیفت‌کار" width="96" height="96" />
+            <!-- REAL ShiftKar app icon — the same artwork as the Android launcher
+                 icon, the PWA manifest icons and the site favicon (no web badge). -->
+            <img class="app-icon" src="./icons/icon-512.png?v=701" width="96" height="96"
+                 alt="آیکون برنامهٔ شیفت‌کار" decoding="async" />
           </div>
           <h1>شیفت‌کار</h1>
           <p class="tagline">تقویم هوشمند شیفت کاری — ویندوز، لینوکس، مک، اندروید و وب</p>
@@ -1331,19 +1406,19 @@
             </button>
             <button type="button" class="os-tab" id="tab-linux" onclick="selectHeroPlatform('linux')">
               <svg width="15" height="15"><use href="#ico-linux"/></svg>
-              <span>لینوکس (DEB / RPM / AppImage)</span>
+              <span>لینوکس <bdi>(DEB / RPM / AppImage)</bdi></span>
             </button>
             <button type="button" class="os-tab" id="tab-android" onclick="selectHeroPlatform('android')">
               <svg width="15" height="15"><use href="#ico-android"/></svg>
-              <span>اندروید (APK)</span>
+              <span>اندروید <bdi>(APK)</bdi></span>
             </button>
             <button type="button" class="os-tab" id="tab-mac" onclick="selectHeroPlatform('mac')">
               <svg width="15" height="15"><use href="#ico-apple"/></svg>
-              <span>مک (macOS)</span>
+              <span>مک <bdi>(macOS)</bdi></span>
             </button>
             <button type="button" class="os-tab" id="tab-web" onclick="selectHeroPlatform('web')">
               <svg width="14" height="14"><use href="#ico-web"/></svg>
-              <span>آیفون (iOS) / وب‌اپلیکیشن (PWA)</span>
+              <span>آیفون <bdi>(iOS)</bdi> / وب‌اپلیکیشن <bdi>(PWA)</bdi></span>
             </button>
           </div>
 
@@ -1364,18 +1439,26 @@
             </div>
 
             <div class="smart-cta-group">
-              <a id="detectedPrimaryBtn" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download/ShiftKar-Linux-x64.deb" class="btn-cta-main">
-                <svg width="18" height="18"><use href="#ico-download"/></svg>
-                <span id="detectedBtnText">دانلود بسته نصبی لینوکس (DEB)</span>
-              </a>
-              <a id="detectedSecondaryBtn" href="#" class="btn-cta-share" style="display:none">
-                <svg width="16" height="16"><use href="#ico-download"/></svg>
-                <span id="detectedSecondaryBtnText"></span>
-              </a>
-              <button type="button" class="btn-cta-share" id="detectedShareBtn" title="اشتراک‌گذاری لینک مستقیم">
-                <svg width="15" height="15"><use href="#ico-share"/></svg>
-                <span>اشتراک‌گذاری لینک</span>
-              </button>
+              <!-- Primary download + inline share icon (x64-style double cell) -->
+              <div class="smart-cta-row">
+                <a id="detectedPrimaryBtn" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download/ShiftKar-Linux-x64.deb" class="btn-cta-main">
+                  <svg width="18" height="18"><use href="#ico-download"/></svg>
+                  <span id="detectedBtnText">دانلود بسته نصبی لینوکس (DEB)</span>
+                </a>
+                <button type="button" class="btn-cta-sq" id="detectedShareBtn" title="اشتراک‌گذاری لینک مستقیم" aria-label="اشتراک‌گذاری لینک دانلود اصلی">
+                  <svg width="17" height="17"><use href="#ico-share"/></svg>
+                </button>
+              </div>
+              <!-- Secondary download + its own inline share icon -->
+              <div class="smart-cta-row" id="detectedSecondaryRow" style="display:none">
+                <a id="detectedSecondaryBtn" href="#" class="btn-cta-alt">
+                  <svg width="16" height="16"><use href="#ico-download"/></svg>
+                  <span id="detectedSecondaryBtnText"></span>
+                </a>
+                <button type="button" class="btn-cta-sq" id="detectedSecondaryShareBtn" title="اشتراک‌گذاری لینک مستقیم" aria-label="اشتراک‌گذاری لینک دانلود دوم">
+                  <svg width="17" height="17"><use href="#ico-share"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1393,7 +1476,7 @@
           <div class="section-head">
             <span class="eyebrow">همه پلتفرم‌ها و معماری‌ها</span>
             <h2 id="all-platforms-title" class="section-title">دانلود به تفکیک سیستم‌عامل و فرمت فایل</h2>
-            <p class="section-sub">تمامی نسخه‌های ویندوز (EXE / MSI / Portable)، لینوکس (DEB / RPM / AppImage)، مک (ARM64 / Intel)، اندروید (APK) و وب‌اپلیکیشن (PWA)</p>
+            <p class="section-sub">تمامی نسخه‌های ویندوز <bdi>(EXE / MSI / Portable)</bdi>، لینوکس <bdi>(DEB / RPM / AppImage)</bdi>، مک <bdi>(ARM64 / Intel)</bdi>، اندروید <bdi>(APK)</bdi> و وب‌اپلیکیشن <bdi>(PWA)</bdi></p>
           </div>
 
           <div class="platforms-grid">
@@ -1405,7 +1488,7 @@
                     <svg width="24" height="24"><use href="#ico-windows"/></svg>
                   </div>
                   <div>
-                    <div class="plat-name">ویندوز ۱۱ و ۱۰ (Windows)</div>
+                    <div class="plat-name">ویندوز ۱۱ و ۱۰ <bdi>(Windows)</bdi></div>
                     <div class="plat-desc">معماری ۶۴ بیتی (x64) و آرم (ARM64) — نصبی EXE، بسته MSI و نسخه Portable</div>
                   </div>
                 </div>
@@ -1416,7 +1499,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>فایل نصبی استاندارد ویندوز (Setup EXE)</span>
+                      <span>فایل نصبی استاندارد ویندوز <bdi>(Setup EXE)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
                     <div class="dl-meta">پیشنهادی برای تمامی کامپیوترها و لپ‌تاپ‌های ویندوز ۱۰ و ۱۱ (۶۴ بیتی)</div>
@@ -1435,7 +1518,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>بسته نصبی سازمانی ویندوز (MSI Installer)</span>
+                      <span>بسته نصبی سازمانی ویندوز <bdi>(MSI Installer)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
                     <div class="dl-meta">پکیج نصبی استاندارد MSI برای ویندوز ۶۴ بیتی</div>
@@ -1454,7 +1537,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>نسخه بدون نیاز به نصب (Portable ZIP)</span>
+                      <span>نسخه بدون نیاز به نصب <bdi>(Portable ZIP)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
                     <div class="dl-meta">اجرای فوری بدون نیاز به دسترسی Administrator</div>
@@ -1473,7 +1556,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>فایل نصبی ویندوز معماری آرم (Setup EXE)</span>
+                      <span>فایل نصبی ویندوز معماری آرم <bdi>(Setup EXE)</bdi></span>
                       <span class="dl-arch arm">ARM64</span>
                     </div>
                     <div class="dl-meta">مخصوص سرفیس پرو و لپ‌تاپ‌های ویندوزی با پردازنده ARM64 (Snapdragon)</div>
@@ -1492,7 +1575,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>نسخه بدون نصب ویندوز آرم (Portable ZIP)</span>
+                      <span>نسخه بدون نصب ویندوز آرم <bdi>(Portable ZIP)</bdi></span>
                       <span class="dl-arch arm">ARM64</span>
                     </div>
                     <div class="dl-meta">نسخه پرتابل مخصوص ویندوز ARM64</div>
@@ -1518,7 +1601,7 @@
                     <svg width="26" height="26"><use href="#ico-linux"/></svg>
                   </div>
                   <div>
-                    <div class="plat-name">لینوکس دسکتاپ (Linux)</div>
+                    <div class="plat-name">لینوکس دسکتاپ <bdi>(Linux)</bdi></div>
                     <div class="plat-desc">پکیج‌های DEB، RPM و AppImage برای هر دو معماری x64 و ARM64</div>
                   </div>
                 </div>
@@ -1529,7 +1612,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>بسته نصبی اوبونتو و دبیان (DEB)</span>
+                      <span>بسته نصبی اوبونتو و دبیان <bdi>(DEB)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
                     <div class="dl-meta">مخصوص Ubuntu، Debian، Linux Mint، Kubuntu و Pop!_OS</div>
@@ -1548,7 +1631,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>بسته نصبی فدورا و ردهت (RPM)</span>
+                      <span>بسته نصبی فدورا و ردهت <bdi>(RPM)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
                     <div class="dl-meta">مخصوص Fedora، RHEL، AlmaLinux، Rocky و openSUSE</div>
@@ -1567,7 +1650,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>نسخه مستقل بدون نصب (AppImage)</span>
+                      <span>نسخه مستقل بدون نصب <bdi>(AppImage)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
                     <div class="dl-meta">قابل اجرا روی تمام توزیع‌های لینوکس (Arch، Manjaro و ...)</div>
@@ -1586,26 +1669,45 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>بسته‌های لینوکس معماری آرم (DEB / RPM)</span>
+                      <span>بسته نصبی اوبونتو و دبیان <bdi>(DEB)</bdi></span>
                       <span class="dl-arch arm">ARM64</span>
                     </div>
-                    <div class="dl-meta">مخصوص سیستم‌های لینوکسی با پردازنده ARM64 / AArch64</div>
+                    <div class="dl-meta">مخصوص سیستم‌های لینوکسی با پردازنده ARM64 / AArch64 (اوبونتو، دبیان)</div>
                   </div>
                   <div class="dl-btns">
                     <a class="btn-dl" data-dl-role="lin-arm64-deb" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download/ShiftKar-Linux-arm64.deb">
                       <svg width="14" height="14"><use href="#ico-download"/></svg>
-                      <span>DEB ARM64</span>
+                      <span>دانلود DEB</span>
                     </a>
-                    <a class="btn-dl" data-dl-role="lin-arm64-rpm" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download/ShiftKar-Linux-arm64.rpm" style="background:rgba(255,255,255,0.1);border:1px solid var(--sk-border);color:var(--sk-text)">
-                      <span>RPM ARM64</span>
-                    </a>
+                    <button class="btn-icon-sq" onclick="shareRoleLink('lin-arm64-deb', 'شیفت‌کار برای لینوکس ARM64 (بسته DEB)')" title="اشتراک‌گذاری لینک">
+                      <svg width="15" height="15"><use href="#ico-share"/></svg>
+                    </button>
                   </div>
                 </div>
 
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>نسخه بدون نصب لینوکس آرم (AppImage)</span>
+                      <span>بسته نصبی فدورا و ردهت <bdi>(RPM)</bdi></span>
+                      <span class="dl-arch arm">ARM64</span>
+                    </div>
+                    <div class="dl-meta">فدورا، ردهت و openSUSE روی پردازنده‌های ARM64 (AArch64)</div>
+                  </div>
+                  <div class="dl-btns">
+                    <a class="btn-dl" data-dl-role="lin-arm64-rpm" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download/ShiftKar-Linux-arm64.rpm">
+                      <svg width="14" height="14"><use href="#ico-download"/></svg>
+                      <span>دانلود RPM</span>
+                    </a>
+                    <button class="btn-icon-sq" onclick="shareRoleLink('lin-arm64-rpm', 'شیفت‌کار برای لینوکس ARM64 (بسته RPM)')" title="اشتراک‌گذاری لینک">
+                      <svg width="15" height="15"><use href="#ico-share"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="dl-row">
+                  <div class="dl-info">
+                    <div class="dl-label">
+                      <span>نسخه بدون نصب لینوکس آرم <bdi>(AppImage)</bdi></span>
                       <span class="dl-arch arm">ARM64</span>
                     </div>
                     <div class="dl-meta">اجرای مستقیم روی کلیه توزیع‌های لینوکس ARM64</div>
@@ -1631,7 +1733,7 @@
                     <svg width="26" height="26"><use href="#ico-android"/></svg>
                   </div>
                   <div>
-                    <div class="plat-name">اندروید (Android APK)</div>
+                    <div class="plat-name">اندروید <bdi>(Android APK)</bdi></div>
                     <div class="plat-desc">اپلیکیشن بومی اندروید به همراه ویجت صفحه اصلی و یادآور هوشمند</div>
                   </div>
                 </div>
@@ -1642,7 +1744,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>فایل نصبی مستقیم اندروید (APK)</span>
+                      <span>فایل نصبی مستقیم اندروید <bdi>(APK)</bdi></span>
                       <span class="dl-arch">Universal</span>
                     </div>
                     <div class="dl-meta">نصب روی نسخهٔ قبلی بدون از دست رفتن داده‌ها (اندروید ۸ به بالا)</div>
@@ -1670,7 +1772,7 @@
                     <svg width="24" height="24"><use href="#ico-apple"/></svg>
                   </div>
                   <div>
-                    <div class="plat-name">سیستم‌عامل مک (macOS)</div>
+                    <div class="plat-name">سیستم‌عامل مک <bdi>(macOS)</bdi></div>
                     <div class="plat-desc">پکیج نصبی DMG برای مک‌بوک‌ها و آی‌مک‌های اپل سیلیکون و اینتل</div>
                   </div>
                 </div>
@@ -1681,7 +1783,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>مک اپل سیلیکون (M1 / M2 / M3 / M4)</span>
+                      <span>مک اپل سیلیکون <bdi>(M1 / M2 / M3 / M4)</bdi></span>
                       <span class="dl-arch arm">ARM64 DMG</span>
                     </div>
                     <div class="dl-meta">مخصوص مک‌های مجهز به تراشه‌های سری M اپل</div>
@@ -1700,7 +1802,7 @@
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>مک با پردازنده اینتل (Intel Mac)</span>
+                      <span>مک با پردازنده اینتل <bdi>(Intel Mac)</bdi></span>
                       <span class="dl-arch">x64 DMG</span>
                     </div>
                     <div class="dl-meta">مخصوص مک‌بوک‌ها و آی‌مک‌های دارای پردازنده Intel</div>
@@ -1726,21 +1828,21 @@
                     <svg width="25" height="25"><use href="#ico-web"/></svg>
                   </div>
                   <div>
-                    <div class="plat-name">نسخهٔ تحت وب و آیفون (PWA — iOS، اندروید و دسکتاپ)</div>
+                    <div class="plat-name">نسخهٔ تحت وب و آیفون (<bdi>PWA</bdi> — <bdi>iOS</bdi>، اندروید و دسکتاپ)</div>
                     <div class="plat-desc">پیشنهاد پیش‌فرض برای کاربران آیفون و آیپد (iOS) — بدون نیاز به اپ‌استور، با کارکرد کامل آفلاین و نصب روی صفحهٔ اصلی</div>
                   </div>
                 </div>
                 <span class="plat-tag" id="card-ver-pwa">نسخه ۶٫۷٫۳</span>
               </div>
 
-              <div class="dl-grid-2">
+              <div class="dl-list">
                 <div class="dl-row">
                   <div class="dl-info">
                     <div class="dl-label">
-                      <span>ورود و نصب مستقیم وب‌اپلیکیشن (PWA)</span>
+                      <span>ورود و نصب مستقیم وب‌اپلیکیشن <bdi>(PWA)</bdi></span>
                       <span class="dl-arch">Offline-Ready</span>
                     </div>
-                    <div class="dl-meta">در آیفون (Safari): دکمه Share و سپس Add to Home Screen را بزنید</div>
+                    <div class="dl-meta">در آیفون <bdi>(Safari)</bdi>: دکمه <bdi>Share</bdi> و سپس <bdi>Add to Home Screen</bdi> را بزنید</div>
                   </div>
                   <div class="dl-btns">
                     <a class="btn-dl" data-dl-role="web-pwa" href="https://alimosavi-code.github.io">
@@ -1750,21 +1852,6 @@
                     <button class="btn-icon-sq" onclick="shareRoleLink('web-pwa', 'وب‌اپلیکیشن شیفت‌کار (مخصوص آیفون و وب — PWA)')" title="اشتراک‌گذاری لینک">
                       <svg width="15" height="15"><use href="#ico-share"/></svg>
                     </button>
-                  </div>
-                </div>
-
-                <div class="dl-row">
-                  <div class="dl-info">
-                    <div class="dl-label">
-                      <span>پشتیبان‌گیری یکپارچه بین همه نسخه‌ها</span>
-                      <span class="dl-arch">.json</span>
-                    </div>
-                    <div class="dl-meta">فایل پشتیبان یادداشت‌ها و تنظیمات بین وب، اندروید و دسکتاپ کاملاً مشترک است</div>
-                  </div>
-                  <div class="dl-btns">
-                    <a class="btn-dl" href="https://alimosavi-code.github.io" style="background:rgba(255,255,255,0.09);border:1px solid var(--sk-border);color:var(--sk-text)">
-                      <span>اجرای آنی</span>
-                    </a>
                   </div>
                 </div>
               </div>
@@ -1802,7 +1889,7 @@
                 <svg width="22" height="22"><use href="#ico-theme"/></svg>
               </span>
               <h3>۶ تم رنگی شیشه‌ای + میانبرهای دسکتاپ</h3>
-              <p>طراحی شیشه‌ای با ۶ تم اختصاصی (آبی، زمردی، بنفش، نارنجی، رز و فیروزه‌ای)، شورتکات‌های کیبورد دسکتاپ و اسکرول افقی با Shift + Scroll.</p>
+              <p>طراحی شیشه‌ای با ۶ تم اختصاصی (آبی، زمردی، بنفش، نارنجی، رز و فیروزه‌ای)، شورتکات‌های کیبورد دسکتاپ و اسکرول افقی با <bdi>Shift + Scroll</bdi>.</p>
             </article>
 
             <article class="glass lift feat">
@@ -1810,7 +1897,7 @@
                 <svg width="22" height="22"><use href="#ico-sync"/></svg>
               </span>
               <h3>ثبت اضافه‌کاری، جابه‌جایی و پرسنل</h3>
-              <p>ثبت ساعت اضافه‌کاری، جابه‌جایی نوبت (Shift Swap)، مدیریت همکاران واحد، پیشنهاد جایگزین مرخصی و گزارش کامل کارکرد ماهانه و سالانه.</p>
+              <p>ثبت ساعت اضافه‌کاری، جابه‌جایی نوبت <bdi>(Shift Swap)</bdi>، مدیریت همکاران واحد، پیشنهاد جایگزین مرخصی و گزارش کامل کارکرد ماهانه و سالانه.</p>
             </article>
 
             <article class="glass lift feat">
@@ -1818,7 +1905,7 @@
                 <svg width="22" height="22"><use href="#ico-shield"/></svg>
               </span>
               <h3>هماهنگ‌سازی زنده تعطیلات و آپدیت خودکار</h3>
-              <p>بروزرسانی آنلاین تقویم و مناسبت‌های رسمی (calendar-sync.json) و بررسی هوشمند آخرین نسخهٔ اندروید و دسکتاپ از مخزن رسمی گیت‌هاب.</p>
+              <p>به‌روزرسانی آنلاین تقویم و مناسبت‌های رسمی <bdi>(calendar-sync.json)</bdi> و بررسی هوشمند آخرین نسخهٔ اندروید و دسکتاپ از مخزن رسمی گیت‌هاب.</p>
             </article>
 
             <article class="glass lift feat">
@@ -1826,7 +1913,7 @@
                 <svg width="22" height="22"><use href="#ico-web"/></svg>
               </span>
               <h3>پشتیبان‌گیری یکپارچه و کارکرد آفلاین</h3>
-              <p>انتقال آسان یادداشت‌ها، اضافه‌کاری‌ها، الگوها و همکاران با فایل پشتیبان (.json) بین اندروید، ویندوز، لینوکس، مک و وب‌اپلیکیشن.</p>
+              <p>انتقال آسان یادداشت‌ها، اضافه‌کاری‌ها، الگوها و همکاران با فایل پشتیبان <bdi>(.json)</bdi> بین اندروید، ویندوز، لینوکس، مک و وب‌اپلیکیشن.</p>
             </article>
           </div>
         </section>
@@ -1952,9 +2039,9 @@
        3. Dual Live Update Fetcher (update.json for Android + update-desktop.json for Desktop)
           with Persistent localStorage Fallback & Independent Version State
        ============================================================================ */
-    var STORAGE_KEY_ANDROID = "shiftkar_cached_update_android_v1";
-    var STORAGE_KEY_DESKTOP = "shiftkar_cached_update_desktop_v1";
-    var STORAGE_KEY_PWA = "shiftkar_cached_update_pwa_v1";
+    var STORAGE_KEY_ANDROID = "shiftkar_cached_update_android_v2";
+    var STORAGE_KEY_DESKTOP = "shiftkar_cached_update_desktop_v2";
+    var STORAGE_KEY_PWA = "shiftkar_cached_update_pwa_v2";
 
     var DEFAULT_RELEASE_BASE = "https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download";
 
@@ -1962,11 +2049,13 @@
       android: {
         version: "6.7.3",
         releaseDate: "",
-        apkUrl: DEFAULT_RELEASE_BASE + "/ShiftKar-v6.7.3.apk"
+        apkUrl: DEFAULT_RELEASE_BASE + "/ShiftKar-v6.7.3.apk",
+        fromFetch: false
       },
       desktop: {
         version: "6.7.3",
         releaseDate: "",
+        fromFetch: false,
         urls: {
           "win-x64-exe": DEFAULT_RELEASE_BASE + "/ShiftKar-Windows-x64-Setup.exe",
           "win-x64-msi": DEFAULT_RELEASE_BASE + "/ShiftKar-Windows-x64.msi",
@@ -1995,6 +2084,22 @@
       return v.trim().replace(/^[vV]/, "");
     }
 
+    /* Numeric x.y.z comparison: positive → a is NEWER, 0 → equal, negative → a is older.
+       Used so a STALE fetch (CDN cache) can never downgrade a NEWER version we
+       already know from a previous fetch (localStorage fallback) or from the
+       built-in defaults — the highest known version always wins. */
+    function compareVersions(a, b) {
+      var pa = String(a || "").split(".");
+      var pb = String(b || "").split(".");
+      var len = Math.max(pa.length, pb.length);
+      for (var i = 0; i < len; i++) {
+        var na = parseInt(pa[i], 10) || 0;
+        var nb = parseInt(pb[i], 10) || 0;
+        if (na !== nb) return na - nb;
+      }
+      return 0;
+    }
+
     function extractVersionFromJson(obj) {
       if (!obj || typeof obj !== "object") return "";
       var raw = obj.versionName || obj.latestVersion || obj.version || obj.tag_name || obj.appVersion || "";
@@ -2012,13 +2117,13 @@
         var cachedAnd = localStorage.getItem(STORAGE_KEY_ANDROID);
         if (cachedAnd) {
           var pAnd = JSON.parse(cachedAnd);
-          if (pAnd && pAnd.version) {
+          /* Load the last genuinely fetched Android version from localStorage */
+          if (pAnd && pAnd.version && pAnd.fromFetch) {
             LIVE_STATE.android.version = pAnd.version;
+            LIVE_STATE.android.fromFetch = true;
             if (pAnd.releaseDate) LIVE_STATE.android.releaseDate = pAnd.releaseDate;
             if (pAnd.apkUrl) LIVE_STATE.android.apkUrl = pAnd.apkUrl;
           }
-        } else {
-          localStorage.setItem(STORAGE_KEY_ANDROID, JSON.stringify(LIVE_STATE.android));
         }
       } catch (e) {}
 
@@ -2026,8 +2131,10 @@
         var cachedDsk = localStorage.getItem(STORAGE_KEY_DESKTOP);
         if (cachedDsk) {
           var pDsk = JSON.parse(cachedDsk);
-          if (pDsk && pDsk.version) {
+          /* Load the last genuinely fetched Desktop version from localStorage */
+          if (pDsk && pDsk.version && pDsk.fromFetch) {
             LIVE_STATE.desktop.version = pDsk.version;
+            LIVE_STATE.desktop.fromFetch = true;
             if (pDsk.releaseDate) LIVE_STATE.desktop.releaseDate = pDsk.releaseDate;
             if (pDsk.urls && typeof pDsk.urls === "object") {
               for (var k in pDsk.urls) {
@@ -2035,8 +2142,6 @@
               }
             }
           }
-        } else {
-          localStorage.setItem(STORAGE_KEY_DESKTOP, JSON.stringify(LIVE_STATE.desktop));
         }
       } catch (e) {}
 
@@ -2044,7 +2149,9 @@
         var cachedPwa = localStorage.getItem(STORAGE_KEY_PWA);
         if (cachedPwa) {
           var pPwa = JSON.parse(cachedPwa);
-          if (pPwa && pPwa.version) LIVE_STATE.pwa.version = pPwa.version;
+          if (pPwa && pPwa.version && compareVersions(pPwa.version, LIVE_STATE.pwa.version) >= 0) {
+            LIVE_STATE.pwa.version = pPwa.version;
+          }
         } else {
           localStorage.setItem(STORAGE_KEY_PWA, JSON.stringify(LIVE_STATE.pwa));
         }
@@ -2180,8 +2287,14 @@
         var ver = extractVersionFromJson(data);
         var relDate = extractDateFromJson(data);
         var dlUrl = data.downloadUrl || data.url || data.apkUrl || "";
-        if (ver) {
+        /* Accept the live GitHub version immediately if we were on the un-fetched
+           initial seed (!fromFetch), OR if it is >= the previously fetched cache.
+           This ensures Android (update.json) and Desktop (update-desktop.json)
+           each show their true independent version from GitHub while still
+           updating localStorage when a newer release (e.g. 6.8.0) is published. */
+        if (ver && (!LIVE_STATE.android.fromFetch || compareVersions(ver, LIVE_STATE.android.version) >= 0)) {
           LIVE_STATE.android.version = ver;
+          LIVE_STATE.android.fromFetch = true;
           if (relDate) LIVE_STATE.android.releaseDate = relDate;
           if (typeof dlUrl === "string" && dlUrl.trim()) {
             LIVE_STATE.android.apkUrl = dlUrl.trim();
@@ -2194,7 +2307,7 @@
           applyLiveStateToDom();
         }
       }).catch(function() {
-        /* Fallback already loaded from localStorage */
+        /* Offline / fetch failed: fallback from localStorage (or 6.7.3 seed) stays active */
       });
 
       /* 2. Fetch Desktop update-desktop.json (https://github.com/Alimosavi-Code/Shiftkar/blob/main/update-desktop.json) */
@@ -2204,8 +2317,9 @@
       ]).then(function(data) {
         var ver = extractVersionFromJson(data);
         var relDate = extractDateFromJson(data);
-        if (ver) {
+        if (ver && (!LIVE_STATE.desktop.fromFetch || compareVersions(ver, LIVE_STATE.desktop.version) >= 0)) {
           LIVE_STATE.desktop.version = ver;
+          LIVE_STATE.desktop.fromFetch = true;
           if (relDate) LIVE_STATE.desktop.releaseDate = relDate;
           LIVE_STATE.desktop.urls = parseDesktopUrlsFromJson(data, ver);
           try {
@@ -2262,12 +2376,12 @@
       if (key === "linux") {
         var primaryUrl = IS_ARM_ARCH ? u["lin-arm64-deb"] : u["lin-x64-deb"];
         var primaryText = IS_ARM_ARCH
-          ? "دانلود بسته DEB لینوکس (ARM64)"
-          : "دانلود بسته نصبی لینوکس (DEB x64)";
+          ? "دانلود بسته \u2066DEB\u2069 لینوکس \u2066(ARM64)\u2069"
+          : "دانلود بسته نصبی لینوکس \u2066(DEB x64)\u2069";
         var allLinux = [
           {
             id: "lin-x64-deb",
-            name: "بسته نصبی DEB (اوبونتو/دبیان)",
+            name: "بسته نصبی \u2066DEB\u2069 (اوبونتو/دبیان)",
             arch: "x64",
             isArm: false,
             sub: "Ubuntu, Debian, Linux Mint, Pop!_OS",
@@ -2276,7 +2390,7 @@
           },
           {
             id: "lin-x64-rpm",
-            name: "بسته نصبی RPM (فدورا/ردهت)",
+            name: "بسته نصبی \u2066RPM\u2069 (فدورا/ردهت)",
             arch: "x64",
             isArm: false,
             sub: "Fedora, RHEL, openSUSE, AlmaLinux",
@@ -2321,33 +2435,40 @@
           }
         ];
         var primaryId = IS_ARM_ARCH ? "lin-arm64-deb" : "lin-x64-deb";
+        var secondaryId = IS_ARM_ARCH ? "lin-arm64-rpm" : "lin-x64-rpm";
         return {
           icon: "#ico-linux",
           tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: لینوکس دسکتاپ" : "نسخه لینوکس دسکتاپ",
           arch: IS_ARM_ARCH ? "Linux ARM64 & x64" : "Linux 64-bit (x64 & ARM64)",
           verText: "نسخه " + dskVerFa,
-          title: "شیفت‌کار برای لینوکس (DEB / RPM / AppImage)",
-          sub: "پشتیبانی کامل از اوبونتو، دبیان، فدورا، ردهت، آرچ و کلیه توزیع‌ها در دو معماری x64 و ARM64",
+          title: "شیفت‌کار برای لینوکس \u2066(DEB / RPM / AppImage)\u2069",
+          sub: "پشتیبانی کامل از اوبونتو، دبیان، فدورا، ردهت، آرچ و کلیه توزیع‌ها در دو معماری \u2066x64\u2069 و \u2066ARM64\u2069",
           primaryUrl: primaryUrl,
           primaryText: primaryText,
-          secondaryUrl: "",
-          secondaryText: "",
+          secondaryUrl: IS_ARM_ARCH ? u["lin-arm64-rpm"] : u["lin-x64-rpm"],
+          secondaryText: IS_ARM_ARCH
+            ? "بسته \u2066RPM\u2069 لینوکس \u2066(ARM64)\u2069"
+            : "بسته \u2066RPM\u2069 لینوکس \u2066(x64)\u2069",
           shareLabel: "شیفت‌کار برای لینوکس دسکتاپ (نسخه " + LIVE_STATE.desktop.version + ")",
           cardId: "card-linux",
-          variantsTitle: "سایر فرمت‌ها و معماری‌های لینوکس (RPM، AppImage و ARM64):",
-          variants: allLinux.filter(function(item) { return item.id !== primaryId; })
+          variantsTitle: IS_ARM_ARCH
+            ? "سایر فرمت‌ها و معماری‌های لینوکس \u2066(AppImage و x64)\u2069:"
+            : "سایر فرمت‌ها و معماری‌های لینوکس \u2066(AppImage و ARM64)\u2069:",
+          variants: allLinux.filter(function(item) {
+            return item.id !== primaryId && item.id !== secondaryId;
+          })
         };
       }
 
       if (key === "windows") {
         var winPrimaryUrl = IS_ARM_ARCH ? u["win-arm64-exe"] : u["win-x64-exe"];
         var winPrimaryText = IS_ARM_ARCH
-          ? "دانلود نصبی ویندوز ARM64 (EXE)"
-          : "دانلود مستقیم نصبی ویندوز (Setup EXE)";
+          ? "دانلود نصبی ویندوز \u2066ARM64 (EXE)\u2069"
+          : "دانلود مستقیم نصبی ویندوز \u2066(Setup EXE)\u2069";
         var allWin = [
           {
             id: "win-x64-exe",
-            name: "فایل نصبی استاندارد (Setup EXE)",
+            name: "فایل نصبی استاندارد \u2066(Setup EXE)\u2069",
             arch: "x64",
             isArm: false,
             sub: "پیشنهادی برای ویندوز ۱۰ و ۱۱ (۶۴ بیتی)",
@@ -2356,7 +2477,7 @@
           },
           {
             id: "win-x64-msi",
-            name: "بسته نصبی سازمانی (MSI)",
+            name: "بسته نصبی سازمانی \u2066(MSI)\u2069",
             arch: "x64",
             isArm: false,
             sub: "نصب استاندارد Windows Installer",
@@ -2365,7 +2486,7 @@
           },
           {
             id: "win-x64-zip",
-            name: "نسخه بدون نیاز به نصب (Portable)",
+            name: "نسخه بدون نیاز به نصب \u2066(Portable)\u2069",
             arch: "x64",
             isArm: false,
             sub: "فایل فشرده ZIP بدون نیاز به نصب",
@@ -2374,7 +2495,7 @@
           },
           {
             id: "win-arm64-exe",
-            name: "فایل نصبی ویندوز آرم (Setup EXE)",
+            name: "فایل نصبی ویندوز آرم \u2066(Setup EXE)\u2069",
             arch: "ARM64",
             isArm: true,
             sub: "مخصوص سرفیس و پردازنده‌های ARM64",
@@ -2383,7 +2504,7 @@
           },
           {
             id: "win-arm64-msi",
-            name: "بسته نصبی MSI ویندوز آرم",
+            name: "بسته نصبی \u2066MSI\u2069 ویندوز آرم",
             arch: "ARM64",
             isArm: true,
             sub: "پکیج MSI مخصوص ویندوز ARM64",
@@ -2392,7 +2513,7 @@
           },
           {
             id: "win-arm64-zip",
-            name: "نسخه بدون نصب ویندوز آرم (ZIP)",
+            name: "نسخه بدون نصب ویندوز آرم \u2066(ZIP)\u2069",
             arch: "ARM64",
             isArm: true,
             sub: "پرتابل بدون نصب مخصوص ARM64",
@@ -2406,8 +2527,8 @@
           tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: ویندوز ۱۱ / ۱۰" : "نسخه ویندوز ۱۱ / ۱۰",
           arch: IS_ARM_ARCH ? "Windows ARM64 & x64" : "Windows 64-bit (x64 & ARM64)",
           verText: "نسخه " + dskVerFa,
-          title: "شیفت‌کار برای ویندوز ۱۱ و ۱۰ (EXE / MSI / Portable)",
-          sub: "فایل نصبی استاندارد EXE، بسته سازمانی MSI و نسخه بدون نصب Portable برای پردازنده‌های x64 و ARM64",
+          title: "شیفت‌کار برای ویندوز ۱۱ و ۱۰ \u2066(EXE / MSI / Portable)\u2069",
+          sub: "فایل نصبی استاندارد \u2066EXE\u2069، بسته سازمانی \u2066MSI\u2069 و نسخه بدون نصب \u2066Portable\u2069 برای پردازنده‌های \u2066x64\u2069 و \u2066ARM64\u2069",
           primaryUrl: winPrimaryUrl,
           primaryText: winPrimaryText,
           secondaryUrl: "",
@@ -2425,12 +2546,12 @@
           tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: سیستم‌عامل مک" : "نسخه مک (macOS)",
           arch: "Apple Silicon (M1–M4) & Intel",
           verText: "نسخه " + dskVerFa,
-          title: "شیفت‌کار برای مک (macOS Apple Silicon & Intel DMG)",
-          sub: "پکیج نصبی DMG برای مک‌های سری M اپل (ARM64) و مک‌های پردازنده اینتل (x64)",
+          title: "شیفت‌کار برای مک \u2066(macOS Apple Silicon & Intel DMG)\u2069",
+          sub: "پکیج نصبی \u2066DMG\u2069 برای مک‌های سری \u2066M\u2069 اپل \u2066(ARM64)\u2069 و مک‌های پردازنده اینتل \u2066(x64)\u2069",
           primaryUrl: u["mac-arm64-dmg"],
-          primaryText: "دانلود مک اپل سیلیکون (ARM64 DMG)",
+          primaryText: "دانلود مک اپل سیلیکون \u2066(ARM64 DMG)\u2069",
           secondaryUrl: u["mac-x64-dmg"],
-          secondaryText: "نسخه مک اینتل (Intel x64 DMG)",
+          secondaryText: "نسخه مک اینتل \u2066(Intel x64 DMG)\u2069",
           shareLabel: "شیفت‌کار برای مک (macOS نسخه " + LIVE_STATE.desktop.version + ")",
           cardId: "card-mac",
           variantsTitle: "",
@@ -2445,9 +2566,9 @@
           arch: "iOS / Android / Desktop PWA",
           verText: "نسخه " + pwaVerFa,
           title: "وب‌اپلیکیشن شیفت‌کار (پیشنهاد ویژه آیفون و آیپد)",
-          sub: "اجرای آنی در مرورگر سافاری و کروم با قابلیت افزودن به صفحهٔ اصلی گوشی (Share ← Add to Home Screen) و کارکرد ۱۰۰٪ آفلاین",
+          sub: "اجرای آنی در مرورگر سافاری و کروم با قابلیت افزودن به صفحهٔ اصلی گوشی \u2066(Share ← Add to Home Screen)\u2069 و کارکرد ۱۰۰٪ آفلاین",
           primaryUrl: "https://alimosavi-code.github.io",
-          primaryText: "ورود و نصب وب‌اپلیکیشن (PWA)",
+          primaryText: "ورود و نصب وب‌اپلیکیشن \u2066(PWA)\u2069",
           secondaryUrl: "",
           secondaryText: "",
           shareLabel: "وب‌اپلیکیشن شیفت‌کار (نسخه تحت وب و آیفون PWA)",
@@ -2466,7 +2587,7 @@
         title: "اپلیکیشن بومی اندروید شیفت‌کار (فایل نصبی APK)",
         sub: "مناسب برای تمامی گوشی‌ها و تبلت‌های اندرویدی با ویجت اختصاصی و به‌روزرسانی خودکار درون‌برنامه‌ای",
         primaryUrl: LIVE_STATE.android.apkUrl,
-        primaryText: "دانلود مستقیم نسخه اندروید (APK)",
+        primaryText: "دانلود مستقیم نسخه اندروید \u2066(APK)\u2069",
         secondaryUrl: "",
         secondaryText: "",
         shareLabel: "اپلیکیشن اندروید شیفت‌کار (نسخه " + LIVE_STATE.android.version + ")",
@@ -2495,7 +2616,11 @@
       var html = "";
       for (var i = 0; i < list.length; i++) {
         var v = list[i];
-        var safeTitle = v.name.replace(/'/g, "");
+        /* Strip quotes/backslashes so the value can be inlined into the
+           onclick attribute safely (this quoting was previously broken and
+           threw a SyntaxError that killed the whole page script). */
+        var safeTitle = String(v.name).replace(/['"\\]/g, "");
+        var safeUrl = String(v.url).replace(/['"\\]/g, "");
         html +=
           '<div class="variant-chip">' +
             '<div class="variant-info">' +
@@ -2503,14 +2628,14 @@
                 '<span>' + v.name + '</span>' +
                 '<span class="dl-arch' + (v.isArm ? ' arm' : '') + '">' + v.arch + '</span>' +
               '</div>' +
-              '<div class="variant-sub">' + v.sub + '</div>' +
+              '<div class="variant-sub"><bdi>' + v.sub + '</bdi></div>' +
             '</div>' +
             '<div class="variant-actions">' +
               '<a class="variant-dl-btn" href="' + v.url + '">' +
                 '<svg width="12" height="12"><use href="#ico-download"/></svg>' +
                 '<span>' + v.btn + '</span>' +
               '</a>' +
-              '<button type="button" class="variant-share-btn" title="اشتراک‌گذاری لینک" onclick="shareItem('' + safeTitle + '', '' + v.url + '')">' +
+              '<button type="button" class="variant-share-btn" title="اشتراک‌گذاری لینک" onclick="shareItem(\'' + safeTitle + '\', \'' + safeUrl + '\')">' +
                 '<svg width="13" height="13"><use href="#ico-share"/></svg>' +
               '</button>' +
             '</div>' +
@@ -2528,6 +2653,15 @@
       for (var i = 0; i < tabs.length; i++) {
         var el = document.getElementById("tab-" + tabs[i]);
         if (el) el.classList.toggle("active", tabs[i] === mode);
+      }
+
+      /* On narrow screens the tab row scrolls horizontally — keep the ACTIVE
+         tab comfortably in view instead of leaving it clipped at an edge. */
+      var activeTabEl = document.getElementById("tab-" + mode);
+      if (activeTabEl && activeTabEl.scrollIntoView) {
+        try {
+          activeTabEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        } catch (e) {}
       }
 
       var cards = ["card-windows", "card-linux", "card-android", "card-mac", "card-web"];
@@ -2549,22 +2683,36 @@
       pBtn.href = spec.primaryUrl;
       document.getElementById("detectedBtnText").textContent = spec.primaryText;
 
+      var secRow = document.getElementById("detectedSecondaryRow");
       var secBtn = document.getElementById("detectedSecondaryBtn");
       var secBtnText = document.getElementById("detectedSecondaryBtnText");
-      if (secBtn && secBtnText) {
+      if (secRow && secBtn && secBtnText) {
         if (spec.secondaryUrl && spec.secondaryText) {
           secBtn.href = spec.secondaryUrl;
           secBtnText.textContent = spec.secondaryText;
-          secBtn.style.display = "inline-flex";
+          secRow.style.display = "flex";
         } else {
-          secBtn.style.display = "none";
+          secRow.style.display = "none";
         }
       }
 
+      /* Inline square share buttons next to each download button */
       var sBtn = document.getElementById("detectedShareBtn");
-      sBtn.onclick = function() {
-        shareItem(spec.shareLabel, spec.primaryUrl);
-      };
+      if (sBtn) {
+        sBtn.onclick = function() {
+          shareItem(spec.shareLabel, spec.primaryUrl);
+        };
+      }
+      var sBtn2 = document.getElementById("detectedSecondaryShareBtn");
+      if (sBtn2) {
+        sBtn2.onclick = function() {
+          if (spec.secondaryUrl) {
+            shareItem(spec.shareLabel, spec.secondaryUrl);
+          } else {
+            shareItem(spec.shareLabel, spec.primaryUrl);
+          }
+        };
+      }
 
       renderSmartVariants(spec);
     }

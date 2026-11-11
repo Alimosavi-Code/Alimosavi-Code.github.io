@@ -139,7 +139,10 @@ export function applyCalendarSyncJson(rawJson: string): boolean {
   try {
     const clean = preprocessJsonWithComments(rawJson);
     const root = JSON.parse(clean);
-    if (!root || typeof root !== "object") return false;
+    /* A valid calendar-sync payload must be a JSON *object* — arrays/scalars
+     * (e.g. a truncated or hijacked remote file) are rejected outright so they
+     * can never wipe the applied overrides. */
+    if (!root || typeof root !== "object" || Array.isArray(root)) return false;
 
     const ver = typeof root.syncVersion === "number" ? root.syncVersion : 1;
     const upd = typeof root.updatedAt === "string" && root.updatedAt.trim() ? root.updatedAt.trim() : "پیش‌فرض برنامه";

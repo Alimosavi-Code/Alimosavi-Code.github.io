@@ -106,7 +106,19 @@ export async function getNote(dateKey: string): Promise<string> {
       if (res.ok && ct.includes("application/json")) {
         const data = await res.json();
         apiMode = "up";
-        const text = data.note?.text || "";
+        /* Prefer the single-note shape `{ note }`; fall back to searching the
+         * full `{ notes: [] }` list so an older backend can never wipe a
+         * locally stored note by answering with an unexpected shape. */
+        let text = "";
+        if (data && data.note && typeof data.note.text === "string") {
+          text = data.note.text;
+        } else if (Array.isArray(data.notes)) {
+          const hit = (data.notes as NoteRow[]).find((n) => n && n.dateKey === dateKey);
+          text = hit?.text || "";
+        } else {
+          /* Unknown response shape — do not touch the local copy. */
+          return readLocal()[dateKey] || "";
+        }
         const local = readLocal();
         if (text) local[dateKey] = text;
         else delete local[dateKey];
@@ -130,8 +142,9 @@ export async function saveNote(dateKey: string, text: string): Promise<void> {
 
   if (apiMode !== "down") {
     try {
+      /* NOTE: the API route upserts via POST (PUT is not exported and returns 405). */
       const res = await fetch("/api/notes", {
-        method: "PUT",
+        method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ dateKey, text: trimmed }),
       });

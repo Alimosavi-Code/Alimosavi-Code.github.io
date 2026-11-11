@@ -47,9 +47,9 @@ jobs:
       - name: Remove server-only API routes for the static build
         run: rm -rf src/app/api
 
-      - name: Rewrite manifest URLs for the Pages origin
+      - name: Rewrite manifest & download-page URLs for the Pages origin
         run: |
-          sed -i "s#https://shiftkar\.space-z\.ai#${SITE_URL}${BASE_PATH}#g; s#https://alimosavi-code\.github\.io#${SITE_URL}${BASE_PATH}#g" public/manifest.webmanifest
+          sed -i "s#https://shiftkar\.space-z\.ai#${SITE_URL}${BASE_PATH}#g; s#https://alimosavi-code\.github\.io#${SITE_URL}${BASE_PATH}#g" public/manifest.webmanifest public/download/index.html
           echo "--- manifest.webmanifest (rewritten) ---"
           cat public/manifest.webmanifest
 

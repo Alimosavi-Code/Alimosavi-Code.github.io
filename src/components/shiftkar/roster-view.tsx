@@ -18,9 +18,9 @@ import {
   jalaaliMonthLength,
   jalaaliWeekday,
   makeDateKey,
-  todayJalaali,
   toPersianDigits,
 } from "@/lib/jalali";
+import { useToday } from "@/lib/use-today";
 import {
   getShiftCode,
   getAllGroupsForDate,
@@ -102,7 +102,7 @@ export function RosterView({
 
   const activeGroups = useMemo(() => getActiveGroups(pat), [pat]);
   const groupFilters = useMemo(() => getActiveGroupFilters(pat), [pat]);
-  const today = useMemo(() => todayJalaali(), []);
+  const today = useToday();
   const effectiveFilter: GroupFilter = !pat.hasGroups ? "A" : rosterGroup;
 
   void calendarSyncRev;
@@ -400,7 +400,12 @@ function Classic1405LoheView({
 }) {
   const pat = getActivePattern();
   const hasEvening = (pat.eveningCount ?? 0) > 0;
-  const rowsData = useMemo(() => buildClassic1405LoheData(jy, showEvents), [jy, showEvents]);
+  /* Rebuild when the remote calendar-sync lands so holiday colors stay fresh. */
+  const calendarSyncRev = useShiftKar((s) => s.calendarSyncRev);
+  const rowsData = useMemo(
+    () => buildClassic1405LoheData(jy, showEvents),
+    [jy, showEvents, calendarSyncRev],
+  );
 
   const firstHalfMonths = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور"];
   const secondHalfMonths = ["مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
@@ -626,6 +631,8 @@ function AllShiftsMonthBlock({
   onClick: () => void;
 }) {
   const pat = getActivePattern();
+  /* Rebuild when the remote calendar-sync lands so holiday colors stay fresh. */
+  const calendarSyncRev = useShiftKar((s) => s.calendarSyncRev);
   const days = useMemo(() => {
     const len = jalaaliMonthLength(jy, jm);
     const firstWd = jalaaliWeekday(jy, jm, 1);
@@ -668,7 +675,7 @@ function AllShiftsMonthBlock({
       });
     }
     return out;
-  }, [jy, jm, today, showEvents, groups, pat]);
+  }, [jy, jm, today, showEvents, groups, pat, calendarSyncRev]);
 
   const tier1 = days.slice(0, 16);
   const tier2 = days.slice(16);

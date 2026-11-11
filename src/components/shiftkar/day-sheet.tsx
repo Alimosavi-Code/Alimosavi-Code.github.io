@@ -30,11 +30,14 @@ import {
   calculateAllShifts,
   getActivePattern,
   getGroupTitle,
+  getShiftCodeForPattern,
+  resolvePattern,
 } from "@/lib/shift-engine";
 import { getDayEvents } from "@/lib/holidays";
 import {
   CODE_FA,
   SHIFT_KIND_FA,
+  codeToKind,
   type ShiftGroup,
   type ShiftKind,
 } from "@/lib/models";
@@ -129,6 +132,7 @@ function DaySheetBody({
   const employees = useShiftKar((s) => s.employees);
   const showEmployeesOnCalendar = useShiftKar((s) => s.showEmployeesOnCalendar);
   const calendarSyncRev = useShiftKar((s) => s.calendarSyncRev);
+  const customPatterns = useShiftKar((s) => s.customPatterns);
 
   const [text, setText] = useState("");
   const [saved, setSaved] = useState(false);
@@ -211,10 +215,15 @@ function DaySheetBody({
     }, 60);
   }, [dateKey, effectiveGroup, dayRec, text, showEmployeesOnCalendar, employees, bodyRef]);
 
+  /* Rebuilding the full PNG canvas (≈1080×1100+ plus a base64 toDataURL) on
+   * every keystroke of the note textarea janks low-end phones — debounce the
+   * live preview while the export card is open. */
   useEffect(() => {
-    if (exportDayOpen) {
+    if (!exportDayOpen) return;
+    const t = setTimeout(() => {
       handleBuildExport();
-    }
+    }, 450);
+    return () => clearTimeout(t);
   }, [exportDayOpen, handleBuildExport]);
 
   const isHolidayDay = holidays.length > 0;
@@ -433,13 +442,24 @@ function DaySheetBody({
           </div>
           <div className="glass rounded-2xl p-2.5 space-y-1.5">
             {employees.map((emp) => {
-              const empShift = calculateShift(dateKey, emp.group);
+              /* Use the employee's OWN pattern (parity with ManagerView) so a
+               * colleague on a different pattern shows their real shift. */
+              const empPat =
+                emp.patternId && emp.patternId !== "ACTIVE"
+                  ? resolvePattern(emp.patternId, customPatterns)
+                  : pat;
+              const empCode = getShiftCodeForPattern(dateKey, emp.group, empPat);
+              const empShift = {
+                code: empCode,
+                type: codeToKind(empCode),
+              };
               const log = emp.dayLogs?.[dateKey];
               const isLeave = log?.status === "LEAVE";
               const effKind: ShiftKind =
                 log && log.status !== "AS_SCHEDULED" && log.status !== "LEAVE"
                   ? log.status
                   : empShift.type;
+              const empGroupTitle = getGroupTitle(emp.group, empPat);
               const badgeLabel = isLeave
                 ? "مرخصی"
                 : log && log.status !== "AS_SCHEDULED"
@@ -457,7 +477,7 @@ function DaySheetBody({
                   className="rounded-[11px] bg-[var(--sk-surface)] px-2.5 py-2 flex items-center justify-between gap-2"
                 >
                   <span className="text-[12px] font-bold truncate">
-                    {emp.name} ({getGroupTitle(emp.group, pat)})
+                    {emp.name} ({empGroupTitle})
                   </span>
                   <span
                     className={`px-2 py-0.5 rounded-[8px] text-[11px] font-black shrink-0 ${

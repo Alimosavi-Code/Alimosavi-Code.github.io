@@ -43,19 +43,21 @@ git push -u origin main
 1. `bun install` با lockfile قفل‌شده
 2. تشخیص خودکار basePath (`/repo` یا ریشه)
 3. حذف `src/app/api` از بیلد استاتیک (سرور روی Pages وجود ندارد؛ اپ fallback دارد)
-4. بازنویسی آدرس‌های مانیفست از `https://shiftkar.space-z.ai` به دامنهٔ Pages (تا اعتبارسنجی Chrome همان‌جا هم پاس شود)
-5. `NEXT_EXPORT=1 next build` → پوشهٔ `out/` + فایل `.nojekyll` (لازم است وگرنه گیت‌هاب پوشهٔ `_next` را نادیده می‌گیرد)
+4. بازنویسی آدرس‌های دامنه در `manifest.webmanifest` و `download/index.html` به دامنهٔ Pages (مانیفست با آدرس‌های نسبی `./` هم بدون بازنویسی روی هر دامنه‌ای کار می‌کند)
+5. `NEXT_EXPORT=1 NEXT_PUBLIC_STATIC=1 next build` (از طریق `build-gh.sh`) → پوشهٔ `out/` + فایل `.nojekyll` (لازم است وگرنه گیت‌هاب پوشهٔ `_next` را نادیده می‌گیرد)
 6. انتشار با artifacts رسمی Pages
+
+`NEXT_PUBLIC_STATIC=1` باعث می‌شود یادداشت‌ها از همان اول به‌جای تلاش برای `/api/notes` مستقیم روی `localStorage` ذخیره شوند.
 
 ## تست محلی (اختیاری)
 
 ```bash
 # شبیه‌سازی بیلد GitHub Pages با basePath فرضی
-NEXT_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/my-repo bun run build:gh
+NEXT_PUBLIC_BASE_PATH=/my-repo bun run build:gh
 npx serve out        # یا هر سرور استاتیک
 ```
 
-بیلد استاتیک در `.next-gh` انجام می‌شود و کاری با بیلد اصلی (`.next`) ندارد.
+`bun run build:gh` اسکریپت `build-gh.sh` را اجرا می‌کند که روت‌های سروری `/api` را موقتاً کنار می‌گذارد، بعد از بیلد سرجایش برمی‌گرداند و کش‌های کهنهٔ dev را پاک می‌کند — درخواهید یا ناخواسته هیچ چیزی از سورس حذف نمی‌شود.
 
 ## نکات مهم
 

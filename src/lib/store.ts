@@ -124,7 +124,9 @@ export const useShiftKar = create<ShiftKarState>()(
         onboardingDone: false,
         tourDone: false,
         showEvents: true,
-        showSecondaryCalendars: false,
+        /* Secondary (lunar + gregorian) dates are shown by default — matches
+         * the Android app and the onboarding «تقویم» expectation. */
+        showSecondaryCalendars: true,
         hapticOn: true,
         showEmployeesOnCalendar: true,
         shiftReminderOn: false,

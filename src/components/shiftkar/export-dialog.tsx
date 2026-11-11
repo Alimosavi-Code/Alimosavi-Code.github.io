@@ -11,9 +11,11 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { isTopModal, popModalStack, pushModalStack } from "@/lib/modal-stack";
 import { toast } from "sonner";
 import { downloadCanvasAsPng, shareOrDownloadCanvas } from "@/lib/image-exporter";
 import { useShiftKar, haptic } from "@/lib/store";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 import { CloseIcon, DownloadIcon, ShareIcon, ImageIcon } from "./icons";
 
 export function ExportImageDialog({
@@ -35,6 +37,10 @@ export function ExportImageDialog({
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  /* Keep Tab focus inside the open export dialog. */
+  useFocusTrap(cardRef, open);
 
   useEffect(() => {
     if (!open) {
@@ -58,11 +64,17 @@ export function ExportImageDialog({
 
   useEffect(() => {
     if (!open) return;
+    /* Only react to Esc when this dialog is the topmost modal layer
+     * (it can be opened on top of a Sheet — Esc must not close both). */
+    const modalId = pushModalStack();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && isTopModal(modalId)) onClose();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      popModalStack(modalId);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -98,7 +110,11 @@ export function ExportImageDialog({
     >
       <div onClick={onClose} className="sk-scrim-in absolute inset-0 sk-scrim" />
 
-      <div className="sk-pop-in relative z-10 w-full max-w-[440px] max-h-[90dvh] glass-strong rounded-[26px] p-4 flex flex-col gap-3 overflow-y-auto sk-scroll">
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        className="sk-pop-in relative z-10 w-full max-w-[440px] max-h-[90dvh] glass-strong rounded-[26px] p-4 flex flex-col gap-3 overflow-y-auto sk-scroll outline-none"
+      >
         {/* Header (matching ExportImageDialog.kt lines 147-170) */}
         <div className="flex items-center gap-2.5">
           <span className="size-[38px] rounded-[13px] bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] grid place-items-center shrink-0">

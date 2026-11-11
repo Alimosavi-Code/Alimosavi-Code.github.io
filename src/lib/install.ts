@@ -293,6 +293,30 @@ const installReadyPromise = new Promise<boolean>((resolve) => {
   notifyInstallReady = () => resolve(true);
 });
 
+/** Consume the captured `beforeinstallprompt` event (if any) and show the
+ *  native install dialog. Returns the user's outcome, "instructions" when the
+ *  dialog could not be opened, or null when no prompt is available. Shared by
+ *  both the immediate and the waited-for paths. */
+async function consumeDeferredPrompt(): Promise<"installed" | "dismissed" | "instructions" | null> {
+  /* Read through a local alias so TS keeps the nullable widened type. */
+  const promptEvent: typeof deferredPrompt = deferredPrompt;
+  if (!promptEvent) return null;
+  deferredPrompt = null;
+  try {
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    if (choice && choice.outcome === "accepted") {
+      installedFlag = true;
+      saveFlag({ installed: true, lastStandalone: Date.now() });
+      emitState();
+      return "installed";
+    }
+    return "dismissed";
+  } catch {
+    return "instructions";
+  }
+}
+
 /* ---------------- helpers ---------------- */
 
 function loadFlag(): { installed?: boolean; lastStandalone?: number; autoShown?: boolean } {
@@ -400,23 +424,8 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
   if (st.installed) return "installed";
 
   /* Preserve transient user activation on Desktop Edge/Chrome when deferredPrompt is already ready! */
-  if (deferredPrompt) {
-    const prompt = deferredPrompt;
-    deferredPrompt = null;
-    try {
-      await prompt.prompt();
-      const choice = await prompt.userChoice;
-      if (choice && choice.outcome === "accepted") {
-        installedFlag = true;
-        saveFlag({ installed: true, lastStandalone: Date.now() });
-        emitState();
-        return "installed";
-      }
-      return "dismissed";
-    } catch {
-      return "instructions";
-    }
-  }
+  const immediate = await consumeDeferredPrompt();
+  if (immediate) return immediate;
 
   if (isChromium()) {
     window.dispatchEvent(new CustomEvent("shiftkar-neo:install-waiting"));
@@ -426,22 +435,9 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
       new Promise<boolean>((r) => setTimeout(() => r(false), WAIT_FOR_PROMPT_MS)),
     ]);
     window.dispatchEvent(new CustomEvent("shiftkar-neo:install-wait-done"));
-    if (arrived && deferredPrompt) {
-      const prompt = deferredPrompt;
-      deferredPrompt = null;
-      try {
-        await prompt.prompt();
-        const choice = await prompt.userChoice;
-        if (choice && choice.outcome === "accepted") {
-          installedFlag = true;
-          saveFlag({ installed: true, lastStandalone: Date.now() });
-          emitState();
-          return "installed";
-        }
-        return "dismissed";
-      } catch {
-        return "instructions";
-      }
+    if (arrived) {
+      const waited = await consumeDeferredPrompt();
+      if (waited) return waited;
     }
   }
 

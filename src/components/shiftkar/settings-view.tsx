@@ -3,10 +3,12 @@
  * Settings view (`SettingsView`) — Symmetrical, height-matched 2-column Desktop Grid + Mobile Stack:
  *  - Row 1: `شیفت شما` + `حالت نمایش`
  *  - Row 2: `رنگ اصلی` + `نمای تقویم`
- *  - Row 3: `به‌روزرسانی و نصب برنامه` + `پشتیبان‌گیری و بازیابی یادداشت‌ها`
- *  - Row 4: `یادآور هوشمند شیفت و یادداشت‌ها` + `راهنمای شروع`
- *  - Row 5: `درباره ما` + `راه‌های ارتباط با ما` (2-column internal contact grid on desktop/tablet)
- *  - Row 6 (`lg:col-span-2`): `راهنما` (Full-width card with 2-column internal FAQ grid on desktop)
+ *  - Row 3: `به‌روزرسانی و نصب برنامه` + `یادآور هوشمند شیفت و یادداشت‌ها`
+ *  - Row 4: `درباره ما` + `راه‌های ارتباط با ما` (2-column internal contact grid on desktop/tablet;
+ *    the last contact row stretches full-width so no half-empty cell is left on desktop)
+ *  - Row 5 (`lg:col-span-2`): `راهنما` (Full-width card with 2-column internal FAQ grid on desktop;
+ *    every FAQ row keeps its separator in 2-column mode EXCEPT the last row of each column)
+ *  - Row 6 (last): `پشتیبان‌گیری و بازیابی` + `راهنمای شروع` (start guide is the final section)
  */
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -89,6 +91,16 @@ const CONTACTS = [
     href: "https://chat.whatsapp.com/5HolMMoVnojCdh8GjhSZo2",
   },
   {
+    id: "telegram",
+    fa: "تلگرام",
+    sub: "ارتباط از طریق تلگرام",
+    badgeBg: "rgba(56, 189, 248, 0.16)",
+    badgeBorder: "rgba(56, 189, 248, 0.36)",
+    badgeInk: "#38BDF8",
+    icon: <TelegramIcon size={20} />,
+    href: "https://t.me/h_mosavi_s",
+  },
+  {
     id: "eitaa",
     fa: "گروه ایتا",
     sub: "عضویت در گروه اطلاع‌رسانی و پشتیبانی ایتا",
@@ -98,16 +110,6 @@ const CONTACTS = [
     icon: <EitaaIcon size={20} />,
     href: "https://eitaa.com/joinchat/929104214C56d88e3e24",
   },
-  {
-    id: "telegram",
-    fa: "تلگرام",
-    sub: "ارتباط از طریق تلگرام",
-    badgeBg: "rgba(56, 189, 248, 0.16)",
-    badgeBorder: "rgba(56, 189, 248, 0.36)",
-    badgeInk: "#38BDF8",
-    icon: <TelegramIcon size={20} />,
-    href: "https://t.me/h_mosavi_s",
-  }
 ];
 
 const HELP_ITEMS: { title: string; body: string }[] = [
@@ -154,6 +156,10 @@ const HELP_ITEMS: { title: string; body: string }[] = [
   {
     title: "هماهنگ‌سازی زندهٔ تقویم و مناسبت‌ها",
     body: "برنامه دارای سامانهٔ هوشمند هماهنگ‌سازی از راه دور تقویم و مناسبت‌ها (calendar-sync.json) است تا در صورت اعلام تغییرات تقویم یا انتشار تقویم سال‌های آینده، تاریخ اعیاد و تعطیلات رسمی بدون نیاز به نصب مجدد به‌روز شوند.",
+  },
+  {
+    title: "میانبرهای صفحه‌کلید دسکتاپ و اسکرول افقی (Shift + Scroll)",
+    body: "در نسخهٔ دسکتاپ و وب می‌توانید بدون نیاز به ماوس، با کلیدهای میانبر در برنامه جابه‌جا شوید:\n• فلش راست و چپ (ArrowRight / ArrowLeft): رفتن به ماه قبل و ماه بعد در تقویم و جدول (یا سال قبل و بعد در تب لوحه).\n• فلش بالا و پایین (ArrowUp / ArrowDown) و PageUp / PageDown: اسکرول عمودی سریع در نمای جدولی و لوحه.\n• نگه‌داشتن کلید Shift + چرخ اسکرول ماوس (Shift + Scroll): اسکرول افقی نرم در جدول‌ها، لوحهٔ سالانه و نوارهای افقی در دسکتاپ.\n• کلید V: تغییر سریع بین نمای تقویم (شبکه‌ای) و نمای جدولی.\n• کلید F: باز و بسته کردن حالت تمام‌صفحه در نمای جدولی.\n• کلید T: پرش سریع به تاریخ امروز.\n• کلید N: باز کردن پنجرهٔ همهٔ یادداشت‌ها.\n• کلیدهای ۱ تا ۵: جابه‌جایی سریع بین ۵ تب اصلی برنامه (تقویم، سامانه‌ها، لوحه، مدیریت شیفت و تنظیمات).\n• کلید Esc: بستن پنجره‌های باز یا خروج از حالت تمام‌صفحه.",
   },
 ];
 
@@ -266,6 +272,9 @@ export function SettingsView({
     };
   }, []);
 
+  /* Backup badge: count every saved day record (overtime and/or swap), but the
+   * label below says «ثبت اضافه‌کاری/جابه‌جایی» so swap-only records are not
+   * mislabeled as «اضافه‌کاری». */
   const recordsCount = Object.values(dayRecords).filter(
     (r) => (r.overtimeHours ?? 0) > 0 || r.swapKind !== null,
   ).length;
@@ -317,7 +326,7 @@ export function SettingsView({
           );
         } else {
           toast.success(
-            `تقویم و مناسبت‌ها به نسخهٔ ${toPersianDigits(res.syncVersion)} بروزرسانی شد`,
+            `تقویم و مناسبت‌ها به نسخهٔ ${toPersianDigits(res.syncVersion)} به‌روزرسانی شد`,
           );
         }
       } else {
@@ -618,9 +627,9 @@ export function SettingsView({
         title="به‌روزرسانی و نصب برنامه"
         desc="نصب وب‌اپلیکیشن روی دستگاه، هماهنگ‌سازی آنلاین تقویم و مناسبت‌ها و دریافت مستقیم نسخه‌های نصبی."
       >
-        <div className="flex flex-col justify-between gap-2.5 flex-1">
+        <div className="flex flex-col gap-2.5 flex-1">
           {/* نسخهٔ نصب‌شده */}
-          <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-3">
+          <div className="flex-1 rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-3">
             <ShiftKarAppEmblem size={40} />
             <div className="min-w-0 flex-1">
               <div className="text-[11px] text-[var(--sk-text-muted)]">نسخهٔ فعلی برنامه</div>
@@ -637,7 +646,7 @@ export function SettingsView({
               haptic(hapticOn);
               onOpenInstall();
             }}
-            className={`w-full py-3 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+            className={`w-full flex-1 py-3 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
               installed
                 ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] border border-[var(--sk-rest)]/30"
                 : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
@@ -654,7 +663,7 @@ export function SettingsView({
             type="button"
             onClick={handleSyncCalendar}
             disabled={syncingCal}
-            className="w-full rounded-2xl bg-[var(--sk-surface)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99] disabled:opacity-60"
+            className="w-full flex-1 rounded-2xl bg-[var(--sk-surface)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99] disabled:opacity-60"
             style={{
               border: "1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent)",
             }}
@@ -666,10 +675,10 @@ export function SettingsView({
               <div className="text-[12.5px] font-bold">
                 {syncingCal
                   ? "در حال بررسی اصلاحیهٔ تقویم و مناسبت‌ها…"
-                  : "بروزرسانی تقویم و مناسبت‌ها"}
+                  : "به‌روزرسانی تقویم و مناسبت‌ها"}
               </div>
               <div className="text-[10.5px] text-[var(--sk-text-muted)] mt-0.5 truncate">
-                نسخهٔ داده تقویم: {toPersianDigits(calStatus.syncVersion)} • آخرین بروزرسانی:{" "}
+                نسخهٔ داده تقویم: {toPersianDigits(calStatus.syncVersion)} • آخرین به‌روزرسانی:{" "}
                 {calStatus.updatedAt}
               </div>
             </div>
@@ -684,7 +693,7 @@ export function SettingsView({
             href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99]"
+            className="w-full flex-1 rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-2.5 text-start active:scale-[0.99]"
           >
             <span className="size-[34px] rounded-[11px] bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] grid place-items-center shrink-0">
               <DownloadIcon size={16} />
@@ -700,113 +709,13 @@ export function SettingsView({
         </div>
       </Section>
 
-      {/* ============ Row 3 Left: 6. پشتیبان‌گیری و بازیابی یادداشت‌ها ============ */}
-      <Section
-        icon={<NotesIcon size={16} />}
-        title="پشتیبان‌گیری و بازیابی یادداشت‌ها"
-        desc="از یادداشت‌های شخصی، اضافه‌کاری‌ها، الگوهای سفارشی و فهرست همکاران فایل پشتیبان بسازید (کاملاً سازگار با اندروید و دسکتاپ)."
-      >
-        <div className="flex flex-col justify-between gap-2.5 flex-1">
-          <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3 py-3 space-y-2">
-            <div className="text-[11.5px] font-bold text-[var(--sk-text-muted)]">
-              اطلاعات آمادهٔ پشتیبان‌گیری در این دستگاه:
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  `${toPersianDigits(notesCount)} یادداشت`,
-                  `${toPersianDigits(recordsCount)} اضافه‌کاری`,
-                  `${toPersianDigits(employees.length)} همکار`,
-                ] as const
-              ).map((badgeText) => (
-                <div
-                  key={badgeText}
-                  className="rounded-xl bg-[var(--sk-primary-soft)] py-2 px-1.5 text-center text-[11px] font-black text-[var(--sk-primary)] truncate"
-                  style={{
-                    border: "1px solid color-mix(in srgb, var(--sk-primary) 35%, transparent)",
-                  }}
-                >
-                  {badgeText}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={doExport}
-              className="py-3 rounded-2xl bg-[var(--sk-primary)] text-white text-[12.5px] font-bold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform"
-            >
-              <DownloadIcon size={16} />
-              <span>ذخیرهٔ پشتیبان</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="py-3 rounded-2xl bg-[var(--sk-surface)] text-[var(--sk-primary)] text-[12.5px] font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
-              style={{
-                border: "1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent)",
-              }}
-            >
-              <RefreshIcon size={16} />
-              <span>بازیابی از فایل</span>
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="*/*,.json,application/json,text/plain"
-              onChange={onFile}
-              className="hidden"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={doCopyBackup}
-              className="py-2.5 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11.5px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
-            >
-              کپی متن پشتیبان
-            </button>
-            <button
-              type="button"
-              onClick={() => setPasteMode((v) => !v)}
-              className="py-2.5 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11.5px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
-            >
-              {pasteMode ? "بستن کادر متن" : "بازیابی با الصاق متن"}
-            </button>
-          </div>
-
-          {pasteMode && (
-            <div className="space-y-2 pt-1">
-              <textarea
-                value={pasteText}
-                onChange={(e) => setPasteText(e.target.value)}
-                rows={4}
-                dir="ltr"
-                placeholder={"{\n  \"app\": \"ShiftKar\",\n  \"notes\": [...]\n}"}
-                className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border)] p-3 text-[11.5px] font-mono focus:outline-none focus:border-[var(--sk-primary)]"
-              />
-              <button
-                type="button"
-                onClick={doRestoreFromText}
-                className="w-full py-2.5 rounded-xl bg-[var(--sk-primary)] text-white text-[12px] font-bold"
-              >
-                اعمال و بازیابی متن پشتیبان
-              </button>
-            </div>
-          )}
-        </div>
-      </Section>
-
       {/* ============ Row 4 Right: 7. یادآور هوشمند شیفت و یادداشت‌ها ============ */}
       <Section
         icon={<CalendarIcon size={16} />}
         title="یادآور هوشمند شیفت و یادداشت‌ها"
         desc="اعلان خودکار پیش از شروع نوبت صبح‌کار و شب‌کار و یادآوری روزهایی که یادداشت شخصی دارند."
       >
-        <div className="flex flex-col justify-between gap-2.5 flex-1">
+        <div className="flex flex-col gap-2.5 flex-1">
           {/* Shift Reminder Toggle Row */}
           <button
             type="button"
@@ -816,7 +725,7 @@ export function SettingsView({
               if (next) requestBrowserNotifPerm();
               set({ shiftReminderOn: next });
             }}
-            className={`w-full rounded-2xl bg-[var(--sk-surface)] px-3.5 py-3 flex items-center justify-between gap-3 text-start border transition-all ${
+            className={`w-full flex-1 rounded-2xl bg-[var(--sk-surface)] px-3.5 py-3 flex items-center justify-between gap-3 text-start border transition-all ${
               shiftReminderOn
                 ? "border-[var(--sk-primary)]"
                 : "border-[var(--sk-border-soft)]"
@@ -920,7 +829,7 @@ export function SettingsView({
               if (next) requestBrowserNotifPerm();
               set({ noteReminderOn: next });
             }}
-            className={`w-full rounded-2xl bg-[var(--sk-surface)] px-3.5 py-3 flex items-center justify-between gap-3 text-start border transition-all ${
+            className={`w-full flex-1 rounded-2xl bg-[var(--sk-surface)] px-3.5 py-3 flex items-center justify-between gap-3 text-start border transition-all ${
               noteReminderOn
                 ? "border-[var(--sk-primary)]"
                 : "border-[var(--sk-border-soft)]"
@@ -941,40 +850,6 @@ export function SettingsView({
             >
               {noteReminderOn ? "روشن" : "خاموش"}
             </span>
-          </button>
-        </div>
-      </Section>
-
-      {/* ============ Row 4 Left: 8. راهنمای شروع ============ */}
-      <Section
-        icon={<RefreshIcon size={16} />}
-        title="راهنمای شروع"
-        desc="تور راهنمای برنامه را دوباره ببینید یا تنظیمات اولیهٔ نرم‌افزار را از نو شروع کنید."
-      >
-        <div className="flex flex-col justify-between gap-2.5 flex-1">
-          <button
-            type="button"
-            onClick={() => {
-              haptic(hapticOn);
-              toast("تور راهنما در صفحهٔ تقویم اجرا می‌شود");
-              onRestartTour();
-            }}
-            className="w-full py-3.5 px-4 rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--sk-primary-soft)]/50 transition-colors"
-          >
-            <InfoIcon size={16} className="text-[var(--sk-primary)]" />
-            <span>اجرای دوبارهٔ تور راهنمای برنامه</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              haptic(hapticOn);
-              toast("راهنمای خوش‌آمدگویی نمایش داده می‌شود؛ تنظیمات شما حفظ می‌شود");
-              onRestartOnboarding();
-            }}
-            className="w-full py-3.5 px-4 rounded-2xl border-2 border-[var(--sk-holiday)]/35 text-[var(--sk-holiday)] text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--sk-holiday-soft)] transition-colors"
-          >
-            <SparkIcon size={15} />
-            <span>راه‌اندازی مجدد تنظیمات اولیهٔ نرم‌افزار</span>
           </button>
         </div>
       </Section>
@@ -1021,14 +896,14 @@ export function SettingsView({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 items-stretch" role="list">
           {CONTACTS.map((c, idx) => (
             <a
-              key={c.id ?? idx}
+              key={c.id}
               href={c.href}
               target="_blank"
               rel="noopener noreferrer"
               role="listitem"
               aria-label={c.fa}
               className={`group rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)] px-3 py-2.5 flex items-center gap-2.5 transition-all active:scale-[0.99] ${
-                idx === CONTACTS.length - 1 ? "sm:col-span-2" : ""
+                idx === CONTACTS.length - 1 && CONTACTS.length % 2 === 1 ? "sm:col-span-2" : ""
               }`}
             >
               <span
@@ -1067,10 +942,14 @@ export function SettingsView({
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-6 divide-y lg:divide-y-0 divide-[var(--sk-border-soft)]">
           {HELP_ITEMS.map((h, idx) => {
             const open = openFaq === idx;
+            /* Last TWO items = the bottom row of the 2-column desktop grid (one at the
+             * bottom of each column) — they get no bottom separator, exactly like the
+             * single-column mobile list where divide-y never underlines the last item. */
+            const lastRow = idx >= HELP_ITEMS.length - 2;
             return (
               <div
                 key={h.title}
-                className="lg:border-b lg:border-[var(--sk-border-soft)] lg:last:border-b-0"
+                className={lastRow ? "lg:border-b-0" : "lg:border-b lg:border-[var(--sk-border-soft)]"}
               >
                 <button
                   type="button"
@@ -1096,6 +975,173 @@ export function SettingsView({
               </div>
             );
           })}
+        </div>
+      </Section>
+
+      {/* ============ Row 6 Right (پیش از آخر): پشتیبان‌گیری و بازیابی یادداشت‌ها ============ */}
+      <Section
+        icon={<NotesIcon size={16} />}
+        title="پشتیبان‌گیری و بازیابی یادداشت‌ها"
+        desc="از یادداشت‌های شخصی، اضافه‌کاری‌ها، الگوهای سفارشی و فهرست همکاران فایل پشتیبان بسازید (کاملاً سازگار با اندروید و دسکتاپ)."
+      >
+        <div className="flex flex-col gap-2.5 flex-1">
+          <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3 py-3 space-y-2">
+            <div className="text-[11.5px] font-bold text-[var(--sk-text-muted)]">
+              اطلاعات آمادهٔ پشتیبان‌گیری در این دستگاه:
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  `${toPersianDigits(notesCount)} یادداشت`,
+                  `${toPersianDigits(recordsCount)} ثبت اضافه‌کاری/جابه‌جایی`,
+                  `${toPersianDigits(employees.length)} همکار`,
+                ] as const
+              ).map((badgeText) => (
+                <div
+                  key={badgeText}
+                  className="rounded-xl bg-[var(--sk-primary-soft)] py-2 px-1.5 text-center text-[11px] font-black text-[var(--sk-primary)] truncate"
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--sk-primary) 35%, transparent)",
+                  }}
+                >
+                  {badgeText}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={doExport}
+              className="py-3 rounded-2xl bg-[var(--sk-primary)] text-white text-[12.5px] font-bold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform"
+            >
+              <DownloadIcon size={16} />
+              <span>ذخیرهٔ پشتیبان</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="py-3 rounded-2xl bg-[var(--sk-surface)] text-[var(--sk-primary)] text-[12.5px] font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+              style={{
+                border: "1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent)",
+              }}
+            >
+              <RefreshIcon size={16} />
+              <span>بازیابی از فایل</span>
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="*/*,.json,application/json,text/plain"
+              onChange={onFile}
+              className="hidden"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={doCopyBackup}
+              className="py-2.5 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11.5px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
+            >
+              کپی متن پشتیبان
+            </button>
+            <button
+              type="button"
+              onClick={() => setPasteMode((v) => !v)}
+              className="py-2.5 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11.5px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
+            >
+              {pasteMode ? "بستن کادر متن" : "بازیابی با الصاق متن"}
+            </button>
+          </div>
+
+          {pasteMode && (
+            <div className="space-y-2 pt-1">
+              <textarea
+                value={pasteText}
+                onChange={(e) => setPasteText(e.target.value)}
+                rows={4}
+                dir="ltr"
+                placeholder={"{\n  \"app\": \"ShiftKar\",\n  \"notes\": [...]\n}"}
+                className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border)] p-3 text-[11.5px] font-mono focus:outline-none focus:border-[var(--sk-primary)]"
+              />
+              <button
+                type="button"
+                onClick={doRestoreFromText}
+                className="w-full py-2.5 rounded-xl bg-[var(--sk-primary)] text-white text-[12px] font-bold"
+              >
+                اعمال و بازیابی متن پشتیبان
+              </button>
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* ============ Row 6 Left (آخرین بخش): راهنمای شروع ============ */}
+      <Section
+        icon={<RefreshIcon size={16} />}
+        title="راهنمای شروع"
+        desc="تور راهنمای برنامه را دوباره ببینید یا تنظیمات اولیهٔ نرم‌افزار را از نو شروع کنید."
+      >
+        {/* Two action rows (same visual language as the sync/GitHub rows above),
+            vertically centered in the leftover height — no more stretched
+            full-width pill buttons with a huge dead gap between them. */}
+        <div className="flex flex-col justify-center gap-3 flex-1">
+          <button
+            type="button"
+            onClick={() => {
+              haptic(hapticOn);
+              toast("تور راهنما در صفحهٔ تقویم اجرا می‌شود");
+              onRestartTour();
+            }}
+            className="w-full rounded-2xl bg-[var(--sk-surface)] px-3.5 py-3 flex items-center gap-3 text-start active:scale-[0.99] transition-transform"
+            style={{
+              border: "1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent)",
+            }}
+          >
+            <span className="size-10 rounded-[12px] bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] grid place-items-center shrink-0">
+              <InfoIcon size={19} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] font-bold">اجرای دوبارهٔ تور راهنمای برنامه</span>
+              <span className="block text-[11px] text-[var(--sk-text-muted)] mt-0.5">
+                مرور تعاملی امکانات اصلی روی صفحهٔ تقویم
+              </span>
+            </span>
+            <ChevronDown
+              size={16}
+              className="text-[var(--sk-text-faint)] shrink-0 -rotate-90"
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              haptic(hapticOn);
+              toast("راهنمای خوش‌آمدگویی نمایش داده می‌شود؛ تنظیمات شما حفظ می‌شود");
+              onRestartOnboarding();
+            }}
+            className="w-full rounded-2xl bg-[var(--sk-surface)] px-3.5 py-3 flex items-center gap-3 text-start active:scale-[0.99] transition-transform"
+            style={{
+              border: "1px solid color-mix(in srgb, var(--sk-holiday) 38%, transparent)",
+            }}
+          >
+            <span className="size-10 rounded-[12px] bg-[var(--sk-holiday-soft)] text-[var(--sk-holiday)] grid place-items-center shrink-0">
+              <SparkIcon size={18} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[13px] font-bold text-[var(--sk-holiday)]">
+                راه‌اندازی مجدد تنظیمات اولیهٔ نرم‌افزار
+              </span>
+              <span className="block text-[11px] text-[var(--sk-text-muted)] mt-0.5">
+                اجرای دوبارهٔ راهنمای ۶ مرحله‌ای خوش‌آمدگویی؛ داده‌ها حفظ می‌شوند
+              </span>
+            </span>
+            <ChevronDown
+              size={16}
+              className="text-[var(--sk-text-faint)] shrink-0 -rotate-90"
+            />
+          </button>
         </div>
       </Section>
       </div>

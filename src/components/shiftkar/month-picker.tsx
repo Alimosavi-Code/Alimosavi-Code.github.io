@@ -61,7 +61,11 @@ export function MonthPicker({
       const maxD = jalaaliMonthLength(viewYear, viewMonth);
       setDay(Math.max(1, Math.min(maxD, today.jd)));
     }
-  }, [open, viewYear, viewMonth, today.jd]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-sync only when the sheet (re)opens
+  }, [open]);
+
+  /* NOTE: `safeDay` below clamps the picked day to the selected month's length
+   * during render, so no extra effect is needed when browsing months. */
 
   const maxDaysInMonth = jalaaliMonthLength(year, month);
   const safeDay = Math.max(1, Math.min(maxDaysInMonth, day));
@@ -79,8 +83,11 @@ export function MonthPicker({
 
   const pickMonth = (m: number) => {
     haptic(hapticOn);
+    /* Only update the LOCAL selection — the global calendar view is committed
+     * by the explicit action buttons («نمایش این ماه» / «جزئیات این روز»), so
+     * browsing months inside the sheet and closing it never jumps the
+     * underlying calendar or silently resets the picked day. */
     setMonth(m);
-    set({ viewYear: year, viewMonth: m });
   };
 
   return (

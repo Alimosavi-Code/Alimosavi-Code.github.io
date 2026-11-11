@@ -18,6 +18,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useFocusTrap } from "@/lib/use-focus-trap";
+import { isTopModal, popModalStack, pushModalStack } from "@/lib/modal-stack";
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon } from "./icons";
 
 let scrollLocks = 0;
@@ -88,22 +90,46 @@ function SheetView({
   const sheetRef = useRef<HTMLDivElement>(null);
   const internalBodyRef = useRef<HTMLDivElement>(null);
   const bodyRef = bodyRefExternal ?? internalBodyRef;
+  /* This sheet's slot in the global modal stack — used so a single Esc press
+   * only closes the TOPMOST layer (e.g. ExportImageDialog over this sheet). */
+  const modalIdRef = useRef<symbol | null>(null);
 
   const startY = useRef<number | null>(null);
   const startedOnChrome = useRef(false);
   const dragging = useRef(false);
   const dragMode = useRef<"dismiss" | "collapse" | "expand" | null>(null);
+  /* Timestamp of the last collapse-to-peek: collapsing changes the body height
+   * and fires a scroll event — if the body was sitting at its very end, that
+   * scroll burst would instantly re-expand to fullscreen again (making Esc /
+   * the collapse button look like they do nothing). onBodyScroll ignores the
+   * burst for a short window after collapsing. */
+  const lastCollapseAt = useRef(0);
 
   const closing = !open;
+
+  /* Keep Tab focus inside the open sheet (aria-modal parity for keyboards). */
+  useFocusTrap(sheetRef, open);
 
   useEffect(() => {
     if (open) setFullscreen(false);
   }, [open]);
 
+  /* Register in the global modal stack once per open (NOT on every fullscreen
+   * toggle) so stacking order stays stable while a dialog is open on top. */
+  useEffect(() => {
+    if (!open) return;
+    const id = pushModalStack();
+    modalIdRef.current = id;
+    return () => {
+      popModalStack(id);
+      modalIdRef.current = null;
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && isTopModal(modalIdRef.current)) {
         if (fullscreen) setFullscreen(false);
         else onClose();
       }
@@ -121,6 +147,7 @@ function SheetView({
   const setFs = useCallback(
     (on: boolean) => {
       if (!expandable) return;
+      if (!on) lastCollapseAt.current = Date.now();
       setFullscreen(on);
     },
     [expandable],
@@ -130,6 +157,7 @@ function SheetView({
   const onBodyScroll = useCallback(() => {
     const b = bodyRef.current;
     if (!b || fullscreen || !expandable) return;
+    if (Date.now() - lastCollapseAt.current < 450) return; /* post-collapse scroll burst */
     if (b.scrollHeight > b.clientHeight + 4 && b.scrollTop + b.clientHeight >= b.scrollHeight - 8) {
       setFs(true);
     }
@@ -233,7 +261,8 @@ function SheetView({
     >
       <div
         ref={sheetRef}
-        className={`sk-sheet ${fullscreen ? "is-fullscreen" : ""} ${closing ? "is-closing" : ""}`}
+        tabIndex={-1}
+        className={`sk-sheet ${fullscreen ? "is-fullscreen" : ""} ${closing ? "is-closing" : ""} outline-none`}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}

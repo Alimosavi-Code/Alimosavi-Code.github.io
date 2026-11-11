@@ -330,6 +330,14 @@ export function AppShell() {
 
 /** Unified Orbital Splash Screen matching Android MainActivity.kt SplashArt */
 function SplashArt() {
+  /* Pattern-dependent splash content (the عصرکار pill) must wait for mount:
+   * the prerendered HTML is built with the DEFAULT pattern while the client
+   * rehydrates the active pattern synchronously before first render — reading
+   * it here directly caused React hydration error #418 on reload. */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const showEveningPill = mounted && (getActivePattern().eveningCount ?? 0) > 0;
+
   return (
     <div className="flex flex-col items-center select-none px-6">
       <div className="relative grid place-items-center mb-5 sk-splash-orb">
@@ -351,7 +359,7 @@ function SplashArt() {
           <SunIcon size={12} />
           صبح‌کار
         </span>
-        {(getActivePattern().eveningCount ?? 0) > 0 && (
+        {showEveningPill && (
           <span className="sk-splash-p2 h-7 px-3 rounded-full sk-grad-evening text-[10.5px] font-black inline-flex items-center gap-1.5 border border-[var(--sk-evening-ink)]/30">
             <SunsetIcon size={12} />
             عصرکار
