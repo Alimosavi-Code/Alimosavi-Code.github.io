@@ -417,7 +417,8 @@ export function SettingsView({
   };
 
   return (
-    <div className="h-full overflow-y-auto sk-scroll overscroll-contain flex flex-col lg:grid lg:grid-cols-2 lg:items-stretch gap-3.5 md:gap-4 px-4 md:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+116px)]">
+    <div className="h-full overflow-y-auto sk-scroll overscroll-contain px-4 md:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+116px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch gap-3.5 md:gap-4">
       {/* Header */}
       <header className="text-center pt-1 pb-1 lg:col-span-2">
         <h1 className="text-[22px] md:text-[24px] font-black">تنظیمات</h1>
@@ -1101,6 +1102,7 @@ export function SettingsView({
           })}
         </div>
       </Section>
+      </div>
     </div>
   );
 }
@@ -1119,7 +1121,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className={`glass rounded-3xl p-4 md:p-5 shrink-0 lg:h-full flex flex-col overflow-hidden ${className}`}>
+    <section className={`glass rounded-3xl p-4 md:p-5 flex flex-col ${className}`}>
       <h2 className="flex items-center gap-2 text-[14.5px] font-extrabold text-[var(--sk-primary)] shrink-0">
         {icon}
         {title}

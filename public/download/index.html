@@ -1368,6 +1368,10 @@
                 <svg width="18" height="18"><use href="#ico-download"/></svg>
                 <span id="detectedBtnText">دانلود بسته نصبی لینوکس (DEB)</span>
               </a>
+              <a id="detectedSecondaryBtn" href="#" class="btn-cta-share" style="display:none">
+                <svg width="16" height="16"><use href="#ico-download"/></svg>
+                <span id="detectedSecondaryBtnText"></span>
+              </a>
               <button type="button" class="btn-cta-share" id="detectedShareBtn" title="اشتراک‌گذاری لینک مستقیم">
                 <svg width="15" height="15"><use href="#ico-share"/></svg>
                 <span>اشتراک‌گذاری لینک</span>
@@ -1376,7 +1380,7 @@
           </div>
 
           <!-- Complete Matrix of All Formats & Architectures for the Currently Selected OS -->
-          <div class="smart-variants-wrap">
+          <div class="smart-variants-wrap" id="smartVariantsWrap">
             <div class="smart-variants-head">
               <span class="smart-variants-title" id="smartVariantsTitle">همه پکیج‌ها و معماری‌های این پلتفرم (انتخاب مستقیم فرمت یا معماری):</span>
             </div>
@@ -1654,20 +1658,7 @@
                   </div>
                 </div>
 
-                <div class="dl-row">
-                  <div class="dl-info">
-                    <div class="dl-label">
-                      <span>صفحه رسمی Releases گیت‌هاب</span>
-                      <span class="dl-arch">GitHub</span>
-                    </div>
-                    <div class="dl-meta">مشاهده تغییرات نسخه‌ها و آرشیو فایل‌های نصبی در گیت‌هاب</div>
-                  </div>
-                  <div class="dl-btns">
-                    <a class="btn-dl" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest" target="_blank" rel="noopener noreferrer" style="background:rgba(255,255,255,0.09);border:1px solid var(--sk-border);color:var(--sk-text)">
-                      <span>صفحه Releases</span>
-                    </a>
-                  </div>
-                </div>
+
               </div>
             </article>
 
@@ -2273,6 +2264,63 @@
         var primaryText = IS_ARM_ARCH
           ? "دانلود بسته DEB لینوکس (ARM64)"
           : "دانلود بسته نصبی لینوکس (DEB x64)";
+        var allLinux = [
+          {
+            id: "lin-x64-deb",
+            name: "بسته نصبی DEB (اوبونتو/دبیان)",
+            arch: "x64",
+            isArm: false,
+            sub: "Ubuntu, Debian, Linux Mint, Pop!_OS",
+            url: u["lin-x64-deb"],
+            btn: "دانلود DEB"
+          },
+          {
+            id: "lin-x64-rpm",
+            name: "بسته نصبی RPM (فدورا/ردهت)",
+            arch: "x64",
+            isArm: false,
+            sub: "Fedora, RHEL, openSUSE, AlmaLinux",
+            url: u["lin-x64-rpm"],
+            btn: "دانلود RPM"
+          },
+          {
+            id: "lin-x64-appimage",
+            name: "نسخه بدون نصب AppImage",
+            arch: "x64",
+            isArm: false,
+            sub: "اجرای مستقیم روی تمام توزیع‌ها (Arch و ...)",
+            url: u["lin-x64-appimage"],
+            btn: "AppImage"
+          },
+          {
+            id: "lin-arm64-deb",
+            name: "بسته نصبی DEB معماری آرم",
+            arch: "ARM64",
+            isArm: true,
+            sub: "Ubuntu / Debian ARM64 (AArch64)",
+            url: u["lin-arm64-deb"],
+            btn: "DEB ARM64"
+          },
+          {
+            id: "lin-arm64-rpm",
+            name: "بسته نصبی RPM معماری آرم",
+            arch: "ARM64",
+            isArm: true,
+            sub: "Fedora / RHEL / openSUSE ARM64",
+            url: u["lin-arm64-rpm"],
+            btn: "RPM ARM64"
+          },
+          {
+            id: "lin-arm64-appimage",
+            name: "نسخه AppImage معماری آرم",
+            arch: "ARM64",
+            isArm: true,
+            sub: "پرتابل بدون نصب مخصوص لینوکس ARM64",
+            url: u["lin-arm64-appimage"],
+            btn: "AppImage ARM"
+          }
+        ];
+        var primaryId = IS_ARM_ARCH ? "lin-arm64-deb" : "lin-x64-deb";
         return {
           icon: "#ico-linux",
           tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: لینوکس دسکتاپ" : "نسخه لینوکس دسکتاپ",
@@ -2282,65 +2330,12 @@
           sub: "پشتیبانی کامل از اوبونتو، دبیان، فدورا، ردهت، آرچ و کلیه توزیع‌ها در دو معماری x64 و ARM64",
           primaryUrl: primaryUrl,
           primaryText: primaryText,
+          secondaryUrl: "",
+          secondaryText: "",
           shareLabel: "شیفت‌کار برای لینوکس دسکتاپ (نسخه " + LIVE_STATE.desktop.version + ")",
           cardId: "card-linux",
-          variantsTitle: "همه فرمت‌ها و معماری‌های لینوکس (DEB، RPM و AppImage):",
-          variants: [
-            {
-              name: "بسته نصبی DEB (اوبونتو/دبیان)",
-              arch: "x64",
-              isArm: false,
-              sub: "Ubuntu, Debian, Linux Mint, Pop!_OS",
-              url: u["lin-x64-deb"],
-              btn: "دانلود DEB",
-              rec: !IS_ARM_ARCH
-            },
-            {
-              name: "بسته نصبی RPM (فدورا/ردهت)",
-              arch: "x64",
-              isArm: false,
-              sub: "Fedora, RHEL, openSUSE, AlmaLinux",
-              url: u["lin-x64-rpm"],
-              btn: "دانلود RPM",
-              rec: false
-            },
-            {
-              name: "نسخه بدون نصب AppImage",
-              arch: "x64",
-              isArm: false,
-              sub: "اجرای مستقیم روی تمام توزیع‌ها (Arch و ...)",
-              url: u["lin-x64-appimage"],
-              btn: "AppImage",
-              rec: false
-            },
-            {
-              name: "بسته نصبی DEB معماری آرم",
-              arch: "ARM64",
-              isArm: true,
-              sub: "Ubuntu / Debian ARM64 (AArch64)",
-              url: u["lin-arm64-deb"],
-              btn: "DEB ARM64",
-              rec: IS_ARM_ARCH
-            },
-            {
-              name: "بسته نصبی RPM معماری آرم",
-              arch: "ARM64",
-              isArm: true,
-              sub: "Fedora / RHEL / openSUSE ARM64",
-              url: u["lin-arm64-rpm"],
-              btn: "RPM ARM64",
-              rec: false
-            },
-            {
-              name: "نسخه AppImage معماری آرم",
-              arch: "ARM64",
-              isArm: true,
-              sub: "پرتابل بدون نصب مخصوص لینوکس ARM64",
-              url: u["lin-arm64-appimage"],
-              btn: "AppImage ARM",
-              rec: false
-            }
-          ]
+          variantsTitle: "سایر فرمت‌ها و معماری‌های لینوکس (RPM، AppImage و ARM64):",
+          variants: allLinux.filter(function(item) { return item.id !== primaryId; })
         };
       }
 
@@ -2349,6 +2344,63 @@
         var winPrimaryText = IS_ARM_ARCH
           ? "دانلود نصبی ویندوز ARM64 (EXE)"
           : "دانلود مستقیم نصبی ویندوز (Setup EXE)";
+        var allWin = [
+          {
+            id: "win-x64-exe",
+            name: "فایل نصبی استاندارد (Setup EXE)",
+            arch: "x64",
+            isArm: false,
+            sub: "پیشنهادی برای ویندوز ۱۰ و ۱۱ (۶۴ بیتی)",
+            url: u["win-x64-exe"],
+            btn: "دانلود EXE"
+          },
+          {
+            id: "win-x64-msi",
+            name: "بسته نصبی سازمانی (MSI)",
+            arch: "x64",
+            isArm: false,
+            sub: "نصب استاندارد Windows Installer",
+            url: u["win-x64-msi"],
+            btn: "دانلود MSI"
+          },
+          {
+            id: "win-x64-zip",
+            name: "نسخه بدون نیاز به نصب (Portable)",
+            arch: "x64",
+            isArm: false,
+            sub: "فایل فشرده ZIP بدون نیاز به نصب",
+            url: u["win-x64-zip"],
+            btn: "دانلود ZIP"
+          },
+          {
+            id: "win-arm64-exe",
+            name: "فایل نصبی ویندوز آرم (Setup EXE)",
+            arch: "ARM64",
+            isArm: true,
+            sub: "مخصوص سرفیس و پردازنده‌های ARM64",
+            url: u["win-arm64-exe"],
+            btn: "EXE ARM64"
+          },
+          {
+            id: "win-arm64-msi",
+            name: "بسته نصبی MSI ویندوز آرم",
+            arch: "ARM64",
+            isArm: true,
+            sub: "پکیج MSI مخصوص ویندوز ARM64",
+            url: u["win-arm64-msi"],
+            btn: "MSI ARM64"
+          },
+          {
+            id: "win-arm64-zip",
+            name: "نسخه بدون نصب ویندوز آرم (ZIP)",
+            arch: "ARM64",
+            isArm: true,
+            sub: "پرتابل بدون نصب مخصوص ARM64",
+            url: u["win-arm64-zip"],
+            btn: "ZIP ARM64"
+          }
+        ];
+        var winPrimaryId = IS_ARM_ARCH ? "win-arm64-exe" : "win-x64-exe";
         return {
           icon: "#ico-windows",
           tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: ویندوز ۱۱ / ۱۰" : "نسخه ویندوز ۱۱ / ۱۰",
@@ -2358,65 +2410,12 @@
           sub: "فایل نصبی استاندارد EXE، بسته سازمانی MSI و نسخه بدون نصب Portable برای پردازنده‌های x64 و ARM64",
           primaryUrl: winPrimaryUrl,
           primaryText: winPrimaryText,
+          secondaryUrl: "",
+          secondaryText: "",
           shareLabel: "شیفت‌کار برای ویندوز ۱۱ و ۱۰ (نسخه " + LIVE_STATE.desktop.version + ")",
           cardId: "card-windows",
-          variantsTitle: "همه فرمت‌ها و معماری‌های ویندوز (x64 و ARM64):",
-          variants: [
-            {
-              name: "فایل نصبی استاندارد (Setup EXE)",
-              arch: "x64",
-              isArm: false,
-              sub: "پیشنهادی برای ویندوز ۱۰ و ۱۱ (۶۴ بیتی)",
-              url: u["win-x64-exe"],
-              btn: "دانلود EXE",
-              rec: !IS_ARM_ARCH
-            },
-            {
-              name: "بسته نصبی سازمانی (MSI)",
-              arch: "x64",
-              isArm: false,
-              sub: "نصب استاندارد Windows Installer",
-              url: u["win-x64-msi"],
-              btn: "دانلود MSI",
-              rec: false
-            },
-            {
-              name: "نسخه بدون نیاز به نصب (Portable)",
-              arch: "x64",
-              isArm: false,
-              sub: "فایل فشرده ZIP بدون نیاز به نصب",
-              url: u["win-x64-zip"],
-              btn: "دانلود ZIP",
-              rec: false
-            },
-            {
-              name: "فایل نصبی ویندوز آرم (Setup EXE)",
-              arch: "ARM64",
-              isArm: true,
-              sub: "مخصوص سرفیس و پردازنده‌های ARM64",
-              url: u["win-arm64-exe"],
-              btn: "EXE ARM64",
-              rec: IS_ARM_ARCH
-            },
-            {
-              name: "بسته نصبی MSI ویندوز آرم",
-              arch: "ARM64",
-              isArm: true,
-              sub: "پکیج MSI مخصوص ویندوز ARM64",
-              url: u["win-arm64-msi"],
-              btn: "MSI ARM64",
-              rec: false
-            },
-            {
-              name: "نسخه بدون نصب ویندوز آرم (ZIP)",
-              arch: "ARM64",
-              isArm: true,
-              sub: "پرتابل بدون نصب مخصوص ARM64",
-              url: u["win-arm64-zip"],
-              btn: "ZIP ARM64",
-              rec: false
-            }
-          ]
+          variantsTitle: "سایر فرمت‌ها و معماری‌های ویندوز (MSI، Portable و ARM64):",
+          variants: allWin.filter(function(item) { return item.id !== winPrimaryId; })
         };
       }
 
@@ -2429,39 +2428,13 @@
           title: "شیفت‌کار برای مک (macOS Apple Silicon & Intel DMG)",
           sub: "پکیج نصبی DMG برای مک‌های سری M اپل (ARM64) و مک‌های پردازنده اینتل (x64)",
           primaryUrl: u["mac-arm64-dmg"],
-          primaryText: "دانلود نسخه مک اپل سیلیکون (DMG)",
+          primaryText: "دانلود مک اپل سیلیکون (ARM64 DMG)",
+          secondaryUrl: u["mac-x64-dmg"],
+          secondaryText: "نسخه مک اینتل (Intel x64 DMG)",
           shareLabel: "شیفت‌کار برای مک (macOS نسخه " + LIVE_STATE.desktop.version + ")",
           cardId: "card-mac",
-          variantsTitle: "همه نسخه‌های مک (Apple Silicon ARM64 و Intel x64):",
-          variants: [
-            {
-              name: "مک اپل سیلیکون (M1 / M2 / M3 / M4)",
-              arch: "ARM64 DMG",
-              isArm: true,
-              sub: "مخصوص مک‌های دارای تراشه سری M اپل",
-              url: u["mac-arm64-dmg"],
-              btn: "دانلود ARM64",
-              rec: true
-            },
-            {
-              name: "مک با پردازنده اینتل (Intel Mac)",
-              arch: "x64 DMG",
-              isArm: false,
-              sub: "مخصوص مک‌های دارای پردازنده اینتل",
-              url: u["mac-x64-dmg"],
-              btn: "دانلود Intel",
-              rec: false
-            },
-            {
-              name: "نسخه تحت وب مک (PWA)",
-              arch: "Safari / Chrome",
-              isArm: false,
-              sub: "اجرای مستقیم در مرورگر بدون نصب DMG",
-              url: "https://alimosavi-code.github.io",
-              btn: "ورود به وب‌اپ",
-              rec: false
-            }
-          ]
+          variantsTitle: "",
+          variants: []
         };
       }
 
@@ -2472,45 +2445,19 @@
           arch: "iOS / Android / Desktop PWA",
           verText: "نسخه " + pwaVerFa,
           title: "وب‌اپلیکیشن شیفت‌کار (پیشنهاد ویژه آیفون و آیپد)",
-          sub: "اجرای آنی در مرورگر سافاری و کروم با قابلیت افزودن به صفحهٔ اصلی گوشی (Add to Home Screen) و کارکرد ۱۰۰٪ آفلاین",
+          sub: "اجرای آنی در مرورگر سافاری و کروم با قابلیت افزودن به صفحهٔ اصلی گوشی (Share ← Add to Home Screen) و کارکرد ۱۰۰٪ آفلاین",
           primaryUrl: "https://alimosavi-code.github.io",
           primaryText: "ورود و نصب وب‌اپلیکیشن (PWA)",
+          secondaryUrl: "",
+          secondaryText: "",
           shareLabel: "وب‌اپلیکیشن شیفت‌کار (نسخه تحت وب و آیفون PWA)",
           cardId: "card-web",
-          variantsTitle: "گزینه‌های اجرای تحت وب و نصب روی آیفون (iOS):",
-          variants: [
-            {
-              name: "ورود مستقیم به وب‌اپلیکیشن (PWA)",
-              arch: "PWA",
-              isArm: false,
-              sub: "مخصوص آیفون، آیپد و تمام مرورگرها",
-              url: "https://alimosavi-code.github.io",
-              btn: "اجرای وب‌اپ",
-              rec: true
-            },
-            {
-              name: "نصب در آیفون (Safari)",
-              arch: "iOS Guide",
-              isArm: false,
-              sub: "در سافاری: دکمه Share ← Add to Home Screen",
-              url: "https://alimosavi-code.github.io",
-              btn: "ورود و نصب",
-              rec: false
-            },
-            {
-              name: "دانلود نسخه بومی اندروید (APK)",
-              arch: "Android",
-              isArm: false,
-              sub: "فایل نصبی مستقیم برای گوشی‌های اندرویدی",
-              url: LIVE_STATE.android.apkUrl,
-              btn: "دانلود APK",
-              rec: false
-            }
-          ]
+          variantsTitle: "",
+          variants: []
         };
       }
 
-      /* Default: Android */
+      /* Default: Android (Single direct APK button, no extra sub-options needed) */
       return {
         icon: "#ico-android",
         tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: اندروید" : "نسخه اندروید (APK)",
@@ -2520,54 +2467,37 @@
         sub: "مناسب برای تمامی گوشی‌ها و تبلت‌های اندرویدی با ویجت اختصاصی و به‌روزرسانی خودکار درون‌برنامه‌ای",
         primaryUrl: LIVE_STATE.android.apkUrl,
         primaryText: "دانلود مستقیم نسخه اندروید (APK)",
+        secondaryUrl: "",
+        secondaryText: "",
         shareLabel: "اپلیکیشن اندروید شیفت‌کار (نسخه " + LIVE_STATE.android.version + ")",
         cardId: "card-android",
-        variantsTitle: "گزینه‌های دریافت برای اندروید:",
-        variants: [
-          {
-            name: "فایل نصبی مستقیم اندروید (APK)",
-            arch: "Universal APK",
-            isArm: false,
-            sub: "نصب روی نسخه قبلی بدون حذف اطلاعات",
-            url: LIVE_STATE.android.apkUrl,
-            btn: "دانلود APK",
-            rec: true
-          },
-          {
-            name: "اجرای نسخه تحت وب (PWA)",
-            arch: "Web PWA",
-            isArm: false,
-            sub: "بدون نیاز به نصب APK — همیشه آخرین نسخه",
-            url: "https://alimosavi-code.github.io",
-            btn: "اجرای وب‌اپ",
-            rec: false
-          },
-          {
-            name: "صفحه رسمی Releases گیت‌هاب",
-            arch: "GitHub",
-            isArm: false,
-            sub: "مشاهده آرشیو نسخه‌ها در گیت‌هاب",
-            url: "https://github.com/Alimosavi-Code/Shiftkar/releases/latest",
-            btn: "صفحه گیت‌هاب",
-            rec: false
-          }
-        ]
+        variantsTitle: "",
+        variants: []
       };
     }
 
     function renderSmartVariants(spec) {
+      var wrapEl = document.getElementById("smartVariantsWrap");
       var titleEl = document.getElementById("smartVariantsTitle");
       var gridEl = document.getElementById("smartVariantsGrid");
-      if (!gridEl) return;
+      if (!gridEl || !wrapEl) return;
+
+      var list = spec.variants || [];
+      if (list.length === 0) {
+        wrapEl.style.display = "none";
+        gridEl.innerHTML = "";
+        return;
+      }
+
+      wrapEl.style.display = "block";
       if (titleEl && spec.variantsTitle) titleEl.textContent = spec.variantsTitle;
 
       var html = "";
-      var list = spec.variants || [];
       for (var i = 0; i < list.length; i++) {
         var v = list[i];
         var safeTitle = v.name.replace(/'/g, "");
         html +=
-          '<div class="variant-chip' + (v.rec ? ' is-recommended' : '') + '">' +
+          '<div class="variant-chip">' +
             '<div class="variant-info">' +
               '<div class="variant-name">' +
                 '<span>' + v.name + '</span>' +
@@ -2580,7 +2510,7 @@
                 '<svg width="12" height="12"><use href="#ico-download"/></svg>' +
                 '<span>' + v.btn + '</span>' +
               '</a>' +
-              '<button type="button" class="variant-share-btn" title="اشتراک‌گذاری لینک" onclick="shareItem(\'' + safeTitle + '\', \'' + v.url + '\')">' +
+              '<button type="button" class="variant-share-btn" title="اشتراک‌گذاری لینک" onclick="shareItem('' + safeTitle + '', '' + v.url + '')">' +
                 '<svg width="13" height="13"><use href="#ico-share"/></svg>' +
               '</button>' +
             '</div>' +
@@ -2618,6 +2548,18 @@
       var pBtn = document.getElementById("detectedPrimaryBtn");
       pBtn.href = spec.primaryUrl;
       document.getElementById("detectedBtnText").textContent = spec.primaryText;
+
+      var secBtn = document.getElementById("detectedSecondaryBtn");
+      var secBtnText = document.getElementById("detectedSecondaryBtnText");
+      if (secBtn && secBtnText) {
+        if (spec.secondaryUrl && spec.secondaryText) {
+          secBtn.href = spec.secondaryUrl;
+          secBtnText.textContent = spec.secondaryText;
+          secBtn.style.display = "inline-flex";
+        } else {
+          secBtn.style.display = "none";
+        }
+      }
 
       var sBtn = document.getElementById("detectedShareBtn");
       sBtn.onclick = function() {

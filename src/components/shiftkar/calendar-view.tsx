@@ -1402,7 +1402,10 @@ function TableView(props: {
         ) : (
           <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-faint)]">
             <InfoIcon size={13} />
-            برای جزئیات روی هر ردیف کلیک کنید (اسکرول افقی با لمس یا Shift + اسکرول ماوس)
+            <span>
+              برای جزئیات، ثبت یادداشت یا اضافه‌کاری روی هر ردیف کلیک کنید
+              <span className="hidden lg:inline"> (اسکرول افقی با Shift + اسکرول ماوس)</span>
+            </span>
           </span>
         )}
       </div>
