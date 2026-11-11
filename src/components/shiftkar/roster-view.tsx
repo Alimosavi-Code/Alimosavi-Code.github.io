@@ -80,6 +80,26 @@ export function RosterView({
   const [exportOpen, setExportOpen] = useState(false);
 
   const pat = useMemo(() => getActivePattern(), [activePatternId, customPatterns]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const tgt = e.target as HTMLElement | null;
+      if (tgt?.tagName === "INPUT" || tgt?.tagName === "TEXTAREA" || tgt?.isContentEditable) return;
+      if (document.body.classList.contains("sk-sheet-open") || exportOpen) return;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        haptic(hapticOn);
+        set({ viewYear: Math.max(1300, viewYear - 1) });
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        haptic(hapticOn);
+        set({ viewYear: Math.min(1500, viewYear + 1) });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewYear, exportOpen, hapticOn, set]);
+
   const activeGroups = useMemo(() => getActiveGroups(pat), [pat]);
   const groupFilters = useMemo(() => getActiveGroupFilters(pat), [pat]);
   const today = useMemo(() => todayJalaali(), []);

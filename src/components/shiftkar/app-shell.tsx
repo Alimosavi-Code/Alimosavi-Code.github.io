@@ -109,6 +109,37 @@ export function AppShell() {
     return () => mq.removeEventListener("change", fn);
   }, [hydrated, theme, themeMode]);
 
+  /* Global Desktop Keyboard Shortcuts (Tabs 1..5, Notes N) */
+  useEffect(() => {
+    if (!hydrated || showOnboarding) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const tgt = e.target as HTMLElement | null;
+      const tag = tgt?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || tgt?.isContentEditable) {
+        return;
+      }
+      if (document.body.classList.contains("sk-sheet-open")) return;
+
+      if (e.key === "1") {
+        set({ activeTab: "calendar" });
+      } else if (e.key === "2") {
+        set({ activeTab: "systems" });
+      } else if (e.key === "3") {
+        set({ activeTab: "roster" });
+      } else if (e.key === "4") {
+        set({ activeTab: "manager" });
+      } else if (e.key === "5") {
+        set({ activeTab: "settings" });
+      } else if ((e.key === "n" || e.key === "N" || e.key === "د") && activeTab === "calendar") {
+        e.preventDefault();
+        setNotesOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [hydrated, showOnboarding, activeTab, set]);
+
   /* First-run onboarding trigger */
   useEffect(() => {
     if (!hydrated) return;

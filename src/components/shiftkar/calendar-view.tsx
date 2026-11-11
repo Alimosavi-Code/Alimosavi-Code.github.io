@@ -1,33 +1,40 @@
 "use client";
 /**
  * Calendar view (`CalendarView`):
- *  - Desktop Split Layout (`lg:` in `grid` mode, matching Desktop App `153863.jpg`):
- *      • Top Row 1: Month Navigation Bar
- *      • Top Row 2: Group Filter Chips (`همه`, `A`, `B`, `C`, `D`) + Image Export + Today button
- *      • Main Area (12-col split):
- *          - Right (`lg:col-span-8`): Full-height 7-column Calendar Grid inside a glass card
- *          - Left Sidebar (`lg:col-span-4`): `TodayBanner` on top + `DesktopMonthlyStatsCard`
- *            (`آمار ماهانه` with 2×2 large colored stat cards: صبح‌کار، شب‌کار، تعطیل رسمی، استراحت)
- *  - Non-Fullscreen `TableView` (matching Desktop App `153862.jpg`):
- *      • `TodayBanner` at top + `MonthNav` + Filter Row
- *      • Rounded glass table card with sticky header, 4 columns (`روز`, `هفته`, `شیفت`, `مناسبت و یادداشت`),
- *        rounded shift pill with icon + label (`☀️ صبح‌کار ۱`, `🌙 شب‌کار ۱`, `🏠 استراحت ۱`),
- *        uniform row height (`h-[46px]`), Friday & Holiday row tinting, and disabled month-swipe while scrolling.
+ *  - Unified Desktop 12-Column Split Layout (`lg:` for BOTH `grid` AND `table` modes!):
+ *      • Right Main Panel (`lg:col-span-8`): Displays either `GridView` or `TableView` inside a glass container.
+ *      • Left Sidebar (`lg:col-span-4`): Displays `TodayBanner` on top + `DesktopMonthlyStatsCard` (2×2 stats grid) on bottom.
+ *      • Generous bottom padding (`pb-[calc(env(safe-area-inset-bottom)+88px)] lg:pb-[92px]`) so the bottom
+ *        of the calendar and sidebar never collide with the floating bottom navigation bar.
+ *  - `TableView` & `TableFullscreen`:
+ *      • Always starts from Day 1 (`۰۱`) at the top (`scrollTop = 0`).
+ *      • Supports smooth 2D scrolling (both vertical AND horizontal `overflow-auto` with `min-w-[680px]`)
+ *        showing `روز`, `هفته`, `شیفت`, `قمری`, `میلادی`, and full `مناسبت و یادداشت` text.
+ *  - Desktop Keyboard Shortcuts:
+ *      • `ArrowRight` / `ArrowLeft`: Previous / Next month (in RTL: Right = Previous month, Left = Next month)
+ *      • `ArrowUp` / `ArrowDown` / `PageUp` / `PageDown`: Smooth vertical scroll in Table view
+ *      • `V` (`ر`): Toggle between Calendar Grid and Table view
+ *      • `F` (`ب`): Toggle Fullscreen Table view
+ *      • `T` (`ف`) or `Home`: Jump to Today
  */
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   JALALI_MONTHS,
+  HIJRI_MONTHS,
+  GREGORIAN_MONTHS,
   WEEKDAYS,
   jalaaliMonthLength,
   jalaaliWeekday,
   todayJalaali,
   makeDateKey,
   toPersianDigits,
+  toGregorian,
   formatJalali,
   formatWeekday,
 } from "@/lib/jalali";
+import { gregorianToJdn, jdnToIslamic } from "@/lib/islamic-calendar";
 import {
   calculateShift,
   calculateAllShifts,
@@ -200,6 +207,7 @@ export function CalendarView({
   const [exportMode, setExportMode] = useState<ViewType>(viewType);
   const [compareGroup, setCompareGroup] = useState<ShiftGroup | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
 
   const pat = useMemo(() => getActivePattern(), [activePatternId, customPatterns]);
   const activeGroups = useMemo(() => getActiveGroups(pat), [pat]);
@@ -265,6 +273,65 @@ export function CalendarView({
     setDir(today.jy * 12 + today.jm > viewYear * 12 + viewMonth ? 1 : -1);
     set({ viewYear: today.jy, viewMonth: today.jm, selectedDateKey: todayKey });
   }, [today, viewYear, viewMonth, todayKey, set, hapticOn]);
+
+  /* Global Keyboard Shortcuts for Desktop (Arrow keys for month/table scroll, V for view toggle, F for fullscreen, T/Home for today) */
+  useEffect(() => {
+    const onWindowKey = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const tgt = e.target as HTMLElement | null;
+      const tag = tgt?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || tgt?.isContentEditable) {
+        return;
+      }
+      if (document.body.classList.contains("sk-sheet-open") || exportOpen) return;
+
+      if (e.key === "ArrowRight") {
+        /* In RTL, the right arrow button (<) is Previous Month */
+        e.preventDefault();
+        goMonth(-1);
+      } else if (e.key === "ArrowLeft") {
+        /* In RTL, the left arrow button (>) is Next Month */
+        e.preventDefault();
+        goMonth(1);
+      } else if (e.key === "ArrowDown" || e.key === "PageDown") {
+        if (viewType === "table" && !tableFs && tableScrollRef.current) {
+          e.preventDefault();
+          tableScrollRef.current.scrollBy({
+            top: e.key === "PageDown" ? 260 : 56,
+            behavior: "smooth",
+          });
+        }
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        if (viewType === "table" && !tableFs && tableScrollRef.current) {
+          e.preventDefault();
+          tableScrollRef.current.scrollBy({
+            top: e.key === "PageUp" ? -260 : -56,
+            behavior: "smooth",
+          });
+        }
+      } else if (e.key === "v" || e.key === "V" || e.key === "ر") {
+        if (!tableFs) {
+          e.preventDefault();
+          haptic(hapticOn);
+          set({ viewType: viewType === "grid" ? "table" : "grid" });
+        }
+      } else if (e.key === "f" || e.key === "F" || e.key === "ب") {
+        e.preventDefault();
+        haptic(hapticOn);
+        if (tableFs) {
+          setTableFs(false);
+        } else {
+          if (viewType !== "table") set({ viewType: "table" });
+          setTableFs(true);
+        }
+      } else if (e.key === "t" || e.key === "T" || e.key === "ف" || e.key === "Home") {
+        e.preventDefault();
+        goToday();
+      }
+    };
+    window.addEventListener("keydown", onWindowKey);
+    return () => window.removeEventListener("keydown", onWindowKey);
+  }, [goMonth, goToday, viewType, tableFs, exportOpen, hapticOn, set]);
 
   useEffect(() => {
     if (isCurrentMonth) return;
@@ -346,6 +413,12 @@ export function CalendarView({
               .join(" · ")
           : "";
 
+      const greg = toGregorian(viewYear, viewMonth, d);
+      const jdn = gregorianToJdn(greg.gy, greg.gm, greg.gd);
+      const hijri = jdnToIslamic(jdn);
+      const lunarStr = `${toPersianDigits(hijri.id)} ${HIJRI_MONTHS[hijri.im - 1]}`;
+      const gregStr = `${toPersianDigits(greg.gd)} ${GREGORIAN_MONTHS[greg.gm - 1]}`;
+
       info.push({
         d,
         key,
@@ -356,6 +429,8 @@ export function CalendarView({
         isFriday: jalaaliWeekday(viewYear, viewMonth, d) === 6,
         weekday: jalaaliWeekday(viewYear, viewMonth, d),
         label: `${formatWeekday(viewYear, viewMonth, d)} ${formatJalali(viewYear, viewMonth, d)}`,
+        lunarStr,
+        gregStr,
         note: notes.get(key),
         record: rec,
         all,
@@ -433,16 +508,6 @@ export function CalendarView({
     [viewType, goMonth],
   );
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowRight") {
-      goMonth(1);
-      e.preventDefault();
-    } else if (e.key === "ArrowLeft") {
-      goMonth(-1);
-      e.preventDefault();
-    }
-  };
-
   const setFilter = (g: GroupFilter) => {
     haptic(hapticOn);
     if (g === "ALL") {
@@ -480,13 +545,10 @@ export function CalendarView({
     effectiveFilterGroup === "ALL" ? myGroup : (effectiveFilterGroup as ShiftGroup);
 
   return (
-    <div
-      className="sk-cal-root flex h-full flex-col gap-1.5 sm:gap-2 px-3.5 md:px-6 pt-2.5 overflow-hidden"
-      onKeyDown={onKeyDown}
-    >
-      {/* Top section: On Mobile/Tablet (or in Table mode on all screens), TodayBanner sits at top */}
-      <div className={viewType === "grid" ? "sk-cal-top-pair flex flex-col gap-1.5 lg:contents" : "sk-cal-top-pair flex flex-col gap-1.5"}>
-        <div className={viewType === "grid" ? "lg:hidden shrink-0" : "shrink-0"}>
+    <div className="sk-cal-root flex h-full flex-col gap-1.5 sm:gap-2 px-3.5 md:px-6 pt-2.5 overflow-hidden">
+      {/* Top section: On Mobile/Tablet (< lg), TodayBanner sits at top; on Desktop (>= lg), TodayBanner is in the left sidebar for BOTH grid and table modes! */}
+      <div className="sk-cal-top-pair flex flex-col gap-1.5 lg:contents">
+        <div className="lg:hidden shrink-0">
           <TodayBanner
             todayKey={todayKey}
             filterGroup={effectiveFilterGroup}
@@ -503,6 +565,7 @@ export function CalendarView({
             onClick={() => goMonth(-1)}
             className="sk-sheet-btn !size-10 !rounded-[12px] shrink-0"
             aria-label="ماه قبل"
+            title="ماه قبل (فلش راست کیبورد)"
           >
             <ChevronRight size={18} />
           </button>
@@ -510,6 +573,7 @@ export function CalendarView({
             onClick={onOpenNotes}
             className="sk-sheet-btn !size-10 !rounded-[12px] shrink-0"
             aria-label="همه یادداشت‌ها"
+            title="یادداشت‌ها (کلید N)"
             data-tour="notes-btn"
           >
             <NotesIcon size={18} />
@@ -534,7 +598,7 @@ export function CalendarView({
             className="sk-sheet-btn !size-10 shrink-0"
             data-tour="view-toggle"
             aria-label={viewType === "grid" ? "تغییر به نمای جدولی" : "تغییر به نمای تقویم"}
-            title={viewType === "grid" ? "نمای جدولی" : "نمای تقویم"}
+            title={viewType === "grid" ? "نمای جدولی (کلید V)" : "نمای تقویم (کلید V)"}
           >
             {viewType === "grid" ? <TableIcon size={16} /> : <GridIcon size={16} />}
           </button>
@@ -542,6 +606,7 @@ export function CalendarView({
             onClick={() => goMonth(1)}
             className="sk-sheet-btn !size-10 shrink-0"
             aria-label="ماه بعد"
+            title="ماه بعد (فلش چپ کیبورد)"
           >
             <ChevronLeft size={18} />
           </button>
@@ -608,7 +673,7 @@ export function CalendarView({
             onClick={() => setTableFs(true)}
             className="shrink-0 size-9 rounded-full glass grid place-items-center text-[var(--sk-primary)]"
             aria-label="جدول تمام‌صفحه"
-            title="جدول تمام‌صفحه"
+            title="جدول تمام‌صفحه (کلید F)"
           >
             <ExpandIcon size={16} />
           </button>
@@ -620,7 +685,7 @@ export function CalendarView({
               chipCollapsed ? "w-9 px-0 justify-center" : "px-3.5"
             }`}
             data-tour="today-chip"
-            title="برو به امروز"
+            title="برو به امروز (کلید T)"
             aria-label="رفتن به امروز"
           >
             <CalendarIcon size={15} className="shrink-0" />
@@ -653,7 +718,7 @@ export function CalendarView({
         </div>
       )}
 
-      {/* Main Body */}
+      {/* Main Body — Generous bottom clearance (`pb-[calc(env(safe-area-inset-bottom)+88px)] lg:pb-[92px]`) so it NEVER overlaps the bottom navbar! */}
       <div
         ref={bodyRef}
         onTouchStart={handleTouchStart}
@@ -661,66 +726,67 @@ export function CalendarView({
         onTouchEnd={handleTouchFinish}
         onTouchCancel={handleTouchFinish}
         onWheel={handleWheel}
-        className={`sk-cal-body flex-1 min-h-0 flex flex-col overflow-hidden pb-[calc(env(safe-area-inset-bottom)+74px)]`}
+        className="sk-cal-body flex-1 min-h-0 flex flex-col overflow-hidden pb-[calc(env(safe-area-inset-bottom)+88px)] lg:pb-[92px]"
       >
         <div
           key={`${viewYear}-${viewMonth}-${viewType}`}
-          className={`${animClass} flex-1 min-h-0 flex flex-col ${
-            viewType === "grid" ? "gap-1.5 lg:grid lg:grid-cols-12 lg:gap-4" : ""
-          }`}
+          className={`${animClass} flex-1 min-h-0 flex flex-col gap-1.5 lg:grid lg:grid-cols-12 lg:gap-4`}
         >
+          {/* Right Main Panel on Desktop (8 cols): Either GridView or TableView */}
           {viewType === "grid" ? (
-            <>
-              {/* Right Column on Desktop (8 cols): Calendar Grid inside Glass Container */}
-              <div className="flex-1 min-h-0 flex flex-col lg:col-span-8 lg:glass lg:rounded-[26px] lg:p-3.5">
-                <GridView
-                  dayInfo={dayInfo}
-                  firstWeekday={firstWeekday}
-                  filterGroup={effectiveFilterGroup}
-                  myGroup={myGroup}
-                  selectedDateKey={selectedDateKey}
-                  onOpenDay={openDay}
-                />
-              </div>
-
-              {/* Mobile Summary Strip (< lg) */}
-              <div className="lg:hidden shrink-0">
-                <MonthlySummaryStrip
-                  dayInfo={dayInfo}
-                  effGroup={summaryGroup}
-                  myGroup={myGroup}
-                  compareGroup={compareGroup}
-                />
-              </div>
-
-              {/* Left Sidebar on Desktop (>= lg, 4 cols): TodayBanner + 2x2 Monthly Stats Card (matching 153863.jpg!) */}
-              <div className="hidden lg:flex lg:col-span-4 flex-col gap-3 min-h-0">
-                <TodayBanner
-                  todayKey={todayKey}
-                  filterGroup={effectiveFilterGroup}
-                  myGroup={myGroup}
-                  activeGroups={activeGroups}
-                  dayRecord={dayRecords[todayKey]}
-                  onOpenDay={openDay}
-                />
-                <DesktopMonthlyStatsCard
-                  viewYear={viewYear}
-                  viewMonth={viewMonth}
-                  dayInfo={dayInfo}
-                  effGroup={summaryGroup}
-                  myGroup={myGroup}
-                  compareGroup={compareGroup}
-                />
-              </div>
-            </>
+            <div className="flex-1 min-h-0 flex flex-col lg:col-span-8 lg:glass lg:rounded-[26px] lg:p-3.5">
+              <GridView
+                dayInfo={dayInfo}
+                firstWeekday={firstWeekday}
+                filterGroup={effectiveFilterGroup}
+                myGroup={myGroup}
+                selectedDateKey={selectedDateKey}
+                onOpenDay={openDay}
+              />
+            </div>
           ) : (
-            <TableView
-              dayInfo={dayInfo}
+            <div className="flex-1 min-h-0 flex flex-col lg:col-span-8">
+              <TableView
+                dayInfo={dayInfo}
+                filterGroup={effectiveFilterGroup}
+                myGroup={myGroup}
+                onOpenDay={openDay}
+                scrollRef={tableScrollRef}
+              />
+            </div>
+          )}
+
+          {/* Mobile Summary Strip (< lg, only in grid mode) */}
+          {viewType === "grid" && (
+            <div className="lg:hidden shrink-0">
+              <MonthlySummaryStrip
+                dayInfo={dayInfo}
+                effGroup={summaryGroup}
+                myGroup={myGroup}
+                compareGroup={compareGroup}
+              />
+            </div>
+          )}
+
+          {/* Left Sidebar on Desktop (>= lg, 4 cols): Shown in BOTH Grid AND Table mode! */}
+          <div className="hidden lg:flex lg:col-span-4 flex-col gap-3 min-h-0">
+            <TodayBanner
+              todayKey={todayKey}
               filterGroup={effectiveFilterGroup}
               myGroup={myGroup}
+              activeGroups={activeGroups}
+              dayRecord={dayRecords[todayKey]}
               onOpenDay={openDay}
             />
-          )}
+            <DesktopMonthlyStatsCard
+              viewYear={viewYear}
+              viewMonth={viewMonth}
+              dayInfo={dayInfo}
+              effGroup={summaryGroup}
+              myGroup={myGroup}
+              compareGroup={compareGroup}
+            />
+          </div>
         </div>
       </div>
 
@@ -874,7 +940,7 @@ function TodayBanner({
   );
 }
 
-/* ================= Desktop Monthly Stats Card (matching Desktop App 153863.jpg) ================= */
+/* ================= Desktop Monthly Stats Card (2×2 Grid in Left Sidebar) ================= */
 function DesktopMonthlyStatsCard({
   viewYear,
   viewMonth,
@@ -1093,6 +1159,8 @@ interface DayInfo {
   isFriday: boolean;
   weekday: number;
   label: string;
+  lunarStr: string;
+  gregStr: string;
   note: string | undefined;
   record: DayWorkRecord | undefined;
   all: { group: ShiftGroup; label: string; code: ShiftCode }[];
@@ -1248,7 +1316,7 @@ function GridView(props: {
   );
 }
 
-/* ================= Non-Fullscreen TableView (matching Desktop App 153862.jpg) ================= */
+/* ================= Non-Fullscreen TableView (with horizontal & vertical scroll) ================= */
 function buildRowSummaryLine(info: DayInfo) {
   const parts: { text: string; cls: string }[] = [];
   if (info.record && (info.record.overtimeHours > 0 || info.record.swapKind)) {
@@ -1288,14 +1356,24 @@ function TableView(props: {
   filterGroup: GroupFilter;
   myGroup: ShiftGroup;
   onOpenDay: (k: string) => void;
+  scrollRef?: React.RefObject<HTMLDivElement | null>;
 }) {
-  const { dayInfo, filterGroup, myGroup, onOpenDay } = props;
+  const { dayInfo, filterGroup, myGroup, onOpenDay, scrollRef } = props;
   const all = filterGroup === "ALL";
   const pat = getActivePattern();
+  const internalRef = useRef<HTMLDivElement>(null);
+  const activeScrollRef = scrollRef ?? internalRef;
+
+  /* Always start at the top (Day 1) when month or view changes */
+  useEffect(() => {
+    if (activeScrollRef.current) {
+      activeScrollRef.current.scrollTop = 0;
+    }
+  }, [dayInfo, activeScrollRef]);
 
   return (
-    <div className="glass rounded-[22px] border border-[var(--sk-border-soft)] flex-1 min-h-0 flex flex-col overflow-hidden">
-      <div className="px-4 py-2 border-b border-[var(--sk-border-soft)] flex items-center justify-between shrink-0" data-table-head>
+    <div className="glass rounded-[22px] lg:rounded-[26px] border border-[var(--sk-border-soft)] flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="px-4 py-2 border-b border-[var(--sk-border-soft)] flex items-center justify-between gap-2 shrink-0" data-table-head>
         {all ? (
           <div className="flex items-center gap-3.5 flex-wrap">
             <span className="flex items-center gap-1.5 text-[11px] text-[var(--sk-text-muted)]">
@@ -1320,24 +1398,29 @@ function TableView(props: {
         ) : (
           <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-faint)]">
             <InfoIcon size={13} />
-            برای جزئیات، روی هر روز ضربه بزنید
+            برای جزئیات، ثبت یادداشت یا اضافه‌کاری روی هر ردیف کلیک کنید (اسکرول افقی و عمودی فعال است)
           </span>
         )}
       </div>
 
       <div
+        ref={activeScrollRef}
         className="flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain"
         style={{ touchAction: "pan-x pan-y" }}
       >
-        <table className="w-full text-[13px] min-w-[520px]">
+        <table className="w-full text-[13px] min-w-[680px]">
           <thead className="sticky top-0 z-10 backdrop-blur-md">
             <tr className="text-[11.5px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
-              <th className="py-2.5 font-bold w-14 md:w-16 text-center">روز</th>
-              <th className="py-2.5 font-bold w-20 md:w-24 text-center">هفته</th>
-              <th className="py-2.5 font-bold w-28 md:w-36 text-center">
-                {all ? "شیفت گروه‌ها" : "شیفت"}
+              <th className="py-2.5 font-bold w-12 text-center whitespace-nowrap">روز</th>
+              <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">هفته</th>
+              <th className="py-2.5 font-bold w-28 text-center whitespace-nowrap">
+                {all ? "شیفت گروه‌ها" : `شیفت ${getGroupLetter(filterGroup as ShiftGroup, pat)}`}
               </th>
-              <th className="py-2.5 font-bold text-start ps-4 pe-4">مناسبت و یادداشت</th>
+              <th className="py-2.5 font-bold w-24 text-center whitespace-nowrap">قمری</th>
+              <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">میلادی</th>
+              <th className="py-2.5 font-bold text-start ps-4 pe-4 whitespace-nowrap">
+                مناسبت و یادداشت
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -1396,7 +1479,7 @@ function TableView(props: {
                   >
                     {WEEKDAYS[info.weekday]}
                   </td>
-                  <td className="py-2 text-center whitespace-nowrap">
+                  <td className="py-2 px-1.5 text-center whitespace-nowrap">
                     <span className="inline-flex items-center justify-center gap-1">
                       {all ? (
                         info.all.map((s) => {
@@ -1423,7 +1506,13 @@ function TableView(props: {
                       )}
                     </span>
                   </td>
-                  <td className="py-2 ps-4 pe-4 text-start text-[12px] max-w-[260px] sm:max-w-[420px] md:max-w-[560px] lg:max-w-[720px] truncate">
+                  <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-muted)] whitespace-nowrap">
+                    {info.lunarStr}
+                  </td>
+                  <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-faint)] whitespace-nowrap">
+                    {info.gregStr}
+                  </td>
+                  <td className="py-2 ps-4 pe-5 text-start text-[12px] whitespace-nowrap">
                     {parts.length === 0 ? (
                       <span className="text-[var(--sk-text-faint)]">—</span>
                     ) : (
@@ -1445,7 +1534,7 @@ function TableView(props: {
   );
 }
 
-/* ================= Fullscreen table ================= */
+/* ================= Fullscreen table (Always starts at Day 1 at top!) ================= */
 function TableFullscreen(props: {
   viewYear: number;
   viewMonth: number;
@@ -1476,22 +1565,41 @@ function TableFullscreen(props: {
   } = props;
   const all = filterGroup === "ALL";
   const pat = getActivePattern();
-  const headerRef = useRef<HTMLDivElement>(null);
-  const todayRowRef = useRef<HTMLTableRowElement>(null);
+  const fsScrollRef = useRef<HTMLDivElement>(null);
 
+  /* Keyboard navigation inside Fullscreen Table (Escape to close, Up/Down to scroll) */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "ArrowDown" || e.key === "PageDown") {
+        if (fsScrollRef.current) {
+          e.preventDefault();
+          fsScrollRef.current.scrollBy({
+            top: e.key === "PageDown" ? 300 : 56,
+            behavior: "smooth",
+          });
+        }
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        if (fsScrollRef.current) {
+          e.preventDefault();
+          fsScrollRef.current.scrollBy({
+            top: e.key === "PageUp" ? -300 : -56,
+            behavior: "smooth",
+          });
+        }
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  /* Always start at the top (Day 1) when opening Fullscreen Table or changing months! */
   useEffect(() => {
-    if (isCurrentMonth && todayRowRef.current) {
-      todayRowRef.current.scrollIntoView({ block: "center" });
+    if (fsScrollRef.current) {
+      fsScrollRef.current.scrollTop = 0;
     }
-  }, [isCurrentMonth]);
+  }, [viewYear, viewMonth]);
 
   return createPortal(
     <div
@@ -1501,15 +1609,13 @@ function TableFullscreen(props: {
       aria-label="جدول شیفت‌کاری تمام‌صفحه"
     >
       <div className="aurora-bg" aria-hidden />
-      <div
-        ref={headerRef}
-        className="relative z-10 px-4 md:px-6 pt-[max(env(safe-area-inset-top),14px)] pb-2 shrink-0 max-w-6xl w-full mx-auto"
-      >
+      <div className="relative z-10 px-4 md:px-6 pt-[max(env(safe-area-inset-top),14px)] pb-2 shrink-0 max-w-7xl w-full mx-auto">
         <div className="glass rounded-2xl p-1.5 flex items-center gap-1">
           <button
             onClick={() => onGoMonth(-1)}
             className="sk-sheet-btn !size-10"
             aria-label="ماه قبل"
+            title="ماه قبل (فلش راست)"
           >
             <ChevronRight size={18} />
           </button>
@@ -1527,6 +1633,7 @@ function TableFullscreen(props: {
             onClick={() => onGoMonth(1)}
             className="sk-sheet-btn !size-10"
             aria-label="ماه بعد"
+            title="ماه بعد (فلش چپ)"
           >
             <ChevronLeft size={18} />
           </button>
@@ -1534,13 +1641,15 @@ function TableFullscreen(props: {
             onClick={onExportMonth}
             className="sk-sheet-btn !size-10 !text-[var(--sk-primary)]"
             aria-label="خروجی تصویر ماه"
+            title="خروجی تصویر ماه"
           >
             <ImageIcon size={17} />
           </button>
           <button
             onClick={onClose}
             className="sk-sheet-btn !size-10 !text-[var(--sk-primary)]"
-            aria-label="بازگشت به نمای تقویم"
+            aria-label="بستن نمای تمام‌صفحه"
+            title="بستن نمای تمام‌صفحه (Esc / F)"
           >
             <CollapseIcon size={17} />
           </button>
@@ -1562,7 +1671,7 @@ function TableFullscreen(props: {
               <span className="size-2 rounded-full bg-[var(--sk-night)]" />
               شب‌کار
             </span>
-            <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-muted)]">
+            <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-rest)]">
               <span className="size-2 rounded-full bg-[var(--sk-rest)]" />
               استراحت
             </span>
@@ -1570,20 +1679,25 @@ function TableFullscreen(props: {
         )}
       </div>
 
-      <div className="relative z-10 flex-1 min-h-0 flex px-4 md:px-6 pb-[max(env(safe-area-inset-bottom),16px)] max-w-6xl w-full mx-auto">
+      <div className="relative z-10 flex-1 min-h-0 flex px-4 md:px-6 pb-[max(env(safe-area-inset-bottom),16px)] max-w-7xl w-full mx-auto">
         <div
+          ref={fsScrollRef}
           className="glass rounded-[22px] border border-[var(--sk-border-soft)] w-full flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain"
           style={{ touchAction: "pan-x pan-y" }}
         >
-          <table className="w-full text-[13px] min-w-[520px]">
+          <table className="w-full text-[13px] min-w-[680px]">
             <thead className="sticky top-0 z-10 backdrop-blur-md">
               <tr className="text-[11.5px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
-                <th className="py-2.5 font-bold w-14 md:w-16 text-center">روز</th>
-                <th className="py-2.5 font-bold w-20 md:w-24 text-center">هفته</th>
-                <th className="py-2.5 font-bold w-28 md:w-36 text-center">
-                  {all ? "شیفت گروه‌ها" : "شیفت"}
+                <th className="py-2.5 font-bold w-12 text-center whitespace-nowrap">روز</th>
+                <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">هفته</th>
+                <th className="py-2.5 font-bold w-28 text-center whitespace-nowrap">
+                  {all ? "شیفت گروه‌ها" : `شیفت ${getGroupLetter(filterGroup as ShiftGroup, pat)}`}
                 </th>
-                <th className="py-2.5 font-bold text-start ps-4 pe-4">مناسبت و یادداشت</th>
+                <th className="py-2.5 font-bold w-24 text-center whitespace-nowrap">قمری</th>
+                <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">میلادی</th>
+                <th className="py-2.5 font-bold text-start ps-4 pe-4 whitespace-nowrap">
+                  مناسبت و یادداشت
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -1601,7 +1715,6 @@ function TableFullscreen(props: {
                 return (
                   <tr
                     key={info.key}
-                    ref={info.isToday ? todayRowRef : undefined}
                     onClick={() => onOpenDay(info.key)}
                     className={`h-[46px] cursor-pointer border-b border-[var(--sk-border-soft)] last:border-0 transition-colors hover:bg-[var(--sk-primary-soft)]/45 ${
                       info.isToday
@@ -1635,7 +1748,7 @@ function TableFullscreen(props: {
                     >
                       {WEEKDAYS[info.weekday]}
                     </td>
-                    <td className="py-2 text-center whitespace-nowrap">
+                    <td className="py-2 px-1.5 text-center whitespace-nowrap">
                       <span className="inline-flex items-center justify-center gap-1">
                         {all ? (
                           info.all.map((s) => {
@@ -1662,7 +1775,13 @@ function TableFullscreen(props: {
                         )}
                       </span>
                     </td>
-                    <td className="py-2 ps-4 pe-4 text-start text-[12px] max-w-[260px] sm:max-w-[420px] md:max-w-[560px] lg:max-w-[720px] truncate">
+                    <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-muted)] whitespace-nowrap">
+                      {info.lunarStr}
+                    </td>
+                    <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-faint)] whitespace-nowrap">
+                      {info.gregStr}
+                    </td>
+                    <td className="py-2 ps-4 pe-5 text-start text-[12px] whitespace-nowrap">
                       {parts.length === 0 ? (
                         <span className="text-[var(--sk-text-faint)]">—</span>
                       ) : (

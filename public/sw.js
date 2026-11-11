@@ -4,7 +4,7 @@
  * The base path is derived from the SW scope, so the SAME file works on
  * the root domain (""), GitHub Pages user sites ("") and project sites
  * ("/<repo>") without any rebuild-time rewriting. */
-const CACHE = "shiftkar-web-v690";
+const CACHE = "shiftkar-web-v691";
 const BASE = new URL(self.registration.scope).pathname.replace(/\/+$/, "");
 
 self.addEventListener("install", (event) => {

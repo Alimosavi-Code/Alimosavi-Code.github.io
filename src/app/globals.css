@@ -931,3 +931,51 @@ body.sk-sheet-open {
     height: 44px !important;
   }
 }
+
+
+/* =========================================================================
+   Global Non-Selectable Text & Universal Pointer Cursor on Interactive Elements
+   ========================================================================= */
+html,
+body,
+*:not(input):not(textarea) {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+input,
+textarea {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"],
+[role="radio"],
+[role="switch"],
+[role="listitem"],
+a[href],
+summary,
+label[for],
+input[type="range"],
+input[type="checkbox"],
+input[type="radio"],
+select,
+.sk-sheet-btn,
+.sk-title-btn,
+.sk-seg-item,
+.sk-bottom-nav-btn,
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+}
