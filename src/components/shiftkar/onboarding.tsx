@@ -19,7 +19,8 @@ import {
   getGroupTitle,
 } from "@/lib/shift-engine";
 import { makeDateKey, todayJalaali, toPersianDigits } from "@/lib/onboarding-utils";
-import { promptInstall, getInstallState } from "@/lib/install";
+import { promptInstall, getInstallState, getBrowserInstallGuide } from "@/lib/install";
+import { BrowserInstallGuideBox } from "./install-sheet";
 import {
   SunIcon,
   SunsetIcon,
@@ -47,24 +48,31 @@ const KIND_CHIP: Record<ShiftKind, { bg: string; icon: React.ReactNode; fa: stri
 };
 
 function subscribeInstall(cb: () => void) {
-  const events = ["shiftkar-neo:install-state", "appinstalled"] as const;
+  const events = ["shiftkar-neo:install-state", "shiftkar-neo:install-ready", "appinstalled"] as const;
   for (const e of events) window.addEventListener(e, cb);
   return () => {
     for (const e of events) window.removeEventListener(e, cb);
   };
 }
 const readInstalled = () => getInstallState().installed;
+const readCanPrompt = () => getInstallState().canPrompt;
 const readServerFalse = () => false;
 
 function InstallCta({ compact }: { compact?: boolean }) {
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const installed = useSyncExternalStore(subscribeInstall, readInstalled, readServerFalse);
+  const canPrompt = useSyncExternalStore(subscribeInstall, readCanPrompt, readServerFalse);
   const [busy, setBusy] = useState(false);
-  const [hint, setHint] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!busy) return;
-    const id = window.setTimeout(() => setBusy(false), 8000);
+    const id = window.setTimeout(() => setBusy(false), 6000);
     return () => window.clearTimeout(id);
   }, [busy]);
 
@@ -81,26 +89,25 @@ function InstallCta({ compact }: { compact?: boolean }) {
     );
   }
 
+  const guide = mounted ? getBrowserInstallGuide() : null;
+  const shouldShowGuideCard =
+    !compact || showGuide || (mounted && (!guide?.supportsNativePrompt || !canPrompt));
+
   const run = async () => {
     haptic(hapticOn);
     setBusy(true);
-    setHint(null);
     try {
       const res = await promptInstall();
-      if (res === "installed") setHint(null);
-      else if (res === "dismissed")
-        setHint("از منوی مرورگر (⋮) گزینهٔ «نصب برنامه» را انتخاب کنید");
-      else
-        setHint(
-          "نصب خودکار الان در دسترس نیست؛ بعداً از منوی مرورگر یا تنظیمات انجامش دهید",
-        );
+      if (res !== "installed") {
+        setShowGuide(true);
+      }
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div>
+    <div className="space-y-3">
       <button
         type="button"
         onClick={run}
@@ -110,12 +117,16 @@ function InstallCta({ compact }: { compact?: boolean }) {
         }`}
       >
         <DownloadIcon size={compact ? 16 : 17} />
-        {busy ? "در حال آماده‌سازی…" : "نصب برنامه"}
+        {busy
+          ? "در حال آماده‌سازی…"
+          : canPrompt
+            ? "نصب مستقیم برنامه"
+            : guide && !guide.supportsNativePrompt
+              ? `راهنمای نصب در ${guide.browserName}`
+              : "نصب برنامه روی دستگاه"}
       </button>
-      {hint && (
-        <p className="text-[11px] text-[var(--sk-text-muted)] text-center mt-2 leading-5">
-          {hint}
-        </p>
+      {(!compact || showGuide) && (
+        <BrowserInstallGuideBox busy={busy} forceShowSteps={showGuide || !canPrompt} />
       )}
     </div>
   );
@@ -232,7 +243,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="aurora-bg" aria-hidden />
 
       <div
-        className="relative z-10 flex-1 flex flex-col max-w-md mx-auto w-full min-h-0"
+        className="relative z-10 flex-1 flex flex-col max-w-md md:max-w-lg mx-auto w-full min-h-0"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}

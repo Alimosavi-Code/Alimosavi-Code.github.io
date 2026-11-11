@@ -532,7 +532,7 @@ function PatternsSubTab() {
             </div>
 
             {/* Quick Presets Row */}
-            <div className="flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto md:flex-wrap sk-scroll pb-0.5">
               {(
                 [
                   { lbl: "چهار گروه (A..D)", isNoGrp: false, list: ["A", "B", "C", "D"] },
@@ -832,7 +832,7 @@ function PatternsSubTab() {
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
           {PRESET_PATTERNS.map((defaultPat) => {
             const resolvedPat = resolvePattern(defaultPat.id, customPatterns);
             const isMod = isPresetModified(defaultPat.id, customPatterns);
@@ -1415,7 +1415,7 @@ function PersonnelSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }
           </p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
           {evaluated.map(({ emp, empPat, scheduledCode, scheduledKind, effectiveKind, log }) => {
             const curStatus = log.status;
             const curOt = log.overtimeHours;
@@ -1730,94 +1730,143 @@ function EmployeeEditDialog({
     initial?.group ?? activeGroups[1] ?? "B",
   );
   const [patternId, setPatternId] = useState(initial?.patternId ?? "ACTIVE");
+  const [patternQuery, setPatternQuery] = useState("");
 
   const allPatterns = useMemo(() => {
     const pureCustom = customPatterns.filter((p) => !isBuiltInPreset(p.id));
-    return [...PRESET_PATTERNS, ...pureCustom];
-  }, [customPatterns]);
+    return [
+      {
+        id: "ACTIVE",
+        name: "هماهنگ با الگوی برنامه",
+        subtitle: `الگوی فعلی: ${pat.name}`,
+      },
+      ...pureCustom.map((p) => ({ id: p.id, name: p.name, subtitle: p.subtitle })),
+      ...PRESET_PATTERNS.map((p) => {
+        const resolved = resolvePattern(p.id, customPatterns);
+        return { id: resolved.id, name: resolved.name, subtitle: resolved.subtitle };
+      }),
+    ];
+  }, [customPatterns, pat.name]);
+
+  const filteredPatterns = useMemo(() => {
+    const q = patternQuery.trim().toLowerCase();
+    if (!q) return allPatterns;
+    return allPatterns.filter(
+      (p) =>
+        p.id === patternId ||
+        p.name.toLowerCase().includes(q) ||
+        (p.subtitle && p.subtitle.toLowerCase().includes(q)),
+    );
+  }, [allPatterns, patternQuery, patternId]);
+
+  const selectedPatObj = useMemo(() => {
+    if (patternId === "ACTIVE" || !patternId) return pat;
+    return resolvePattern(patternId, customPatterns);
+  }, [patternId, pat, customPatterns]);
+
+  const dialogGroups = useMemo(
+    () => (selectedPatObj.hasGroups ? getActiveGroups(selectedPatObj) : activeGroups),
+    [selectedPatObj, activeGroups],
+  );
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[110] flex items-center justify-center p-5"
+      className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6"
       role="dialog"
       aria-modal="true"
     >
       <div onClick={onDismiss} className="sk-scrim-in absolute inset-0 sk-scrim" />
-      <div className="sk-pop-in relative z-10 w-full max-w-[400px] glass-strong rounded-3xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="size-[34px] rounded-[10px] bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] grid place-items-center">
-              {initial ? <EditIcon size={17} /> : <GroupIcon size={17} />}
+      <div className="sk-pop-in relative z-10 w-full max-w-[430px] md:max-w-[600px] lg:max-w-[680px] max-h-[90dvh] flex flex-col glass-strong rounded-3xl p-4 md:p-6 space-y-3.5 overflow-hidden">
+        <div className="flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="size-9 rounded-xl bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] grid place-items-center">
+              {initial ? <EditIcon size={18} /> : <GroupIcon size={18} />}
             </span>
-            <h3 className="text-[15px] font-black">
-              {initial ? "ویرایش مشخصات همکار" : "افزودن همکار جدید"}
-            </h3>
+            <div>
+              <h3 className="text-[15.5px] md:text-[17px] font-black">
+                {initial ? "ویرایش مشخصات همکار" : "افزودن همکار جدید"}
+              </h3>
+              <p className="text-[11px] text-[var(--sk-text-muted)]">
+                مشخصات، گروه شیفت و الگوی نوبت‌کاری همکار را انتخاب کنید
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onDismiss}
-            className="size-8 rounded-full bg-[var(--sk-surface-strong)] grid place-items-center text-[var(--sk-text-muted)]"
+            className="size-8 rounded-full bg-[var(--sk-surface-strong)] grid place-items-center text-[var(--sk-text-muted)] hover:text-[var(--sk-text)]"
           >
             <CloseIcon size={15} />
           </button>
         </div>
 
-        <div className="space-y-1">
-          <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
-            نام و نام خانوادگی:
-          </label>
-          <input
-            value={name}
-            onChange={(e) => {
-              if (e.target.value.length <= 35) setName(e.target.value);
-            }}
-            placeholder="مثلاً علی رضایی"
-            className="w-full px-3 py-2.5 rounded-xl bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[13.5px] font-bold focus:outline-none focus:ring-2 focus:ring-[var(--sk-primary)] select-text"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
-            سمت یا واحد (اختیاری):
-          </label>
-          <input
-            value={role}
-            onChange={(e) => {
-              if (e.target.value.length <= 25) setRole(e.target.value);
-            }}
-            placeholder="مثلاً اپراتور برد"
-            className="w-full px-3 py-2.5 rounded-xl bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[13.5px] focus:outline-none focus:ring-2 focus:ring-[var(--sk-primary)] select-text"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
-            گروه شیفت همکار:
-          </label>
-          <div className="sk-seg">
-            {activeGroups.map((g) => (
-              <button
-                key={g}
-                type="button"
-                onClick={() => {
-                  haptic(hapticOn);
-                  setGroup(g);
+        <div className="flex-1 min-h-0 overflow-y-auto sk-scroll space-y-3.5 pe-0.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
+                نام و نام خانوادگی:
+              </label>
+              <input
+                value={name}
+                onChange={(e) => {
+                  if (e.target.value.length <= 35) setName(e.target.value);
                 }}
-                className={`sk-seg-item !text-[12px] ${group === g ? "is-active" : ""}`}
-              >
-                {getGroupTitle(g, pat)}
-              </button>
-            ))}
-          </div>
-        </div>
+                placeholder="مثلاً علی رضایی"
+                className="w-full px-3 py-2.5 rounded-xl bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[13.5px] font-bold focus:outline-none focus:ring-2 focus:ring-[var(--sk-primary)] select-text"
+              />
+            </div>
 
-        <div className="space-y-1">
-          <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
-            الگوی نوبت‌کاری همکار:
-          </label>
-          <div className="flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5">
-            {[{ id: "ACTIVE", name: "هماهنگ با الگوی برنامه" }, ...allPatterns].map(
-              (p) => {
+            <div className="space-y-1">
+              <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
+                سمت یا واحد (اختیاری):
+              </label>
+              <input
+                value={role}
+                onChange={(e) => {
+                  if (e.target.value.length <= 25) setRole(e.target.value);
+                }}
+                placeholder="مثلاً اپراتور برد"
+                className="w-full px-3 py-2.5 rounded-xl bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[13.5px] focus:outline-none focus:ring-2 focus:ring-[var(--sk-primary)] select-text"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[11.5px] font-bold text-[var(--sk-text-muted)]">
+              گروه شیفت همکار:
+            </label>
+            <div className="sk-seg">
+              {dialogGroups.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => {
+                    haptic(hapticOn);
+                    setGroup(g);
+                  }}
+                  className={`sk-seg-item !text-[12px] ${group === g ? "is-active" : ""}`}
+                >
+                  {getGroupTitle(g, selectedPatObj)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <label className="text-[11.5px] font-bold text-[var(--sk-text-muted)]">
+                الگوی نوبت‌کاری همکار ({toPersianDigits(allPatterns.length)} الگو):
+              </label>
+              <input
+                value={patternQuery}
+                onChange={(e) => setPatternQuery(e.target.value)}
+                placeholder="جستجوی نام الگو (مثلاً ۲-۲-۴ یا سه‌نوبتی)…"
+                className="w-full sm:w-[250px] px-2.5 py-1.5 rounded-lg bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[11.5px] focus:outline-none focus:border-[var(--sk-primary)] select-text"
+              />
+            </div>
+
+            <div className="max-h-[210px] md:max-h-[250px] overflow-y-auto sk-scroll rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] p-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {filteredPatterns.map((p) => {
                 const active = patternId === p.id;
                 return (
                   <button
@@ -1827,25 +1876,37 @@ function EmployeeEditDialog({
                       haptic(hapticOn);
                       setPatternId(p.id);
                     }}
-                    className={`shrink-0 h-[34px] px-2.5 rounded-[10px] text-[11px] font-bold border transition-all ${
+                    className={`rounded-xl px-3 py-2 text-start border transition-all flex items-center justify-between gap-2 ${
                       active
-                        ? "bg-[var(--sk-primary-soft)] border-[var(--sk-primary)] text-[var(--sk-primary)]"
-                        : "bg-[var(--sk-surface)] border-[var(--sk-border-soft)] text-[var(--sk-text-muted)]"
+                        ? "bg-[var(--sk-primary-soft)] border-[1.5px] border-[var(--sk-primary)] text-[var(--sk-primary)]"
+                        : "bg-[var(--sk-surface-strong)]/65 border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)]/50 text-[var(--sk-text)]"
                     }`}
                   >
-                    {p.name}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[12px] font-extrabold truncate">{p.name}</div>
+                      {p.subtitle && (
+                        <div className="text-[10px] text-[var(--sk-text-muted)] truncate mt-0.5">
+                          {p.subtitle}
+                        </div>
+                      )}
+                    </div>
+                    {active && (
+                      <span className="size-5 rounded-full bg-[var(--sk-primary)] text-white grid place-items-center shrink-0">
+                        <CheckIcon size={12} />
+                      </span>
+                    )}
                   </button>
                 );
-              },
-            )}
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex items-center gap-2.5 pt-1 shrink-0">
           <button
             type="button"
             onClick={onDismiss}
-            className="flex-1 py-2.5 rounded-[14px] bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[13px] font-bold text-[var(--sk-text-muted)]"
+            className="flex-1 py-3 rounded-[14px] bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] text-[13px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-text)]"
           >
             انصراف
           </button>
@@ -1866,7 +1927,7 @@ function EmployeeEditDialog({
                 dayLogs: initial?.dayLogs ?? {},
               });
             }}
-            className="flex-[1.3] py-2.5 rounded-[14px] bg-[var(--sk-primary)] text-white text-[13px] font-black"
+            className="flex-[1.5] py-3 rounded-[14px] bg-[var(--sk-primary)] text-white text-[13.5px] font-black shadow-[0_10px_24px_-8px_var(--sk-glow-a)]"
           >
             {initial ? "ذخیرهٔ تغییرات" : "افزودن همکار"}
           </button>
@@ -2213,8 +2274,8 @@ function ReportSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }) {
         </div>
       </div>
 
-      {/* 2. Key Payslip Metrics 2×2 Grid (matching ShiftManagerScreen.kt lines 1718-1763) */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* 2. Key Payslip Metrics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         <div className="glass rounded-[18px] p-3 border-[1.5px] border-[var(--sk-primary)] bg-[var(--sk-primary-soft)] space-y-1">
           <div className="text-[11px] font-bold text-[var(--sk-text-muted)] truncate">
             مجموع اضافه‌کاری

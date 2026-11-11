@@ -1,6 +1,6 @@
 "use client";
 /**
- * ShiftKar Web — unified icon set (100% parity with Android `SkIcons.kt`).
+ * ShiftKar Neo — unified icon set (100% parity with Android `SkIcons.kt`).
  */
 import type { SVGProps } from "react";
 

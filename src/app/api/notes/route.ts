@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
 /**
- * Notes API — ShiftKar Web reimagines the original's IndexedDB notes as a
+ * Notes API — ShiftKar Neo reimagines the original's IndexedDB notes as a
  * real backend with SQLite persistence.
  *
  * GET  /api/notes              → all notes (newest updated first)

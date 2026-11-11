@@ -891,10 +891,15 @@ body.sk-sheet-open {
 }
 
 
-
 /* =========================================================================
-   Mobile Landscape Optimization (Full-Width Unified Scroll + 2-Column Top Bar)
+   Desktop Sheet Sizing & Mobile Landscape Optimization
    ========================================================================= */
+@media (min-width: 768px) {
+  .sk-sheet:not(.is-fullscreen) {
+    max-width: 580px;
+  }
+}
+
 @media (orientation: landscape) and (max-height: 580px) {
   .sk-cal-root {
     overflow-y: auto !important;

@@ -31,14 +31,12 @@ jobs:
         run: |
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           OWNER="${GITHUB_REPOSITORY%%/*}"
-          if [ -f "public/CNAME" ]; then
-            SITE="https://$(tr -d "[:space:]" < public/CNAME)"
-            BASE=""
-          elif [ "$REPO_NAME" = "${OWNER}.github.io" ]; then
-            SITE="https://${OWNER}.github.io"
+          OWNER_LC=$(echo "$OWNER" | tr '[:upper:]' '[:lower:]')
+          REPO_LC=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')
+          SITE="https://${OWNER_LC}.github.io"
+          if [ "$REPO_LC" = "${OWNER_LC}.github.io" ]; then
             BASE=""
           else
-            SITE="https://${OWNER}.github.io"
             BASE="/${REPO_NAME}"
           fi
           {
@@ -51,7 +49,8 @@ jobs:
 
       - name: Rewrite manifest URLs for the Pages origin
         run: |
-          sed -i "s#https://shiftkar\.space-z\.ai#${SITE_URL}${BASE_PATH}#g" public/manifest.webmanifest
+          sed -i "s#https://shiftkar\.space-z\.ai#${SITE_URL}${BASE_PATH}#g; s#https://alimosavi-code\.github\.io#${SITE_URL}${BASE_PATH}#g" public/manifest.webmanifest
+          echo "--- manifest.webmanifest (rewritten) ---"
           cat public/manifest.webmanifest
 
       - name: Static export build

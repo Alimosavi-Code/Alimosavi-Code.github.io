@@ -1,4 +1,4 @@
-# انتشار شیفت‌کار وب روی GitHub Pages
+# انتشار ShiftKar وب روی GitHub Pages
 
 ## خلاصه
 
@@ -24,7 +24,7 @@
 # ۱) پروژه را به ریپوی گیت‌هاب خودتان پوش کنید
 git init
 git add -A
-git commit -m "ShiftKar Web"
+git commit -m "ShiftKar Neo"
 git branch -M main
 git remote add origin https://github.com/<USERNAME>/<REPO>.git
 git push -u origin main
@@ -43,7 +43,7 @@ git push -u origin main
 1. `bun install` با lockfile قفل‌شده
 2. تشخیص خودکار basePath (`/repo` یا ریشه)
 3. حذف `src/app/api` از بیلد استاتیک (سرور روی Pages وجود ندارد؛ اپ fallback دارد)
-4. بازنویسی آدرس‌های مانیفست از `https://shiftkar.ir` به دامنهٔ Pages (تا اعتبارسنجی Chrome همان‌جا هم پاس شود)
+4. بازنویسی آدرس‌های مانیفست از `https://shiftkar.space-z.ai` به دامنهٔ Pages (تا اعتبارسنجی Chrome همان‌جا هم پاس شود)
 5. `NEXT_EXPORT=1 next build` → پوشهٔ `out/` + فایل `.nojekyll` (لازم است وگرنه گیت‌هاب پوشهٔ `_next` را نادیده می‌گیرد)
 6. انتشار با artifacts رسمی Pages
 

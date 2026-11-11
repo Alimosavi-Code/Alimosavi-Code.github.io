@@ -11,15 +11,15 @@ export const metadata: Metadata = {
   description:
     "تقویم هوشمند شیفت کاری — محاسبه خودکار شیفت‌های صبح‌کار، عصرکار، شب‌کار و استراحت، همراه با تقویم شمسی و قمری، تعطیلات رسمی و یادداشت‌های شخصی",
   applicationName: "شیفت‌کار وب",
-  manifest: `${BASE_PATH}/manifest.webmanifest?v=682`,
+  manifest: `${BASE_PATH}/manifest.webmanifest?v=690`,
   appleWebApp: {
     capable: true,
     title: "شیفت‌کار وب",
     statusBarStyle: "black-translucent",
   },
   icons: {
-    icon: `${BASE_PATH}/assets/icon-192.png?v=682`,
-    apple: `${BASE_PATH}/assets/apple-touch-icon.png?v=682`,
+    icon: `${BASE_PATH}/assets/icon-192.png?v=690`,
+    apple: `${BASE_PATH}/assets/apple-touch-icon.png?v=690`,
   },
   other: {
     "color-scheme": "dark light",

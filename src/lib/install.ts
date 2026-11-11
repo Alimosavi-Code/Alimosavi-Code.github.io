@@ -1,57 +1,289 @@
 "use client";
 /**
- * PWA install engine — faithful port of the original install-prompt.js.
- *
- *  - Chrome/Edge/Android/desktop: captures `beforeinstallprompt` and shows
- *    the native install UI when asked. Chrome only fires the event AFTER
- *    its service worker is ACTIVE, so on a cold visit we register the SW
- *    and wait briefly for the event instead of claiming "unsupported".
- *  - iOS Safari: no install event — "Add to Home Screen" instructions.
- *  - Firefox: no `beforeinstallprompt` — short manual guide instead.
- *  - Any other browser: generic "use your browser menu" guide.
- *  - Already installed (standalone) or after `appinstalled`: reported as
- *    installed; a previously-installed PWA later running in a normal tab
- *    means it was deleted — the install UI is offered again.
+ * PWA install engine — Cross-platform & multi-browser support (Android, iOS, Windows, macOS, Linux):
+ *  - Preserves transient user gesture when `deferredPrompt` is already captured so Desktop Edge/Chrome
+ *    on Linux, Windows, and macOS always open the native install dialog immediately on click.
+ *  - Automatically resets stale `installedFlag` when `beforeinstallprompt` fires in a normal browser tab.
+ *  - Provides `getBrowserInstallGuide()` with tailored step-by-step instructions per browser & OS
+ *    (Chrome, Edge, Firefox, Vivaldi, Opera, Brave, Safari iOS/macOS, Samsung Internet, Mi Browser)
+ *    for both `InstallSheet` and `Onboarding`.
  */
 
-const FLAG_KEY = "shiftkar-neo.install.v682";
-const WAIT_FOR_PROMPT_MS = 6000;
+const FLAG_KEY = "shiftkar-neo.install.v690";
+const WAIT_FOR_PROMPT_MS = 4500;
 
 const ua = () => (typeof navigator !== "undefined" ? navigator.userAgent || "" : "");
 
-/* ---- per-browser detection (for the manual guides + sheet copy) ---- */
+/* ---- OS & Browser detection ---- */
 
-/** Firefox never fires `beforeinstallprompt`. */
-export function isFirefox() {
-  return /Firefox\//.test(ua());
+export function isIOSDevice() {
+  if (typeof navigator === "undefined") return false;
+  const u = ua();
+  const iPadOS13 = /Macintosh/.test(u) && navigator.maxTouchPoints > 1;
+  return /iPhone|iPad|iPod/.test(u) || iPadOS13;
 }
 
-/** Xiaomi Mi Browser (Chromium-based, but often WITHOUT the native prompt). */
+export function isAndroid() {
+  return /Android/i.test(ua());
+}
+
+export function isLinux() {
+  return /Linux/i.test(ua()) && !isAndroid();
+}
+
+export function isWindows() {
+  return /Windows/i.test(ua());
+}
+
+export function isMacOS() {
+  return /Macintosh|Mac OS X/i.test(ua()) && !isIOSDevice();
+}
+
+export function isFirefox() {
+  return /Firefox\/|FxiOS\//i.test(ua());
+}
+
 export function isMiBrowser() {
   return /MiuiBrowser|Mi\s?Browser/i.test(ua());
 }
 
 export function isSamsung() {
-  return /SamsungBrowser\//.test(ua());
+  return /SamsungBrowser\//i.test(ua());
 }
 
 export function isOpera() {
-  return /OPR\/|Opera/.test(ua());
-}
-
-export function isEdge() {
-  return /Edg\//.test(ua());
+  return /OPR\/|Opera|OPT\//i.test(ua());
 }
 
 export function isVivaldi() {
   return /Vivaldi/i.test(ua());
 }
 
-/** Chromium browsers (Chrome/Edge/Brave/Vivaldi/Opera/Samsung/Mi…) support
- *  the native prompt in principle; a few builds (Mi, old Opera) never fire it
- *  — the sheet falls back to a browser-specific manual guide instead. */
+export function isEdge() {
+  return /Edg\/|EdgA\/|EdgiOS\//i.test(ua());
+}
+
+export function isBrave() {
+  if (typeof navigator === "undefined") return false;
+  return (
+    /Brave/i.test(ua()) ||
+    typeof (navigator as unknown as { brave?: unknown }).brave !== "undefined"
+  );
+}
+
+export function isSafari() {
+  const u = ua();
+  return (
+    /Safari\//i.test(u) &&
+    !/Chrome\/|Chromium\/|CriOS\/|FxiOS\/|Edg\/|EdgA\/|EdgiOS\/|OPR\/|SamsungBrowser\/|Vivaldi/i.test(
+      u,
+    )
+  );
+}
+
 export function isChromium() {
-  return !isIOSDevice() && !isFirefox() && /Chrome|Chromium|Edg\//.test(ua());
+  return !isIOSDevice() && !isFirefox() && /Chrome|Chromium|Edg\/|EdgA\/|OPR\/|Vivaldi|SamsungBrowser/i.test(ua());
+}
+
+export interface BrowserInstallGuide {
+  browserName: string;
+  osName: string;
+  supportsNativePrompt: boolean;
+  items: string[];
+  note?: string;
+}
+
+export function getBrowserInstallGuide(): BrowserInstallGuide {
+  const android = isAndroid();
+  const ios = isIOSDevice();
+  const linux = isLinux();
+  const mac = isMacOS();
+  const osName = ios
+    ? "آیفون / آیپد (iOS)"
+    : android
+      ? "اندروید"
+      : linux
+        ? "لینوکس"
+        : mac
+          ? "مک (macOS)"
+          : "ویندوز";
+
+  if (ios) {
+    if (!isSafari()) {
+      return {
+        browserName: isFirefox() ? "فایرفاکس iOS" : isEdge() ? "اج iOS" : "مرورگر iOS",
+        osName,
+        supportsNativePrompt: false,
+        items: [
+          "در iOS، روی دکمهٔ اشتراک‌گذاری (Share) در نوار آدرس یا پایین مرورگر بزنید.",
+          "گزینهٔ «Add to Home Screen» (افزودن به صفحهٔ اصلی) را انتخاب کنید.",
+          "در صورت نبودن این گزینه، همین آدرس را در مرورگر Safari باز کرده و از Share ← Add to Home Screen نصب کنید.",
+        ],
+      };
+    }
+    return {
+      browserName: "سافاری (Safari)",
+      osName,
+      supportsNativePrompt: false,
+      items: [
+        "دکمهٔ اشتراک‌گذاری (Share) را در نوار پایین سافاری لمس کنید.",
+        "در منوی بازشده، گزینهٔ «Add to Home Screen» را انتخاب کنید.",
+        "روی «Add» در گوشهٔ بالا بزنید تا آیکون شیفت‌کار به صفحهٔ اصلی اضافه شود.",
+      ],
+    };
+  }
+
+  if (isMiBrowser()) {
+    return {
+      browserName: "می‌بروزر شیائومی",
+      osName,
+      supportsNativePrompt: false,
+      items: [
+        "روی دکمهٔ منو (☰ یا ⋮ در نوار پایین مرورگر) بزنید.",
+        "گزینهٔ «افزودن به صفحهٔ اصلی» (Add to Home screen) را انتخاب کنید.",
+        "با تأیید، آیکون شیفت‌کار روی صفحهٔ اصلی قرار می‌گیرد.",
+      ],
+    };
+  }
+
+  if (isSamsung()) {
+    return {
+      browserName: "اینترنت سامسونگ",
+      osName,
+      supportsNativePrompt: true,
+      items: [
+        "روی آیکون دانلود (⬇) در نوار آدرس یا منوی ☰ در نوار پایین بزنید.",
+        "گزینهٔ «افزودن صفحه به» (Add page to) و سپس «صفحهٔ اصلی» (Home screen) را انتخاب کنید.",
+        "با تأیید، برنامه مثل یک اپلیکیشن مستقل نصب می‌شود.",
+      ],
+    };
+  }
+
+  if (isFirefox()) {
+    return {
+      browserName: "فایرفاکس (Firefox)",
+      osName,
+      supportsNativePrompt: false,
+      items: android
+        ? [
+            "روی دکمهٔ منوی سه‌نقطه (⋮) در نوار فایرفاکس بزنید.",
+            "گزینهٔ «نصب» (Install) یا «افزودن به صفحهٔ اصلی» (Add to Home screen) را انتخاب کنید.",
+            "با تأیید، آیکون شیفت‌کار روی صفحهٔ اصلی گوشی نصب می‌شود.",
+          ]
+        : [
+            "فایرفاکس دسکتاپ به‌طور پیش‌فرض نصب مستقیم وب‌اپلیکیشن ندارد؛ می‌توانید روی تبِ صفحه کلیک راست کرده و «Pin Tab» (سنجاق کردن تب) را بزنید.",
+            "برای اجرای وب‌اپلیکیشن در پنجرهٔ مستقل دسکتاپ، می‌توانید از کروم، اج، بریو یا ویوالدی استفاده کنید و یا افزونهٔ «PWAsForFirefox» را نصب نمایید.",
+          ],
+      note: !android
+        ? "پیشنهاد: نسخهٔ بومی دسکتاپ شیفت‌کار (ویندوز، مک و لینوکس) نیز در صفحهٔ دانلود در دسترس است."
+        : undefined,
+    };
+  }
+
+  if (isVivaldi()) {
+    return {
+      browserName: "ویوالدی (Vivaldi)",
+      osName,
+      supportsNativePrompt: true,
+      items: android
+        ? [
+            "روی منوی ویوالدی (لوگوی V در نوار مرورگر) بزنید.",
+            "گزینهٔ «Install app» (نصب برنامه) یا «Add to Home screen» را انتخاب کنید.",
+            "با تأیید، برنامه روی صفحهٔ اصلی نصب می‌شود.",
+          ]
+        : [
+            "روی تبِ بالای صفحه کلیک راست کنید و گزینهٔ «Install شیفت‌کار وب...» را بزنید (یا روی آیکون نصب در سمت راست نوار آدرس کلیک کنید).",
+            "در پنجرهٔ بازشده روی «Install» کلیک کنید تا برنامه در پنجرهٔ مستقل دسکتاپ نصب شود.",
+          ],
+    };
+  }
+
+  if (isOpera()) {
+    return {
+      browserName: "اپرا (Opera)",
+      osName,
+      supportsNativePrompt: true,
+      items: android
+        ? [
+            "روی منوی مرورگر (⋮ یا O در گوشهٔ مرورگر) بزنید.",
+            "گزینهٔ «افزودن به صفحهٔ اصلی» (Add to Home screen) را انتخاب کنید.",
+            "با تأیید، آیکون برنامه روی صفحهٔ اصلی قرار می‌گیرد.",
+          ]
+        : [
+            "روی آیکون نصب (مکعب/مانیتور کوچک در سمت راست نوار آدرس) کلیک کنید.",
+            "در پنجرهٔ تأیید روی «Install» کلیک کنید تا برنامه به‌صورت مستقل نصب شود.",
+          ],
+    };
+  }
+
+  if (isEdge()) {
+    return {
+      browserName: "مایکروسافت اج (Edge)",
+      osName,
+      supportsNativePrompt: true,
+      items: android
+        ? [
+            "روی منوی سه‌نقطه (⋯) در نوار پایین مرورگر بزنید.",
+            "گزینهٔ «افزودن به تلفن» (Add to phone) یا «نصب برنامه» را انتخاب کنید.",
+            "با تأیید، شیفت‌کار مثل یک اپلیکیشن واقعی نصب می‌شود.",
+          ]
+        : [
+            "روی آیکون «App available» (مانیتور کوچک همراه با نشان + در سمت راست نوار آدرس) کلیک کنید.",
+            "یا از منوی سه‌نقطه (⋯) در گوشهٔ بالا به بخش «Apps» و سپس «Install this site as an app» بروید.",
+            "روی «Install» کلیک کنید تا برنامه به‌صورت مستقل نصب شود.",
+          ],
+      note: linux
+        ? "نکتهٔ لینوکس: اگر قبلاً آن را نصب کرده‌اید، در نوار آدرس edge://apps را بررسی کنید."
+        : undefined,
+    };
+  }
+
+  if (isBrave()) {
+    return {
+      browserName: "بریو (Brave)",
+      osName,
+      supportsNativePrompt: true,
+      items: android
+        ? [
+            "منوی سه‌نقطه (⋮) را باز کنید و «Install app» (نصب برنامه) را انتخاب کنید.",
+            "با تأیید، برنامه روی صفحهٔ اصلی نصب می‌شود.",
+          ]
+        : [
+            "روی آیکون نصب در سمت راست نوار آدرس کلیک کنید، یا از منوی ☰ به «Save and share» ← «Install شیفت‌کار وب...» بروید.",
+            "با تأیید، برنامه به‌صورت مستقل روی سیستم نصب می‌شود.",
+          ],
+    };
+  }
+
+  if (isSafari() && mac) {
+    return {
+      browserName: "سافاری مک (Safari)",
+      osName,
+      supportsNativePrompt: false,
+      items: [
+        "از نوار منوی بالای سافاری روی «File» کلیک کنید و گزینهٔ «Add to Dock...» را بزنید (یا از دکمهٔ Share گزینهٔ Add to Dock را انتخاب کنید).",
+        "روی «Add» کلیک کنید تا شیفت‌کار به‌عنوان برنامهٔ مستقل به Dock مک اضافه شود.",
+      ],
+    };
+  }
+
+  /* Default: Chrome / Chromium */
+  return {
+    browserName: "گوگل کروم (Chrome)",
+    osName,
+    supportsNativePrompt: true,
+    items: android
+      ? [
+          "منوی سه‌نقطه (⋮) در بالای کروم را باز کنید.",
+          "گزینهٔ «نصب برنامه» (Install app) یا «افزودن به صفحهٔ اصلی» را بزنید.",
+          "با تأیید، شیفت‌کار مثل یک اپلیکیشن واقعی نصب می‌شود.",
+        ]
+      : [
+          "روی آیکون نصب برنامه (مانیتور کوچک همراه با فلش در سمت راست نوار آدرس) کلیک کنید.",
+          "یا از منوی سه‌نقطه (⋮) در بالای مرورگر به بخش «Cast, save, and share» ← «Install page as app...» بروید.",
+          "روی «Install» کلیک کنید تا برنامه در پنجرهٔ مستقل دسکتاپ اجرا شود.",
+        ],
+  };
 }
 
 let deferredPrompt: (Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null = null;
@@ -83,15 +315,12 @@ export function isStandalone() {
   return (
     (typeof window !== "undefined" &&
       window.matchMedia &&
-      window.matchMedia("(display-mode: standalone)").matches) ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+      (window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia("(display-mode: minimal-ui)").matches ||
+        window.matchMedia("(display-mode: window-controls-overlay)").matches)) ||
+    (typeof window !== "undefined" &&
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true)
   );
-}
-
-function isIOSDevice() {
-  const ua = navigator.userAgent || "";
-  const iPadOS13 = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
-  return /iPhone|iPad|iPod/.test(ua) || iPadOS13;
 }
 
 function emitState() {
@@ -124,15 +353,7 @@ export function initInstallPrompt() {
 
   if (loadFlag().installed) installedFlag = true;
 
-  /* One-time migration: the improved install engine (per-browser guides +
-   * install-ready listener) deserves ONE more auto-prompt for users whose
-   * earlier `autoShown` was burned on the broken sheet. Reset it exactly once. */
-  const flag0 = loadFlag();
-  if (flag0.autoShown === true && flag0.installed !== true && (flag0 as { autoShownV2?: boolean }).autoShownV2 !== true) {
-    saveFlag({ autoShown: false, autoShownV2: true });
-  }
-
-  /* PWA deletion detection (original behavior) */
+  /* PWA deletion detection */
   if (isStandalone()) {
     installedFlag = true;
     saveFlag({ lastStandalone: Date.now() });
@@ -158,8 +379,6 @@ export function getInstallState() {
 
 /* ---------------- the install flow ---------------- */
 
-/** Make sure the SW is active BEFORE waiting for the event (Chrome only
- *  offers installability once a service worker controls the page). */
 async function ensureServiceWorkerReady() {
   if (!("serviceWorker" in navigator)) return;
   try {
@@ -169,7 +388,7 @@ async function ensureServiceWorkerReady() {
     }
     await Promise.race([
       navigator.serviceWorker.ready,
-      new Promise((r) => setTimeout(r, 4000)),
+      new Promise((r) => setTimeout(r, 3500)),
     ]);
   } catch {
     /* fall through to the manual guide */
@@ -180,17 +399,7 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
   const st = getInstallState();
   if (st.installed) return "installed";
 
-  if (!deferredPrompt && isChromium()) {
-    window.dispatchEvent(new CustomEvent("shiftkar-neo:install-waiting"));
-    await ensureServiceWorkerReady();
-    const arrived = await Promise.race([
-      installReadyPromise,
-      new Promise<boolean>((r) => setTimeout(() => r(false), WAIT_FOR_PROMPT_MS)),
-    ]);
-    window.dispatchEvent(new CustomEvent("shiftkar-neo:install-wait-done"));
-    if (!arrived || !deferredPrompt) return "instructions";
-  }
-
+  /* Preserve transient user activation on Desktop Edge/Chrome when deferredPrompt is already ready! */
   if (deferredPrompt) {
     const prompt = deferredPrompt;
     deferredPrompt = null;
@@ -205,15 +414,40 @@ export async function promptInstall(): Promise<"installed" | "dismissed" | "inst
       }
       return "dismissed";
     } catch {
-      return "unavailable";
+      return "instructions";
     }
   }
+
+  if (isChromium()) {
+    window.dispatchEvent(new CustomEvent("shiftkar-neo:install-waiting"));
+    await ensureServiceWorkerReady();
+    const arrived = await Promise.race([
+      installReadyPromise,
+      new Promise<boolean>((r) => setTimeout(() => r(false), WAIT_FOR_PROMPT_MS)),
+    ]);
+    window.dispatchEvent(new CustomEvent("shiftkar-neo:install-wait-done"));
+    if (arrived && deferredPrompt) {
+      const prompt = deferredPrompt;
+      deferredPrompt = null;
+      try {
+        await prompt.prompt();
+        const choice = await prompt.userChoice;
+        if (choice && choice.outcome === "accepted") {
+          installedFlag = true;
+          saveFlag({ installed: true, lastStandalone: Date.now() });
+          emitState();
+          return "installed";
+        }
+        return "dismissed";
+      } catch {
+        return "instructions";
+      }
+    }
+  }
+
   return "instructions";
 }
 
-/** One-time automatic prompt: opens the install sheet as soon as Chromium
- *  hands us the native prompt (even if that arrives LATE), with a short
- *  timeout fallback — never while the tour runs, never twice. */
 export function maybeAutoPromptInstall(openInstallSheet: () => void, isTourActive: () => boolean) {
   if (getInstallState().installed) return;
   if (loadFlag().autoShown) return;
@@ -230,12 +464,7 @@ export function maybeAutoPromptInstall(openInstallSheet: () => void, isTourActiv
   };
   const onReady = () => setTimeout(open, 600);
 
-  /* Chromium fires `beforeinstallprompt` whenever it decides the page is
-   * installable — sometimes seconds after load. Listen for it instead of
-   * relying only on a fixed timer, so the sheet appears WITH the native
-   * prompt ready (Chrome/Edge/Brave/Vivaldi/Opera/Samsung…). */
   window.addEventListener("shiftkar-neo:install-ready", onReady);
-  /* fallback for engines that never fire it (Mi Browser, iOS, Firefox) */
   setTimeout(open, 5000);
 }
 

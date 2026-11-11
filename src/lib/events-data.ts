@@ -14,17 +14,24 @@ export interface CalendarEvent {
   day: number;
 }
 
+export type IrregularRule =
+  | "single event"
+  | "end of month"
+  | "last weekday of month"
+  | "nth weekday of month"
+  | "nth day from";
+
 export interface IrregularEvent {
   calendar: EventCalendar;
   title: string;
   holiday: boolean;
   begin: number | null;
   end: number | null;
-  rule: string;
-  month?: number;
+  rule: IrregularRule;
+  month: number;
   day?: number;
-  weekday?: number;
   nth?: number;
+  weekday?: number;
   offset?: number;
   year?: number;
 }
@@ -371,12 +378,8 @@ export const RECURRING_EVENTS: CalendarEvent[] = [
   {"calendar": "Persian", "title": "روز بزرگداشت پروین اعتصامی", "holiday": false, "begin": null, "end": null, "month": 12, "day": 25},
   {"calendar": "Persian", "title": "بمباران شیمیایی حلبچه به دست ارتش بعث عراق (۱۳۶۶ ه‍.ش)", "holiday": false, "begin": null, "end": null, "month": 12, "day": 25},
   {"calendar": "Persian", "title": "روز ملی‌شدن صنعت نفت ایران (۱۳۲۹ ه‍.ش)", "holiday": true, "begin": null, "end": null, "month": 12, "day": 29},
-  // ---------------------------------------------------------------------------
-  // [تعطیلی ۳۰ اسفند در سال‌های کبیسه — «آخرین روز سال»]
-  // راهنما: در سال‌های کبیسه (مثل ۱۴۰۳ که اسفند ۳۰ روزه است) این روز تعطیل رسمی است.
-  // اگر هر زمان خواستید ۳۰ اسفند تعطیل نباشد، کافی است خط زیر را کامنت (//) یا حذف کنید:
-  {"calendar": "Persian", "title": "آخرین روز سال", "holiday": true, "begin": null, "end": null, "month": 12, "day": 30},
-  // ---------------------------------------------------------------------------
+  // [تعطیلی ۳۰ اسفند - آخر سال]: در صورت عدم نیاز، خط زیر را با // کامنت یا حذف کنید:
+  {"calendar": "Persian", "title": "آخر سال", "holiday": true, "begin": null, "end": null, "month": 12, "day": 30},
   // ==================== تقویم قمری — ماه 1: محرم ====================
   {"calendar": "Hijri", "title": "آغاز سال هجری قمری", "holiday": false, "begin": null, "end": null, "month": 1, "day": 1},
   {"calendar": "Hijri", "title": "روز امر به معروف و نهی از منکر", "holiday": false, "begin": null, "end": null, "month": 1, "day": 2},
@@ -408,7 +411,7 @@ export const RECURRING_EVENTS: CalendarEvent[] = [
   // ==================== تقویم قمری — ماه 5: جمادی‌الاول ====================
   {"calendar": "Hijri", "title": "ولادت حضرت زینب (س) (۵ ه‍.ق) و روز پرستار", "holiday": false, "begin": null, "end": null, "month": 5, "day": 5},
   {"calendar": "Hijri", "title": "شهادت حضرت فاطمهٔ زهرا (س) (۱۱ ه‍.ق) به روایتی", "holiday": false, "begin": null, "end": null, "month": 5, "day": 13},
-  // ==================== تقویم قمری — ماه 6: جمادی‌الثانی ====================
+  // ==================== تقویم قمری — ماه 6: جمادی‌الثانیه ====================
   {"calendar": "Hijri", "title": "شهادت حضرت فاطمهٔ زهرا (س) (۱۱ ه‍.ق)", "holiday": true, "begin": null, "end": null, "month": 6, "day": 3},
   {"calendar": "Hijri", "title": "سالروز وفات حضرت ام‌البنین (س)", "holiday": false, "begin": null, "end": null, "month": 6, "day": 13},
   {"calendar": "Hijri", "title": "روز تکریم مادران و همسران شهدا", "holiday": false, "begin": null, "end": null, "month": 6, "day": 13},

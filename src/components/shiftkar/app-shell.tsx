@@ -158,7 +158,7 @@ export function AppShell() {
         />
       ) : (
         <>
-          <main className="relative z-10 mx-auto h-full w-full max-w-md sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl overflow-hidden">
+          <main className="relative z-10 mx-auto h-full w-full max-w-md sm:max-w-3xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl overflow-hidden">
             <div key={activeTab} className="sk-tab-in h-full">
               {activeTab === "calendar" && (
                 <CalendarView
@@ -200,10 +200,12 @@ export function AppShell() {
             {!isTableFullscreen && (
               <nav
                 className="fixed bottom-0 inset-x-0 z-40 pb-safe pt-2 px-3 pointer-events-none"
-                data-tour="bottom-nav"
                 aria-label="ناوبری اصلی"
               >
-                <div className="pointer-events-auto mx-auto max-w-md md:max-w-xl sk-bottom-nav rounded-[26px] grid grid-cols-5 p-1.5 gap-1">
+                <div
+                  data-tour="bottom-nav"
+                  className="pointer-events-auto mx-auto max-w-md md:max-w-xl sk-bottom-nav rounded-[26px] grid grid-cols-5 p-1.5 gap-1"
+                >
                   {TABS.map((t) => {
                     const active = activeTab === t.id;
                     const Icon = t.icon;

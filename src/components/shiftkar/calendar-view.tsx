@@ -1,35 +1,33 @@
 "use client";
 /**
- * Calendar view — 100% parity with Android `CalendarScreen.kt`:
- *  - Portrait layout: Elastic viewport-fitting `GridView` + `MonthlySummaryStrip`.
- *  - Mobile Landscape layout: Unified vertical scroll with 2-column top header (`TodayBanner` + `MonthNav` side-by-side)
- *    and guaranteed full-height calendar cells (`min-height: 292px`) and full-width table.
- *  - `TableView` & `TableFullscreen`:
- *    - Month swipe (`onTouchStart`/`onTouchEnd`/`onWheel`) is strictly DISABLED in `table` mode.
- *    - Fits 100% of screen width (`w-full table-fixed`) with zero horizontal overflow needed.
- *    - Every row (`<tr>`) has a strict, uniform fixed height (`h-[46px]`) with single-line `truncate`
- *      so no row (like Fridays or multi-occasion days) ever stretches taller than other rows.
- *    - Strictly respects `filterGroup`: shows ONLY the selected group's shift when `A`/`B`/`C`/`D` is active,
- *      and shows all groups (`A۱ B۲ C۱ D۲`) only when `همه` (`ALL`) is active.
+ * Calendar view (`CalendarView`):
+ *  - Desktop Split Layout (`lg:` in `grid` mode, matching Desktop App `153863.jpg`):
+ *      • Top Row 1: Month Navigation Bar
+ *      • Top Row 2: Group Filter Chips (`همه`, `A`, `B`, `C`, `D`) + Image Export + Today button
+ *      • Main Area (12-col split):
+ *          - Right (`lg:col-span-8`): Full-height 7-column Calendar Grid inside a glass card
+ *          - Left Sidebar (`lg:col-span-4`): `TodayBanner` on top + `DesktopMonthlyStatsCard`
+ *            (`آمار ماهانه` with 2×2 large colored stat cards: صبح‌کار، شب‌کار، تعطیل رسمی، استراحت)
+ *  - Non-Fullscreen `TableView` (matching Desktop App `153862.jpg`):
+ *      • `TodayBanner` at top + `MonthNav` + Filter Row
+ *      • Rounded glass table card with sticky header, 4 columns (`روز`, `هفته`, `شیفت`, `مناسبت و یادداشت`),
+ *        rounded shift pill with icon + label (`☀️ صبح‌کار ۱`, `🌙 شب‌کار ۱`, `🏠 استراحت ۱`),
+ *        uniform row height (`h-[46px]`), Friday & Holiday row tinting, and disabled month-swipe while scrolling.
  */
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   JALALI_MONTHS,
-  HIJRI_MONTHS,
-  GREGORIAN_MONTHS,
   WEEKDAYS,
   jalaaliMonthLength,
   jalaaliWeekday,
   todayJalaali,
   makeDateKey,
   toPersianDigits,
-  toGregorian,
   formatJalali,
   formatWeekday,
 } from "@/lib/jalali";
-import { gregorianToJdn, jdnToIslamic } from "@/lib/islamic-calendar";
 import {
   calculateShift,
   calculateAllShifts,
@@ -37,6 +35,7 @@ import {
   getActiveGroups,
   getActiveGroupFilters,
   getGroupLetter,
+  getGroupTitle,
   type ShiftGroup,
   type ShiftCode,
 } from "@/lib/shift-engine";
@@ -96,6 +95,13 @@ const KIND_ICON_MD: Record<ShiftKind, React.ReactNode> = {
   REST: <RestIcon size={15} />,
 };
 
+const KIND_ICON_LG: Record<ShiftKind, React.ReactNode> = {
+  DAY: <SunIcon size={18} />,
+  EVENING: <SunsetIcon size={18} />,
+  NIGHT: <MoonIcon size={18} />,
+  REST: <RestIcon size={18} />,
+};
+
 /** Mini group badge for TableView when filterGroup === "ALL". */
 function MiniBadge({
   label,
@@ -120,8 +126,7 @@ function MiniBadge({
 }
 
 /**
- * GroupNumBadge — matches `GroupNumBadge` in `Glass.kt` lines 163-187:
- * Displays `${group.faLetter()}${ord}` (e.g. `A۱`, `B۲`) inside `همه` calendar cells.
+ * GroupNumBadge — Displays `${group.faLetter()}${ord}` (e.g. `A۱`, `B۲`) inside `همه` calendar cells.
  */
 function GroupNumBadge({ label, code }: { label: string; code: ShiftCode }) {
   const kind = codeToKind(code);
@@ -341,10 +346,6 @@ export function CalendarView({
               .join(" · ")
           : "";
 
-      const gDate = toGregorian(viewYear, viewMonth, d);
-      const hDate = jdnToIslamic(gregorianToJdn(gDate.gy, gDate.gm, gDate.gd));
-      const subDateText = `${toPersianDigits(hDate.hd)} ${HIJRI_MONTHS[hDate.hm - 1]} • ${toPersianDigits(gDate.gd)} ${GREGORIAN_MONTHS[gDate.gm - 1]}`;
-
       info.push({
         d,
         key,
@@ -355,7 +356,6 @@ export function CalendarView({
         isFriday: jalaaliWeekday(viewYear, viewMonth, d) === 6,
         weekday: jalaaliWeekday(viewYear, viewMonth, d),
         label: `${formatWeekday(viewYear, viewMonth, d)} ${formatJalali(viewYear, viewMonth, d)}`,
-        subDateText,
         note: notes.get(key),
         record: rec,
         all,
@@ -382,12 +382,10 @@ export function CalendarView({
     calendarSyncRev,
   ]);
 
-  /* Touch Swipe + Horizontal Wheel Month Navigation — ONLY active in GridView (`viewType === "grid"`),
-   * strictly disabled in `TableView` (`viewType === "table"`). */
+  /* Touch Swipe + Horizontal Wheel Month Navigation — ONLY in Grid mode! */
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      if (viewType !== "grid") return;
-      if (e.touches.length !== 1) return;
+      if (viewType !== "grid" || e.touches.length !== 1) return;
       const x = e.touches[0].clientX;
       const y = e.touches[0].clientY;
       touchStateRef.current = { startX: x, startY: y, lastX: x, lastY: y };
@@ -397,8 +395,7 @@ export function CalendarView({
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
-      if (viewType !== "grid") return;
-      if (!touchStateRef.current || e.touches.length !== 1) return;
+      if (viewType !== "grid" || !touchStateRef.current || e.touches.length !== 1) return;
       touchStateRef.current.lastX = e.touches[0].clientX;
       touchStateRef.current.lastY = e.touches[0].clientY;
     },
@@ -407,13 +404,9 @@ export function CalendarView({
 
   const handleTouchFinish = useCallback(
     (e: React.TouchEvent) => {
-      if (viewType !== "grid") {
-        touchStateRef.current = null;
-        return;
-      }
       const st = touchStateRef.current;
       touchStateRef.current = null;
-      if (!st) return;
+      if (viewType !== "grid" || !st) return;
       const endX = e.changedTouches?.[0]?.clientX ?? st.lastX;
       const endY = e.changedTouches?.[0]?.clientY ?? st.lastY;
       const dx = endX - st.startX;
@@ -423,7 +416,7 @@ export function CalendarView({
         goMonth(dx > 0 ? 1 : -1);
       }
     },
-    [goMonth, viewType],
+    [viewType, goMonth],
   );
 
   const handleWheel = useCallback(
@@ -437,7 +430,7 @@ export function CalendarView({
       wheelLockUntilRef.current = now + 350;
       goMonth(dx > 0 ? 1 : -1);
     },
-    [goMonth, viewType],
+    [viewType, goMonth],
   );
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -491,23 +484,21 @@ export function CalendarView({
       className="sk-cal-root flex h-full flex-col gap-1.5 sm:gap-2 px-3.5 md:px-6 pt-2.5 overflow-hidden"
       onKeyDown={onKeyDown}
     >
-      {/* ============ Top Pair (Stacked in Portrait, 2-Column Side-by-Side in Mobile Landscape) ============ */}
-      <div className="sk-cal-top-pair flex flex-col gap-1.5 sm:gap-2 shrink-0">
-        {/* Today banner */}
-        <TodayBanner
-          todayKey={todayKey}
-          filterGroup={effectiveFilterGroup}
-          myGroup={myGroup}
-          activeGroups={activeGroups}
-          dayRecord={dayRecords[todayKey]}
-          onOpenDay={openDay}
-        />
+      {/* Top section: On Mobile/Tablet (or in Table mode on all screens), TodayBanner sits at top */}
+      <div className={viewType === "grid" ? "sk-cal-top-pair flex flex-col gap-1.5 lg:contents" : "sk-cal-top-pair flex flex-col gap-1.5"}>
+        <div className={viewType === "grid" ? "lg:hidden shrink-0" : "shrink-0"}>
+          <TodayBanner
+            todayKey={todayKey}
+            filterGroup={effectiveFilterGroup}
+            myGroup={myGroup}
+            activeGroups={activeGroups}
+            dayRecord={dayRecords[todayKey]}
+            onOpenDay={openDay}
+          />
+        </div>
 
         {/* Month navigation row */}
-        <div
-          className="glass rounded-[16px] p-[5px] flex items-center gap-1 shrink-0"
-          data-tour="month-nav"
-        >
+        <div className="glass rounded-[16px] p-[5px] flex items-center gap-1 shrink-0" data-tour="month-nav">
           <button
             onClick={() => goMonth(-1)}
             className="sk-sheet-btn !size-10 !rounded-[12px] shrink-0"
@@ -557,48 +548,47 @@ export function CalendarView({
         </div>
       </div>
 
-      {/* ============ Filter chips + PNG Export + Fullscreen + Today chip ============ */}
-      <div
-        className="flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5 shrink-0"
-        data-tour="group-filter"
-      >
+      {/* Filter chips + PNG Export + Fullscreen + Today chip */}
+      <div className="flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5 shrink-0" data-tour="group-filter">
         {!pat.hasGroups ? (
           <span className="shrink-0 h-9 px-3 rounded-full bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] shadow-[inset_0_0_0_1.5px_var(--sk-primary)] text-[12px] font-bold inline-flex items-center">
             شیفت فردی (بدون گروه)
           </span>
         ) : (
-          groupFilters.map((g) => {
-            const active = effectiveFilterGroup === g;
-            const isCompared = g !== "ALL" && compareGroup === (g as ShiftGroup);
-            const label = g === "ALL" ? "همه" : getGroupLetter(g as ShiftGroup, pat);
-            return (
-              <button
-                key={g}
-                onClick={() => setFilter(g)}
-                onContextMenu={(e) => {
-                  if (g !== "ALL") {
-                    e.preventDefault();
-                    toggleCompare(g as ShiftGroup);
+          <div className="inline-flex items-center gap-1.5 glass rounded-full p-1">
+            {groupFilters.map((g) => {
+              const active = effectiveFilterGroup === g;
+              const isCompared = g !== "ALL" && compareGroup === (g as ShiftGroup);
+              const label = g === "ALL" ? "همه" : getGroupLetter(g as ShiftGroup, pat);
+              return (
+                <button
+                  key={g}
+                  onClick={() => setFilter(g)}
+                  onContextMenu={(e) => {
+                    if (g !== "ALL") {
+                      e.preventDefault();
+                      toggleCompare(g as ShiftGroup);
+                    }
+                  }}
+                  className={`shrink-0 min-w-9 h-7 px-2.5 rounded-full text-[12.5px] font-bold transition-all ${
+                    active
+                      ? "bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] shadow-[inset_0_0_0_1.5px_var(--sk-primary)]"
+                      : isCompared
+                        ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] shadow-[inset_0_0_0_1.5px_var(--sk-rest-ink)]"
+                        : "text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)]"
+                  }`}
+                  aria-pressed={active}
+                  title={
+                    g === "ALL"
+                      ? "نمایش همه گروه‌ها"
+                      : `شیفت ${label} (نگه‌داشتن یا کلیک راست برای مقایسه استراحت مشترک)`
                   }
-                }}
-                className={`shrink-0 min-w-10 h-9 px-2.5 rounded-full text-[13px] font-bold transition-all ${
-                  active
-                    ? "bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] shadow-[inset_0_0_0_1.5px_var(--sk-primary)]"
-                    : isCompared
-                      ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] shadow-[inset_0_0_0_1.5px_var(--sk-rest-ink)]"
-                      : "glass text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)]"
-                }`}
-                aria-pressed={active}
-                title={
-                  g === "ALL"
-                    ? "نمایش همه گروه‌ها"
-                    : `شیفت ${label} (نگه‌داشتن یا کلیک راست برای مقایسه استراحت مشترک)`
-                }
-              >
-                {label}
-              </button>
-            );
-          })
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         )}
         <div className="flex-1 min-w-1" />
         <button
@@ -618,6 +608,7 @@ export function CalendarView({
             onClick={() => setTableFs(true)}
             className="shrink-0 size-9 rounded-full glass grid place-items-center text-[var(--sk-primary)]"
             aria-label="جدول تمام‌صفحه"
+            title="جدول تمام‌صفحه"
           >
             <ExpandIcon size={16} />
           </button>
@@ -638,12 +629,9 @@ export function CalendarView({
         )}
       </div>
 
-      {/* ============ Legend (grid + ALL) ============ */}
+      {/* Legend (grid + ALL) */}
       {viewType === "grid" && effectiveFilterGroup === "ALL" && (
-        <div
-          className="flex items-center gap-3.5 px-1 flex-wrap shrink-0 leading-none"
-          aria-label="راهنمای شیفت‌ها"
-        >
+        <div className="flex items-center gap-3.5 px-1 flex-wrap shrink-0 leading-none" aria-label="راهنمای شیفت‌ها">
           <span className="flex items-center gap-1 text-[10.5px] text-[var(--sk-text-muted)]">
             <span className="size-2 rounded-full bg-[var(--sk-day)]" />
             صبح‌کار
@@ -665,43 +653,65 @@ export function CalendarView({
         </div>
       )}
 
-      {/* ============ Body (Swipe enabled ONLY in `grid` mode; disabled in `table` mode!) ============ */}
+      {/* Main Body */}
       <div
         ref={bodyRef}
-        onTouchStart={viewType === "grid" ? handleTouchStart : undefined}
-        onTouchMove={viewType === "grid" ? handleTouchMove : undefined}
-        onTouchEnd={viewType === "grid" ? handleTouchFinish : undefined}
-        onTouchCancel={viewType === "grid" ? handleTouchFinish : undefined}
-        onWheel={viewType === "grid" ? handleWheel : undefined}
-        style={{ touchAction: viewType === "table" ? "pan-x pan-y" : "pan-y" }}
-        className={`sk-cal-body flex-1 min-h-0 ${
-          viewType === "grid"
-            ? "flex flex-col overflow-hidden pb-[calc(env(safe-area-inset-bottom)+72px)]"
-            : "overflow-y-auto sk-scroll overscroll-contain pb-[calc(env(safe-area-inset-bottom)+90px)]"
-        }`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchFinish}
+        onTouchCancel={handleTouchFinish}
+        onWheel={handleWheel}
+        className={`sk-cal-body flex-1 min-h-0 flex flex-col overflow-hidden pb-[calc(env(safe-area-inset-bottom)+74px)]`}
       >
         <div
           key={`${viewYear}-${viewMonth}-${viewType}`}
-          className={`${animClass} ${
-            viewType === "grid" ? "flex-1 min-h-0 flex flex-col gap-1.5" : ""
+          className={`${animClass} flex-1 min-h-0 flex flex-col ${
+            viewType === "grid" ? "gap-1.5 lg:grid lg:grid-cols-12 lg:gap-4" : ""
           }`}
         >
           {viewType === "grid" ? (
             <>
-              <GridView
-                dayInfo={dayInfo}
-                firstWeekday={firstWeekday}
-                filterGroup={effectiveFilterGroup}
-                myGroup={myGroup}
-                selectedDateKey={selectedDateKey}
-                onOpenDay={openDay}
-              />
-              <MonthlySummaryStrip
-                dayInfo={dayInfo}
-                effGroup={summaryGroup}
-                myGroup={myGroup}
-                compareGroup={compareGroup}
-              />
+              {/* Right Column on Desktop (8 cols): Calendar Grid inside Glass Container */}
+              <div className="flex-1 min-h-0 flex flex-col lg:col-span-8 lg:glass lg:rounded-[26px] lg:p-3.5">
+                <GridView
+                  dayInfo={dayInfo}
+                  firstWeekday={firstWeekday}
+                  filterGroup={effectiveFilterGroup}
+                  myGroup={myGroup}
+                  selectedDateKey={selectedDateKey}
+                  onOpenDay={openDay}
+                />
+              </div>
+
+              {/* Mobile Summary Strip (< lg) */}
+              <div className="lg:hidden shrink-0">
+                <MonthlySummaryStrip
+                  dayInfo={dayInfo}
+                  effGroup={summaryGroup}
+                  myGroup={myGroup}
+                  compareGroup={compareGroup}
+                />
+              </div>
+
+              {/* Left Sidebar on Desktop (>= lg, 4 cols): TodayBanner + 2x2 Monthly Stats Card (matching 153863.jpg!) */}
+              <div className="hidden lg:flex lg:col-span-4 flex-col gap-3 min-h-0">
+                <TodayBanner
+                  todayKey={todayKey}
+                  filterGroup={effectiveFilterGroup}
+                  myGroup={myGroup}
+                  activeGroups={activeGroups}
+                  dayRecord={dayRecords[todayKey]}
+                  onOpenDay={openDay}
+                />
+                <DesktopMonthlyStatsCard
+                  viewYear={viewYear}
+                  viewMonth={viewMonth}
+                  dayInfo={dayInfo}
+                  effGroup={summaryGroup}
+                  myGroup={myGroup}
+                  compareGroup={compareGroup}
+                />
+              </div>
             </>
           ) : (
             <TableView
@@ -714,7 +724,7 @@ export function CalendarView({
         </div>
       </div>
 
-      {/* ============ Fullscreen table ============ */}
+      {/* Fullscreen table */}
       {tableFs && (
         <TableFullscreen
           viewYear={viewYear}
@@ -794,7 +804,7 @@ function TodayBanner({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onOpenDay(todayKey);
         }}
-        className="glass rounded-2xl px-3 py-2 flex flex-col gap-1.5 cursor-pointer hover:bg-[var(--sk-primary-soft)]/30 transition-colors shrink-0"
+        className="glass rounded-2xl px-3 py-2.5 flex flex-col gap-1.5 cursor-pointer hover:bg-[var(--sk-primary-soft)]/30 transition-colors shrink-0"
         data-tour="today-banner"
       >
         <div className="flex items-center justify-between">
@@ -847,26 +857,144 @@ function TodayBanner({
   return (
     <button
       onClick={() => onOpenDay(todayKey)}
-      className="glass rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-3 w-full text-start hover:bg-[var(--sk-primary-soft)]/40 transition-colors shrink-0"
+      className="glass rounded-2xl lg:rounded-[24px] px-3.5 lg:px-4 py-2.5 lg:py-3.5 flex items-center justify-between gap-3 w-full text-start hover:bg-[var(--sk-primary-soft)]/40 transition-colors shrink-0"
       data-tour="today-banner"
       aria-label={`شیفت امروز — ${dateLine}، باز کردن جزئیات`}
     >
       <span className="min-w-0">
-        <span className="block text-[11px] text-[var(--sk-text-muted)]">{dateLine}</span>
-        <span className="block text-[15px] sm:text-[15.5px] font-extrabold mt-0.5 truncate">
+        <span className="block text-[11px] lg:text-[11.5px] text-[var(--sk-text-muted)]">{dateLine}</span>
+        <span className="block text-[15.5px] lg:text-[17px] font-extrabold mt-0.5 truncate">
           شیفت امروز: <span className="text-gradient">{label}</span>
         </span>
       </span>
-      <span
-        className={`shrink-0 size-11 rounded-[13px] grid place-items-center ${KIND_GRAD[effKind]}`}
-      >
+      <span className={`shrink-0 size-11 lg:size-12 rounded-[13px] lg:rounded-[15px] grid place-items-center ${KIND_GRAD[effKind]}`}>
         {KIND_ICON_MD[effKind]}
       </span>
     </button>
   );
 }
 
-/* ================= Monthly Summary Strip ================= */
+/* ================= Desktop Monthly Stats Card (matching Desktop App 153863.jpg) ================= */
+function DesktopMonthlyStatsCard({
+  viewYear,
+  viewMonth,
+  dayInfo,
+  effGroup,
+  myGroup,
+  compareGroup,
+}: {
+  viewYear: number;
+  viewMonth: number;
+  dayInfo: DayInfo[];
+  effGroup: ShiftGroup;
+  myGroup: ShiftGroup;
+  compareGroup: ShiftGroup | null;
+}) {
+  const pat = getActivePattern();
+  const counts = useMemo(() => {
+    let day = 0;
+    let evening = 0;
+    let night = 0;
+    let officialHolidays = 0;
+    let rest = 0;
+    let sharedRest = 0;
+
+    for (const info of dayInfo) {
+      if (info.holiday) officialHolidays++;
+      const c = info.all.find((x) => x.group === effGroup)?.code ?? "M1";
+      const k =
+        effGroup === myGroup && info.record?.swapKind
+          ? info.record.swapKind
+          : codeToKind(c);
+      if (k === "DAY") day++;
+      else if (k === "EVENING") evening++;
+      else if (k === "NIGHT") night++;
+      else rest++;
+
+      if (compareGroup) {
+        const c2 = info.all.find((x) => x.group === compareGroup)?.code ?? "M1";
+        if (k === "REST" && codeToKind(c2) === "REST") sharedRest++;
+      }
+    }
+    return { day, evening, night, officialHolidays, rest, sharedRest };
+  }, [dayInfo, effGroup, myGroup, compareGroup]);
+
+  const groupTitle = getGroupTitle(effGroup, pat);
+  const restLabel = compareGroup
+    ? `مشترک ${getGroupLetter(effGroup, pat)}∩${getGroupLetter(compareGroup, pat)}`
+    : "استراحت";
+  const restValue = compareGroup ? counts.sharedRest : counts.rest;
+
+  const tiles: { label: string; count: number; cls: string; icon: React.ReactNode }[] = [
+    { label: "صبح‌کار", count: counts.day, cls: "sk-grad-day", icon: KIND_ICON_LG.DAY },
+    ...(counts.evening > 0
+      ? [
+          {
+            label: "عصرکار",
+            count: counts.evening,
+            cls: "sk-grad-evening",
+            icon: KIND_ICON_LG.EVENING,
+          },
+        ]
+      : []),
+    { label: "شب‌کار", count: counts.night, cls: "sk-grad-night", icon: KIND_ICON_LG.NIGHT },
+    {
+      label: "تعطیل رسمی",
+      count: counts.officialHolidays,
+      cls: "sk-grad-holiday",
+      icon: <HolidayIcon size={18} />,
+    },
+    { label: restLabel, count: restValue, cls: "sk-grad-rest", icon: KIND_ICON_LG.REST },
+  ];
+
+  return (
+    <div
+      className="flex-1 min-h-0 glass rounded-[26px] p-4 flex flex-col justify-between"
+      data-tour="summary-strip"
+    >
+      <div className="flex items-start justify-between gap-2 shrink-0">
+        <div>
+          <h3 className="text-[14.5px] font-black text-[var(--sk-text)]">
+            آمار ماهانه ({JALALI_MONTHS[viewMonth - 1]} {toPersianDigits(viewYear)})
+          </h3>
+          <p className="text-[11px] font-bold text-[var(--sk-text-muted)] mt-0.5">
+            مجموع {toPersianDigits(dayInfo.length)} روز · {groupTitle}
+          </p>
+        </div>
+        <span className="px-2.5 py-1 rounded-full bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] border border-[var(--sk-primary)]/35 text-[11px] font-black shrink-0">
+          {groupTitle}
+        </span>
+      </div>
+
+      <div
+        className={`grid grid-cols-2 gap-2.5 flex-1 min-h-0 mt-3 ${
+          tiles.length > 4 ? "grid-rows-3" : "grid-rows-2"
+        }`}
+      >
+        {tiles.map((t) => (
+          <div
+            key={t.label}
+            className={`rounded-[18px] p-3.5 border border-current/30 flex flex-col justify-between ${t.cls}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="size-8 rounded-xl bg-black/15 grid place-items-center shrink-0">
+                {t.icon}
+              </span>
+              <span className="text-[18px] xl:text-[20px] font-black leading-none">
+                {toPersianDigits(t.count)} روز
+              </span>
+            </div>
+            <div className="text-[12.5px] font-extrabold text-start mt-2 truncate">
+              {t.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ================= Monthly Summary Strip (Mobile / Tablet) ================= */
 function MonthlySummaryStrip({
   dayInfo,
   effGroup,
@@ -965,7 +1093,6 @@ interface DayInfo {
   isFriday: boolean;
   weekday: number;
   label: string;
-  subDateText: string;
   note: string | undefined;
   record: DayWorkRecord | undefined;
   all: { group: ShiftGroup; label: string; code: ShiftCode }[];
@@ -1077,18 +1204,18 @@ function GridView(props: {
 
   return (
     <div
-      className={`sk-cal-grid-wrap flex-1 min-h-0 flex flex-col ${
+      className={`sk-cal-grid-wrap flex-1 min-h-0 flex flex-col lg:max-h-none ${
         rows >= 6
           ? "max-h-[348px] sm:max-h-[396px] md:max-h-[436px]"
           : "max-h-[296px] sm:max-h-[340px] md:max-h-[376px]"
       }`}
     >
-      <div className="grid grid-cols-7 mb-1 shrink-0" aria-hidden>
+      <div className="grid grid-cols-7 mb-1.5 shrink-0" aria-hidden>
         {WEEKDAY_SHORT.map((w, i) => (
           <div
             key={w}
             className={`text-center text-[12px] sm:text-[13px] font-bold leading-4 py-0.5 ${
-              i === 6 ? "text-[var(--sk-text-muted)]" : "text-[var(--sk-text-faint)]"
+              i === 6 ? "text-[var(--sk-holiday)]" : "text-[var(--sk-text-faint)]"
             }`}
           >
             {w}
@@ -1096,7 +1223,7 @@ function GridView(props: {
         ))}
       </div>
       <div
-        className="flex-1 min-h-0 grid grid-cols-7 gap-1 sm:gap-1.5"
+        className="flex-1 min-h-0 grid grid-cols-7 gap-1 sm:gap-1.5 lg:gap-2"
         style={{
           gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
         }}
@@ -1121,74 +1248,41 @@ function GridView(props: {
   );
 }
 
-/* ================= Helper to build single-line cell summary ================= */
-function renderRowDetailLine(info: DayInfo) {
-  const parts: React.ReactNode[] = [];
-
+/* ================= Non-Fullscreen TableView (matching Desktop App 153862.jpg) ================= */
+function buildRowSummaryLine(info: DayInfo) {
+  const parts: { text: string; cls: string }[] = [];
   if (info.record && (info.record.overtimeHours > 0 || info.record.swapKind)) {
-    const otText =
-      info.record.overtimeHours > 0
-        ? `اضافه‌کاری: ${toPersianDigits(info.record.overtimeHours)}س`
-        : "";
-    const swText = info.record.swapKind
-      ? `جابجایی: ${SHIFT_KIND_FA[info.record.swapKind]}`
-      : "";
-    parts.push(
-      <span key="rec" className="font-bold text-[var(--sk-primary)]">
-        {[otText, swText].filter(Boolean).join(" • ")}
-      </span>,
-    );
+    const sub: string[] = [];
+    if (info.record.overtimeHours > 0)
+      sub.push(`اضافه‌کاری: ${toPersianDigits(info.record.overtimeHours)} ساعت`);
+    if (info.record.swapKind)
+      sub.push(`جابه‌جایی: ${SHIFT_KIND_FA[info.record.swapKind]}`);
+    parts.push({ text: sub.join(" · "), cls: "font-bold text-[var(--sk-primary)]" });
   }
-
   if (info.holidayNames.length > 0) {
-    parts.push(
-      <span key="hol" className="font-bold text-[var(--sk-holiday)]">
-        {info.holidayNames.join("، ")}
-      </span>,
-    );
+    parts.push({
+      text: info.holidayNames.join("، "),
+      cls: "font-bold text-[var(--sk-holiday)]",
+    });
   }
-
   if (info.note) {
-    parts.push(
-      <span key="note" className="font-bold text-[var(--sk-text)]">
-        یادداشت: {info.note}
-      </span>,
-    );
+    parts.push({ text: info.note, cls: "font-semibold text-[var(--sk-text)]" });
   }
-
-  if (info.occasions.length > 0) {
-    parts.push(
-      <span key="occ" className="text-[var(--sk-text-muted)]">
-        {info.occasions.join("، ")}
-      </span>,
-    );
-  }
-
   if (info.colleagueSummary) {
-    parts.push(
-      <span key="col" className="text-[var(--sk-rest-ink)] font-semibold">
-        {info.colleagueSummary}
-      </span>,
-    );
+    parts.push({
+      text: info.colleagueSummary,
+      cls: "font-semibold text-[var(--sk-rest-ink)]",
+    });
   }
-
-  if (parts.length === 0) {
-    return (
-      <span className="text-[11px] text-[var(--sk-text-faint)]">
-        {info.subDateText}
-      </span>
-    );
+  if (info.occasions.length > 0) {
+    parts.push({
+      text: info.occasions.join("، "),
+      cls: "text-[var(--sk-text-muted)]",
+    });
   }
-
-  return parts.map((node, idx) => (
-    <span key={idx}>
-      {idx > 0 && <span className="mx-1.5 text-[var(--sk-text-faint)]">•</span>}
-      {node}
-    </span>
-  ));
+  return parts;
 }
 
-/* ================= Table view (Strict Uniform Row Height, Zero Swipe, Filter-Aware) ================= */
 function TableView(props: {
   dayInfo: DayInfo[];
   filterGroup: GroupFilter;
@@ -1198,148 +1292,160 @@ function TableView(props: {
   const { dayInfo, filterGroup, myGroup, onOpenDay } = props;
   const all = filterGroup === "ALL";
   const pat = getActivePattern();
-  const activeSingleGroup = (all ? myGroup : filterGroup) as ShiftGroup;
 
   return (
-    <div className="card-soft rounded-2xl overflow-hidden">
-      <div
-        className="px-3 py-2 border-b border-[var(--sk-border-soft)] flex items-center justify-between gap-2 flex-wrap"
-        data-table-head
-      >
-        <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-faint)]">
-          <InfoIcon size={13} />
-          برای جزئیات کامل، ثبت یادداشت یا اضافه‌کاری روی هر ردیف ضربه بزنید
-        </span>
-        {all && (
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="flex items-center gap-1 text-[10.5px] text-[var(--sk-text-muted)]">
+    <div className="glass rounded-[22px] border border-[var(--sk-border-soft)] flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="px-4 py-2 border-b border-[var(--sk-border-soft)] flex items-center justify-between shrink-0" data-table-head>
+        {all ? (
+          <div className="flex items-center gap-3.5 flex-wrap">
+            <span className="flex items-center gap-1.5 text-[11px] text-[var(--sk-text-muted)]">
               <span className="size-2 rounded-full bg-[var(--sk-day)]" />
               صبح‌کار
             </span>
             {pat.eveningCount > 0 && (
-              <span className="flex items-center gap-1 text-[10.5px] text-[var(--sk-text-muted)]">
+              <span className="flex items-center gap-1.5 text-[11px] text-[var(--sk-text-muted)]">
                 <span className="size-2 rounded-full bg-[var(--sk-evening)]" />
                 عصرکار
               </span>
             )}
-            <span className="flex items-center gap-1 text-[10.5px] text-[var(--sk-text-muted)]">
+            <span className="flex items-center gap-1.5 text-[11px] text-[var(--sk-text-muted)]">
               <span className="size-2 rounded-full bg-[var(--sk-night)]" />
               شب‌کار
             </span>
-            <span className="flex items-center gap-1 text-[10.5px] text-[var(--sk-text-muted)]">
+            <span className="flex items-center gap-1.5 text-[11px] text-[var(--sk-text-muted)]">
               <span className="size-2 rounded-full bg-[var(--sk-rest)]" />
               استراحت
             </span>
           </div>
+        ) : (
+          <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-faint)]">
+            <InfoIcon size={13} />
+            برای جزئیات، روی هر روز ضربه بزنید
+          </span>
         )}
       </div>
 
-      <div className="overflow-x-auto sk-scroll" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
-      <table className="w-max min-w-full border-collapse text-[12.5px]">
-        <thead>
-          <tr className="h-[38px] text-[11px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
-            <th className="w-[44px] sm:w-[52px] px-1.5 font-bold text-center whitespace-nowrap">روز</th>
-            <th className="w-[64px] sm:w-[76px] px-1.5 font-bold text-center whitespace-nowrap">هفته</th>
-            <th
-              className={`${
-                all ? "w-[110px] sm:w-[126px]" : "w-[96px] sm:w-[114px]"
-              } px-1.5 font-bold text-center whitespace-nowrap`}
-            >
-              {all
-                ? "شیفت گروه‌ها"
-                : pat.hasGroups
-                  ? `شیفت ${getGroupLetter(activeSingleGroup, pat)}`
-                  : "شیفت"}
-            </th>
-            <th className="font-bold text-start ps-2.5 pe-4 whitespace-nowrap">مناسبت و یادداشت</th>
-          </tr>
-        </thead>
-        <tbody>
-          {dayInfo.map((info) => {
-            const holiday = info.holiday;
-            const code =
-              info.all.find((s) => s.group === activeSingleGroup)?.code ?? "M1";
-            const swappedKind =
-              activeSingleGroup === myGroup ? (info.record?.swapKind ?? null) : null;
-            const kind = swappedKind ?? codeToKind(code);
-            const badgeText = swappedKind
-              ? `${SHIFT_KIND_FA[swappedKind]}*`
-              : CODE_NUM_FA[code];
+      <div
+        className="flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain"
+        style={{ touchAction: "pan-x pan-y" }}
+      >
+        <table className="w-full text-[13px] min-w-[520px]">
+          <thead className="sticky top-0 z-10 backdrop-blur-md">
+            <tr className="text-[11.5px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
+              <th className="py-2.5 font-bold w-14 md:w-16 text-center">روز</th>
+              <th className="py-2.5 font-bold w-20 md:w-24 text-center">هفته</th>
+              <th className="py-2.5 font-bold w-28 md:w-36 text-center">
+                {all ? "شیفت گروه‌ها" : "شیفت"}
+              </th>
+              <th className="py-2.5 font-bold text-start ps-4 pe-4">مناسبت و یادداشت</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dayInfo.map((info) => {
+              const holiday = info.holiday;
+              const g = (all ? myGroup : filterGroup) as ShiftGroup;
+              const code = info.all.find((s) => s.group === g)?.code ?? "M1";
+              const swappedKind = g === myGroup ? (info.record?.swapKind ?? null) : null;
+              const kind = swappedKind ?? codeToKind(code);
+              const badgeText = swappedKind
+                ? `${SHIFT_KIND_FA[swappedKind]}*`
+                : CODE_NUM_FA[code];
+              const parts = buildRowSummaryLine(info);
 
-            return (
-              <tr
-                key={info.key}
-                onClick={() => onOpenDay(info.key)}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onOpenDay(info.key);
-                  }
-                }}
-                className={`h-[46px] cursor-pointer border-b border-[var(--sk-border-soft)] last:border-0 transition-colors hover:bg-[var(--sk-primary-soft)]/50
-                  ${holiday ? "bg-[var(--sk-holiday-soft)]/60" : info.isFriday ? "bg-[var(--sk-surface-strong)]/35" : ""}
-                  ${info.isToday ? "bg-[var(--sk-primary-soft)]" : ""}`}
-              >
-                <td
-                  className={`h-[46px] py-0 text-center font-extrabold align-middle whitespace-nowrap ${
-                    info.isToday
-                      ? "text-[var(--sk-primary)]"
-                      : holiday
-                        ? "text-[var(--sk-holiday)]"
-                        : ""
-                  }`}
+              return (
+                <tr
+                  key={info.key}
+                  onClick={() => onOpenDay(info.key)}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onOpenDay(info.key);
+                    }
+                  }}
+                  className={`h-[46px] cursor-pointer border-b border-[var(--sk-border-soft)] last:border-0 transition-colors hover:bg-[var(--sk-primary-soft)]/45
+                    ${
+                      info.isToday
+                        ? "bg-[var(--sk-primary-soft)]/75"
+                        : holiday
+                          ? "bg-[var(--sk-holiday-soft)]/55"
+                          : info.isFriday
+                            ? "bg-[var(--sk-surface-strong)]/60"
+                            : ""
+                    }`}
                 >
-                  {toPersianDigits(String(info.d).padStart(2, "۰"))}
-                </td>
-                <td
-                  className={`h-[46px] py-0 text-center text-[12px] font-semibold align-middle whitespace-nowrap truncate ${
-                    holiday ? "text-[var(--sk-holiday)]" : "text-[var(--sk-text-muted)]"
-                  }`}
-                >
-                  {WEEKDAYS[info.weekday]}
-                </td>
-                <td className="h-[46px] py-0 text-center align-middle whitespace-nowrap">
-                  {all ? (
-                    <span className="inline-flex items-center justify-center gap-[3px]">
-                      {info.all.slice(0, 4).map((s) => {
-                        const gSwap =
-                          s.group === myGroup ? (info.record?.swapKind ?? null) : null;
-                        return (
-                          <MiniBadge
-                            key={s.group}
-                            label={s.label}
-                            code={s.code}
-                            kindOverride={gSwap}
-                          />
-                        );
-                      })}
+                  <td
+                    className={`py-2 text-center font-extrabold whitespace-nowrap ${
+                      info.isToday
+                        ? "text-[var(--sk-primary)]"
+                        : holiday
+                          ? "text-[var(--sk-holiday)]"
+                          : ""
+                    }`}
+                  >
+                    {toPersianDigits(String(info.d).padStart(2, "0"))}
+                  </td>
+                  <td
+                    className={`py-2 text-center text-[12px] font-semibold whitespace-nowrap ${
+                      holiday
+                        ? "text-[var(--sk-holiday)] font-bold"
+                        : info.isFriday
+                          ? "text-[var(--sk-text)] font-bold"
+                          : "text-[var(--sk-text-muted)]"
+                    }`}
+                  >
+                    {WEEKDAYS[info.weekday]}
+                  </td>
+                  <td className="py-2 text-center whitespace-nowrap">
+                    <span className="inline-flex items-center justify-center gap-1">
+                      {all ? (
+                        info.all.map((s) => {
+                          const gKind =
+                            s.group === myGroup && info.record?.swapKind
+                              ? info.record.swapKind
+                              : null;
+                          return (
+                            <MiniBadge
+                              key={s.group}
+                              label={s.label}
+                              code={s.code}
+                              kindOverride={gKind}
+                            />
+                          );
+                        })
+                      ) : (
+                        <span
+                          className={`inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black leading-none border border-current/30 ${KIND_GRAD[kind]}`}
+                        >
+                          {KIND_ICON_SM[kind]}
+                          <span>{badgeText}</span>
+                        </span>
+                      )}
                     </span>
-                  ) : (
-                    <span
-                      className={`inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-[8px] text-[10.5px] font-black whitespace-nowrap ${KIND_GRAD[kind]}`}
-                    >
-                      {KIND_ICON_SM[kind]}
-                      <span>{badgeText}</span>
-                    </span>
-                  )}
-                </td>
-                <td className="h-[46px] py-0 ps-2.5 pe-4 text-start align-middle whitespace-nowrap">
-                  <div className="whitespace-nowrap text-[11.5px] leading-[46px]">
-                    {renderRowDetailLine(info)}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  </td>
+                  <td className="py-2 ps-4 pe-4 text-start text-[12px] max-w-[260px] sm:max-w-[420px] md:max-w-[560px] lg:max-w-[720px] truncate">
+                    {parts.length === 0 ? (
+                      <span className="text-[var(--sk-text-faint)]">—</span>
+                    ) : (
+                      parts.map((p, idx) => (
+                        <span key={idx} className={p.cls}>
+                          {idx > 0 ? "  •  " : ""}
+                          {p.text}
+                        </span>
+                      ))
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-/* ================= Fullscreen table (matching TableView uniform rows & filter behavior) ================= */
+/* ================= Fullscreen table ================= */
 function TableFullscreen(props: {
   viewYear: number;
   viewMonth: number;
@@ -1370,7 +1476,6 @@ function TableFullscreen(props: {
   } = props;
   const all = filterGroup === "ALL";
   const pat = getActivePattern();
-  const activeSingleGroup = (all ? myGroup : filterGroup) as ShiftGroup;
   const headerRef = useRef<HTMLDivElement>(null);
   const todayRowRef = useRef<HTMLTableRowElement>(null);
 
@@ -1390,7 +1495,7 @@ function TableFullscreen(props: {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[90] bg-[var(--sk-bg)] flex flex-col sk-fs-in touch-pan-y"
+      className="fixed inset-0 z-[90] bg-[var(--sk-bg)] flex flex-col sk-fs-in"
       role="dialog"
       aria-modal="true"
       aria-label="جدول شیفت‌کاری تمام‌صفحه"
@@ -1398,7 +1503,7 @@ function TableFullscreen(props: {
       <div className="aurora-bg" aria-hidden />
       <div
         ref={headerRef}
-        className="relative z-10 px-4 pt-[max(env(safe-area-inset-top),14px)] pb-2 shrink-0 touch-pan-y"
+        className="relative z-10 px-4 md:px-6 pt-[max(env(safe-area-inset-top),14px)] pb-2 shrink-0 max-w-6xl w-full mx-auto"
       >
         <div className="glass rounded-2xl p-1.5 flex items-center gap-1">
           <button
@@ -1442,7 +1547,7 @@ function TableFullscreen(props: {
         </div>
 
         {all && (
-          <div className="flex items-center justify-center gap-4 pt-2">
+          <div className="flex items-center justify-center gap-4 pt-2.5">
             <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-muted)]">
               <span className="size-2 rounded-full bg-[var(--sk-day)]" />
               صبح‌کار
@@ -1465,54 +1570,51 @@ function TableFullscreen(props: {
         )}
       </div>
 
-      <div className="relative z-10 flex-1 min-h-0 flex px-4 pb-[max(env(safe-area-inset-bottom),16px)]">
-        <div className="card-soft rounded-2xl w-full flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain" style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}>
-          <table className="w-max min-w-full border-collapse text-[12.5px]">
+      <div className="relative z-10 flex-1 min-h-0 flex px-4 md:px-6 pb-[max(env(safe-area-inset-bottom),16px)] max-w-6xl w-full mx-auto">
+        <div
+          className="glass rounded-[22px] border border-[var(--sk-border-soft)] w-full flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain"
+          style={{ touchAction: "pan-x pan-y" }}
+        >
+          <table className="w-full text-[13px] min-w-[520px]">
             <thead className="sticky top-0 z-10 backdrop-blur-md">
-              <tr className="h-[38px] text-[11px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
-                <th className="w-[44px] sm:w-[52px] px-1.5 font-bold text-center whitespace-nowrap">روز</th>
-                <th className="w-[64px] sm:w-[76px] px-1.5 font-bold text-center whitespace-nowrap">هفته</th>
-                <th
-                  className={`${
-                    all ? "w-[110px] sm:w-[126px]" : "w-[96px] sm:w-[114px]"
-                  } px-1.5 font-bold text-center whitespace-nowrap`}
-                >
-                  {all
-                    ? "شیفت گروه‌ها"
-                    : pat.hasGroups
-                      ? `شیفت ${getGroupLetter(activeSingleGroup, pat)}`
-                      : "شیفت"}
+              <tr className="text-[11.5px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
+                <th className="py-2.5 font-bold w-14 md:w-16 text-center">روز</th>
+                <th className="py-2.5 font-bold w-20 md:w-24 text-center">هفته</th>
+                <th className="py-2.5 font-bold w-28 md:w-36 text-center">
+                  {all ? "شیفت گروه‌ها" : "شیفت"}
                 </th>
-                <th className="font-bold text-start ps-2.5 pe-4 whitespace-nowrap">مناسبت و یادداشت</th>
+                <th className="py-2.5 font-bold text-start ps-4 pe-4">مناسبت و یادداشت</th>
               </tr>
             </thead>
             <tbody>
               {dayInfo.map((info) => {
                 const holiday = info.holiday;
-                const code =
-                  info.all.find((s) => s.group === activeSingleGroup)?.code ?? "M1";
-                const swappedKind =
-                  activeSingleGroup === myGroup ? (info.record?.swapKind ?? null) : null;
+                const g = (all ? myGroup : filterGroup) as ShiftGroup;
+                const code = info.all.find((s) => s.group === g)?.code ?? "M1";
+                const swappedKind = g === myGroup ? (info.record?.swapKind ?? null) : null;
                 const kind = swappedKind ?? codeToKind(code);
                 const badgeText = swappedKind
                   ? `${SHIFT_KIND_FA[swappedKind]}*`
                   : CODE_NUM_FA[code];
+                const parts = buildRowSummaryLine(info);
 
                 return (
                   <tr
                     key={info.key}
                     ref={info.isToday ? todayRowRef : undefined}
                     onClick={() => onOpenDay(info.key)}
-                    className={`h-[46px] cursor-pointer border-b border-[var(--sk-border-soft)] last:border-0 ${
-                      holiday
-                        ? "bg-[var(--sk-holiday-soft)]/60"
-                        : info.isFriday
-                          ? "bg-[var(--sk-surface-strong)]/35"
-                          : ""
-                    } ${info.isToday ? "bg-[var(--sk-primary-soft)]" : ""}`}
+                    className={`h-[46px] cursor-pointer border-b border-[var(--sk-border-soft)] last:border-0 transition-colors hover:bg-[var(--sk-primary-soft)]/45 ${
+                      info.isToday
+                        ? "bg-[var(--sk-primary-soft)]/75"
+                        : holiday
+                          ? "bg-[var(--sk-holiday-soft)]/55"
+                          : info.isFriday
+                            ? "bg-[var(--sk-surface-strong)]/60"
+                            : ""
+                    }`}
                   >
                     <td
-                      className={`h-[46px] py-0 text-center font-extrabold align-middle whitespace-nowrap ${
+                      className={`py-2 text-center font-extrabold whitespace-nowrap ${
                         info.isToday
                           ? "text-[var(--sk-primary)]"
                           : holiday
@@ -1520,44 +1622,57 @@ function TableFullscreen(props: {
                             : ""
                       }`}
                     >
-                      {toPersianDigits(String(info.d).padStart(2, "۰"))}
+                      {toPersianDigits(String(info.d).padStart(2, "0"))}
                     </td>
                     <td
-                      className={`h-[46px] py-0 text-center text-[12px] font-semibold align-middle whitespace-nowrap truncate ${
-                        holiday ? "text-[var(--sk-holiday)]" : "text-[var(--sk-text-muted)]"
+                      className={`py-2 text-center text-[12px] font-semibold whitespace-nowrap ${
+                        holiday
+                          ? "text-[var(--sk-holiday)] font-bold"
+                          : info.isFriday
+                            ? "text-[var(--sk-text)] font-bold"
+                            : "text-[var(--sk-text-muted)]"
                       }`}
                     >
                       {WEEKDAYS[info.weekday]}
                     </td>
-                    <td className="h-[46px] py-0 text-center align-middle whitespace-nowrap">
-                      {all ? (
-                        <span className="inline-flex items-center justify-center gap-[3px]">
-                          {info.all.slice(0, 4).map((s) => {
-                            const gSwap =
-                              s.group === myGroup ? (info.record?.swapKind ?? null) : null;
+                    <td className="py-2 text-center whitespace-nowrap">
+                      <span className="inline-flex items-center justify-center gap-1">
+                        {all ? (
+                          info.all.map((s) => {
+                            const gKind =
+                              s.group === myGroup && info.record?.swapKind
+                                ? info.record.swapKind
+                                : null;
                             return (
                               <MiniBadge
                                 key={s.group}
                                 label={s.label}
                                 code={s.code}
-                                kindOverride={gSwap}
+                                kindOverride={gKind}
                               />
                             );
-                          })}
-                        </span>
-                      ) : (
-                        <span
-                          className={`inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-[8px] text-[10.5px] font-black whitespace-nowrap ${KIND_GRAD[kind]}`}
-                        >
-                          {KIND_ICON_SM[kind]}
-                          <span>{badgeText}</span>
-                        </span>
-                      )}
+                          })
+                        ) : (
+                          <span
+                            className={`inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black leading-none border border-current/30 ${KIND_GRAD[kind]}`}
+                          >
+                            {KIND_ICON_SM[kind]}
+                            <span>{badgeText}</span>
+                          </span>
+                        )}
+                      </span>
                     </td>
-                    <td className="h-[46px] py-0 ps-2.5 pe-4 text-start align-middle whitespace-nowrap">
-                      <div className="whitespace-nowrap text-[11.5px] leading-[46px]">
-                        {renderRowDetailLine(info)}
-                      </div>
+                    <td className="py-2 ps-4 pe-4 text-start text-[12px] max-w-[260px] sm:max-w-[420px] md:max-w-[560px] lg:max-w-[720px] truncate">
+                      {parts.length === 0 ? (
+                        <span className="text-[var(--sk-text-faint)]">—</span>
+                      ) : (
+                        parts.map((p, idx) => (
+                          <span key={idx} className={p.cls}>
+                            {idx > 0 ? "  •  " : ""}
+                            {p.text}
+                          </span>
+                        ))
+                      )}
                     </td>
                   </tr>
                 );

@@ -1,18 +1,12 @@
 "use client";
 /**
- * Settings view (`SettingsView`) — 100% layout & section-order parity with Android `SettingsScreen.kt` (v6.7.1):
- *  1. `شیفت شما`
- *  2. `حالت نمایش` (`روشن`, `تیره`, `هماهنگ با سیستم`)
- *  3. `رنگ اصلی` (6 signature themes with `.sk-swatch`)
- *  4. `نمای تقویم` (`تقویم` | `جدولی` with `.vp-preview` miniatures)
- *  5. `به‌روزرسانی و نصب برنامه` (Installed version row + PWA install button +
- *     `بروزرسانی تقویم و مناسبت‌ها` + `دانلود مستقیم از گیت‌هاب`)
- *  6. `راهنما` (all 11 expandable items from `SettingsScreen.kt`)
- *  7. `درباره ما` (with `ShiftKarAppEmblem` + `سید حسین موسوی سعیدی — واحد SBR`)
- *  8. `راه‌های ارتباط با ما` (5 polished contact channel cards with brand-tinted icons & subtitles)
- *  9. `یادآور هوشمند شیفت و یادداشت‌ها` (Shift reminder toggle + Morning/Night hour sliders + Note reminder toggle)
- * 10. `پشتیبان‌گیری و بازیابی یادداشت‌ها` (`X یادداشت` | `X اضافه‌کاری` | `X همکار` + `.json` export/import)
- * 11. `راهنمای شروع` (`تور راهنمای برنامه` + `راه‌اندازی مجدد تنظیمات اولیهٔ نرم‌افزار`)
+ * Settings view (`SettingsView`) — Symmetrical, height-matched 2-column Desktop Grid + Mobile Stack:
+ *  - Row 1: `شیفت شما` + `حالت نمایش`
+ *  - Row 2: `رنگ اصلی` + `نمای تقویم`
+ *  - Row 3: `به‌روزرسانی و نصب برنامه` + `پشتیبان‌گیری و بازیابی یادداشت‌ها`
+ *  - Row 4: `یادآور هوشمند شیفت و یادداشت‌ها` + `راهنمای شروع`
+ *  - Row 5: `درباره ما` + `راه‌های ارتباط با ما` (2-column internal contact grid on desktop/tablet)
+ *  - Row 6 (`lg:col-span-2`): `راهنما` (Full-width card with 2-column internal FAQ grid on desktop)
  */
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -59,6 +53,7 @@ import {
   CalendarIcon,
   ExternalIcon,
   NotesIcon,
+  SparkIcon,
   ShiftKarAppEmblem,
 } from "./icons";
 
@@ -178,12 +173,12 @@ function GridPreview() {
           ? "bg-[var(--sk-holiday)]/70"
           : "bg-[var(--sk-rest)]/45";
   return (
-    <span className="vp-preview" aria-hidden>
+    <span className="vp-preview !w-full !max-w-[140px]" aria-hidden>
       <span className="vp-head" />
       {rows.map((r, i) => (
-        <span key={i} className="flex gap-[2px]">
+        <span key={i} className="flex gap-[2.5px]">
           {r.map((c, j) => (
-            <span key={j} className={`h-2 flex-1 rounded-[2px] ${cls(c)}`} />
+            <span key={j} className={`h-2.5 flex-1 rounded-[2.5px] ${cls(c)}`} />
           ))}
         </span>
       ))}
@@ -199,14 +194,14 @@ function TablePreview() {
     ["bg-[var(--sk-day)]/70", ""],
   ];
   return (
-    <span className="vp-preview" aria-hidden>
+    <span className="vp-preview !w-full !max-w-[140px]" aria-hidden>
       <span className="vp-head" />
       {rows.map((r, i) => (
-        <span key={i} className="flex items-center gap-[3px]">
-          <span className="w-2 h-2 rounded-[2px] bg-[var(--sk-text-faint)]/40" />
-          <span className="flex-1 h-1.5 rounded-full bg-[var(--sk-text-faint)]/35" />
-          <span className={`w-2 h-2 rounded-full ${r[0]}`} />
-          <span className={`flex-1 h-1.5 rounded-full ${r[1] || "bg-[var(--sk-text-faint)]/25"}`} />
+        <span key={i} className="flex items-center gap-[3.5px]">
+          <span className="w-2.5 h-2.5 rounded-[2.5px] bg-[var(--sk-text-faint)]/40" />
+          <span className="flex-1 h-2 rounded-full bg-[var(--sk-text-faint)]/35" />
+          <span className={`w-2.5 h-2.5 rounded-full ${r[0]}`} />
+          <span className={`flex-1 h-2 rounded-full ${r[1] || "bg-[var(--sk-text-faint)]/25"}`} />
         </span>
       ))}
     </span>
@@ -417,50 +412,60 @@ export function SettingsView({
   };
 
   return (
-    <div className="h-full overflow-y-auto sk-scroll overscroll-contain flex flex-col lg:grid lg:grid-cols-2 lg:items-start gap-3 md:gap-4 px-4 md:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+108px)]">
+    <div className="h-full overflow-y-auto sk-scroll overscroll-contain flex flex-col lg:grid lg:grid-cols-2 lg:items-stretch gap-3.5 md:gap-4 px-4 md:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+116px)]">
       {/* Header */}
       <header className="text-center pt-1 pb-1 lg:col-span-2">
-        <h1 className="text-[22px] font-black">تنظیمات</h1>
-        <p className="text-[12px] text-[var(--sk-text-muted)] mt-1">شخصی‌سازی برنامه</p>
+        <h1 className="text-[22px] md:text-[24px] font-black">تنظیمات</h1>
+        <p className="text-[12px] text-[var(--sk-text-muted)] mt-1">شخصی‌سازی کامل برنامه، پشتیبان‌گیری و راهنما</p>
       </header>
 
-      {/* ============ 1. شیفت شما ============ */}
+      {/* ============ Row 1 Right: 1. شیفت شما ============ */}
       <Section
         icon={<GroupIcon size={16} />}
         title="شیفت شما"
         desc="گروه کاری خود را انتخاب کنید؛ تقویم و لوحه بر همین اساس رنگ می‌شود."
       >
-        {pat.hasGroups ? (
-          <div className="sk-seg" role="group" aria-label="شیفت شما">
-            {activeGroups.map((g) => {
-              const active = myGroup === g;
-              return (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => pickGroup(g)}
-                  className={`sk-seg-item ${active ? "is-active" : ""}`}
-                  aria-pressed={active}
-                >
-                  {getGroupLetter(g, pat)}
-                </button>
-              );
-            })}
+        <div className="flex flex-col justify-between gap-2.5 flex-1">
+          <div className="rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3 py-2 flex items-center justify-between gap-2">
+            <span className="text-[11px] font-bold text-[var(--sk-text-muted)] truncate">
+              الگوی فعال: {pat.name}
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--sk-primary-soft)] text-[10.5px] font-black text-[var(--sk-primary)] shrink-0">
+              {getGroupTitle(myGroup, pat)}
+            </span>
           </div>
-        ) : (
-          <div className="rounded-2xl sk-tile px-3.5 py-2.5 text-[12.5px] font-bold text-[var(--sk-text-muted)]">
-            الگوی فعلی در حالت «شیفت فردی (بدون گروه)» قرار دارد.
-          </div>
-        )}
+          {pat.hasGroups ? (
+            <div className="sk-seg" role="group" aria-label="شیفت شما">
+              {activeGroups.map((g) => {
+                const active = myGroup === g;
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => pickGroup(g)}
+                    className={`sk-seg-item ${active ? "is-active" : ""}`}
+                    aria-pressed={active}
+                  >
+                    {getGroupLetter(g, pat)}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl sk-tile px-3.5 py-2.5 text-[12.5px] font-bold text-[var(--sk-text-muted)]">
+              الگوی فعلی در حالت «شیفت فردی (بدون گروه)» قرار دارد.
+            </div>
+          )}
+        </div>
       </Section>
 
-      {/* ============ 2. حالت نمایش ============ */}
+      {/* ============ Row 1 Left: 2. حالت نمایش ============ */}
       <Section
         icon={<PaletteIcon size={16} />}
         title="حالت نمایش"
         desc="روشن، تیره یا پیروی از تم سیستم؛ تغییر به‌صورت زنده اعمال می‌شود."
       >
-        <div className="grid grid-cols-3 gap-2" role="group" aria-label="حالت نمایش">
+        <div className="grid grid-cols-3 gap-2 flex-1 items-stretch" role="group" aria-label="حالت نمایش">
           {THEME_MODES.map((m) => {
             const active = themeMode === m.id;
             const Icon =
@@ -470,7 +475,7 @@ export function SettingsView({
                 key={m.id}
                 type="button"
                 onClick={() => pickMode(m.id)}
-                className={`relative rounded-2xl py-3 px-1 flex flex-col items-center gap-1.5 sk-outline ${
+                className={`relative rounded-2xl py-3.5 px-1 flex flex-col items-center justify-center gap-2 sk-outline ${
                   active ? "is-active" : ""
                 }`}
                 aria-pressed={active}
@@ -480,10 +485,10 @@ export function SettingsView({
                     active ? "text-[var(--sk-primary)]" : "text-[var(--sk-text-muted)]"
                   }
                 >
-                  <Icon size={20} />
+                  <Icon size={21} />
                 </span>
                 <span
-                  className={`text-[10.5px] font-bold leading-3.5 text-center ${
+                  className={`text-[11px] font-bold leading-4 text-center ${
                     active ? "text-[var(--sk-primary)]" : "text-[var(--sk-text-muted)]"
                   }`}
                 >
@@ -495,13 +500,13 @@ export function SettingsView({
         </div>
       </Section>
 
-      {/* ============ 3. رنگ اصلی ============ */}
+      {/* ============ Row 2 Right: 3. رنگ اصلی ============ */}
       <Section
         icon={<PaletteIcon size={16} />}
         title="رنگ اصلی"
         desc="رنگ اصلی برنامه را انتخاب کنید."
       >
-        <div className="grid grid-cols-3 gap-2" role="group" aria-label="انتخاب تم">
+        <div className="grid grid-cols-3 gap-2 flex-1 items-stretch" role="group" aria-label="انتخاب تم">
           {THEMES.map((t) => {
             const active = theme === t.id;
             return (
@@ -509,7 +514,7 @@ export function SettingsView({
                 key={t.id}
                 type="button"
                 onClick={() => pickTheme(t.id)}
-                className={`rounded-2xl py-3 flex flex-col items-center gap-2 sk-outline ${
+                className={`rounded-2xl py-3 flex flex-col items-center justify-center gap-2 sk-outline ${
                   active ? "is-active" : ""
                 }`}
                 aria-pressed={active}
@@ -529,17 +534,17 @@ export function SettingsView({
         </div>
       </Section>
 
-      {/* ============ 4. نمای تقویم ============ */}
+      {/* ============ Row 2 Left: 4. نمای تقویم ============ */}
       <Section
         icon={<GridIcon size={16} />}
         title="نمای تقویم"
         desc="حالت نمایش تقویم (شبکه‌ای) یا جدولی را انتخاب کنید."
       >
-        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="نمای تقویم">
+        <div className="grid grid-cols-2 gap-2.5 flex-1 items-stretch" role="radiogroup" aria-label="نمای تقویم">
           {(
             [
-              { id: "grid" as const, fa: "تقویم", preview: <GridPreview /> },
-              { id: "table" as const, fa: "جدولی", preview: <TablePreview /> },
+              { id: "grid" as const, fa: "تقویم (شبکه‌ای)", preview: <GridPreview /> },
+              { id: "table" as const, fa: "جدولی (فهرست ماه)", preview: <TablePreview /> },
             ]
           ).map((v) => {
             const active = viewType === v.id;
@@ -548,7 +553,7 @@ export function SettingsView({
                 key={v.id}
                 type="button"
                 onClick={() => pickView(v.id)}
-                className={`relative rounded-2xl p-3 flex flex-col items-center gap-2.5 sk-outline ${
+                className={`relative rounded-2xl p-3.5 flex flex-col items-center justify-center gap-3 sk-outline ${
                   active ? "is-active" : ""
                 }`}
                 role="radio"
@@ -568,19 +573,19 @@ export function SettingsView({
         </div>
       </Section>
 
-      {/* ============ 5. نصب و به‌روزرسانی برنامه ============ */}
+      {/* ============ Row 3 Right: 5. به‌روزرسانی و نصب برنامه ============ */}
       <Section
         icon={<DownloadIcon size={16} />}
         title="به‌روزرسانی و نصب برنامه"
-        desc="نصب وب‌اپلیکیشن روی دستگاه، هماهنگ‌سازی آنلاین تقویم و مناسبت‌ها و دریافت مستقیم نسخهٔ اندروید."
+        desc="نصب وب‌اپلیکیشن روی دستگاه، هماهنگ‌سازی آنلاین تقویم و مناسبت‌ها و دریافت مستقیم نسخه‌های نصبی."
       >
-        <div className="space-y-2.5">
+        <div className="flex flex-col justify-between gap-2.5 flex-1">
           {/* نسخهٔ نصب‌شده */}
-          <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-3 flex items-center gap-3">
-            <ShiftKarAppEmblem size={42} />
+          <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3.5 py-2.5 flex items-center gap-3">
+            <ShiftKarAppEmblem size={40} />
             <div className="min-w-0 flex-1">
-              <div className="text-[11px] text-[var(--sk-text-muted)]">نسخهٔ نصب‌شده</div>
-              <div className="text-[14px] font-bold">
+              <div className="text-[11px] text-[var(--sk-text-muted)]">نسخهٔ فعلی برنامه</div>
+              <div className="text-[13.5px] font-bold">
                 {APP.name} {toPersianDigits(APP.version)}
               </div>
             </div>
@@ -593,7 +598,7 @@ export function SettingsView({
               haptic(hapticOn);
               onOpenInstall();
             }}
-            className={`w-full py-3 rounded-2xl text-[13.5px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+            className={`w-full py-3 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
               installed
                 ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] border border-[var(--sk-rest)]/30"
                 : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
@@ -605,7 +610,7 @@ export function SettingsView({
             </span>
           </button>
 
-          {/* بروزرسانی تقویم و مناسبت‌ها (calendar-sync.json) */}
+          {/* بروزرسانی تقویم و مناسبت‌ها */}
           <button
             type="button"
             onClick={handleSyncCalendar}
@@ -648,7 +653,7 @@ export function SettingsView({
             <div className="min-w-0 flex-1">
               <div className="text-[12.5px] font-bold">دانلود مستقیم از گیت‌هاب</div>
               <div className="text-[10.5px] text-[var(--sk-text-muted)] mt-0.5 truncate">
-                دریافت آخرین فایل نصبی اندروید (APK) از مخزن رسمی
+                دریافت آخرین فایل نصبی اندروید و دسکتاپ از مخزن رسمی
               </div>
             </div>
             <ExternalIcon size={15} className="text-[var(--sk-text-faint)] shrink-0" />
@@ -656,122 +661,113 @@ export function SettingsView({
         </div>
       </Section>
 
-      {/* ============ 6. راهنما (matching SettingsScreen.kt order!) ============ */}
-      <Section icon={<HelpIcon size={16} />} title="راهنما">
-        <div className="flex flex-col">
-          {HELP_ITEMS.map((h, idx) => {
-            const open = openFaq === idx;
-            return (
-              <div
-                key={h.title}
-                className="border-t border-[var(--sk-border-soft)] first:border-t-0"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(open ? null : idx)}
-                  aria-expanded={open}
-                  className={`w-full py-3 text-[13px] font-bold text-start flex items-center justify-between gap-2 transition-colors ${
-                    open ? "text-[var(--sk-primary)]" : "hover:text-[var(--sk-primary)]"
-                  }`}
-                >
-                  <span>{h.title}</span>
-                  <ChevronDown
-                    size={15}
-                    className={`text-[var(--sk-text-faint)] transition-transform shrink-0 ${
-                      open ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-                {open && (
-                  <p className="pb-3 text-[12px] leading-6 text-[var(--sk-text-muted)] whitespace-pre-line">
-                    {h.body}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Section>
-
-      {/* ============ 7. درباره ما ============ */}
-      <Section icon={<InfoIcon size={16} />} title="درباره ما">
-        <div className="flex items-center gap-3 mb-3">
-          <ShiftKarAppEmblem size={56} />
-          <div className="min-w-0">
-            <div className="text-[14.5px] font-black">{APP.name}</div>
-            <div className="text-[11.5px] text-[var(--sk-text-muted)]">
-              {APP.nameEn} — نسخهٔ {toPersianDigits(APP.version)}
-            </div>
-            <div className="text-[11px] text-[var(--sk-text-faint)]">{APP.tagline}</div>
-          </div>
-        </div>
-        <div className="text-[12px] leading-6 text-[var(--sk-text-muted)] flex flex-col gap-2">
-          <p>
-            این نرم‌افزار برای سهولت در برنامه‌ریزی وقت کارکنان شیفت ۱۲ ساعته شاغل در شرکت پتروشیمی بندر امام خمینی (ره) می‌باشد.
-          </p>
-          <p>
-            با تشکر و سپاس از تمامی همکاران و دوستانی که با پیشنهادات مفید خود ما را در پیشرفت برنامه یاری نموده‌اند.
-          </p>
-          <p>
-            لطفاً انتقادات و پیشنهادات خود را از قسمت «راه‌های ارتباط با ما» در میان بگذارید.
-          </p>
-        </div>
-        <div className="mt-3 pt-3 border-t border-[var(--sk-border-soft)] flex items-center justify-between">
-          <span className="text-[11px] text-[var(--sk-text-faint)]">تهیه شده توسط</span>
-          <span className="text-[12px] font-bold">سید حسین موسوی سعیدی — واحد SBR</span>
-        </div>
-      </Section>
-
-      {/* ============ 8. راه‌های ارتباط با ما (5 polished cards) ============ */}
+      {/* ============ Row 3 Left: 6. پشتیبان‌گیری و بازیابی یادداشت‌ها ============ */}
       <Section
-        icon={<EitaaIcon size={16} />}
-        title="راه‌های ارتباط با ما"
-        desc="لطفاً انتقادات و پیشنهادات خود را از طریق کانال‌های ارتباطی زیر با ما در میان بگذارید."
+        icon={<NotesIcon size={16} />}
+        title="پشتیبان‌گیری و بازیابی یادداشت‌ها"
+        desc="از یادداشت‌های شخصی، اضافه‌کاری‌ها، الگوهای سفارشی و فهرست همکاران فایل پشتیبان بسازید (کاملاً سازگار با اندروید و دسکتاپ)."
       >
-        <div className="flex flex-col gap-2.5" role="list">
-          {CONTACTS.map((c) => (
-            <a
-              key={c.id}
-              href={c.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              role="listitem"
-              aria-label={c.fa}
-              className="group rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)] px-3.5 py-2.5 flex items-center gap-3 transition-all active:scale-[0.99]"
+        <div className="flex flex-col justify-between gap-2.5 flex-1">
+          <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3 py-3 space-y-2">
+            <div className="text-[11.5px] font-bold text-[var(--sk-text-muted)]">
+              اطلاعات آمادهٔ پشتیبان‌گیری در این دستگاه:
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  `${toPersianDigits(notesCount)} یادداشت`,
+                  `${toPersianDigits(recordsCount)} اضافه‌کاری`,
+                  `${toPersianDigits(employees.length)} همکار`,
+                ] as const
+              ).map((badgeText) => (
+                <div
+                  key={badgeText}
+                  className="rounded-xl bg-[var(--sk-primary-soft)] py-2 px-1.5 text-center text-[11px] font-black text-[var(--sk-primary)] truncate"
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--sk-primary) 35%, transparent)",
+                  }}
+                >
+                  {badgeText}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={doExport}
+              className="py-3 rounded-2xl bg-[var(--sk-primary)] text-white text-[12.5px] font-bold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform"
             >
-              <span
-                className="size-[42px] rounded-[13px] grid place-items-center shrink-0 transition-transform group-hover:scale-105"
-                style={{
-                  background: c.badgeBg,
-                  border: `1px solid ${c.badgeBorder}`,
-                  color: c.badgeInk,
-                }}
+              <DownloadIcon size={16} />
+              <span>ذخیرهٔ پشتیبان</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="py-3 rounded-2xl bg-[var(--sk-surface)] text-[var(--sk-primary)] text-[12.5px] font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+              style={{
+                border: "1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent)",
+              }}
+            >
+              <RefreshIcon size={16} />
+              <span>بازیابی از فایل</span>
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="*/*,.json,application/json,text/plain"
+              onChange={onFile}
+              className="hidden"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={doCopyBackup}
+              className="py-2.5 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11.5px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
+            >
+              کپی متن پشتیبان
+            </button>
+            <button
+              type="button"
+              onClick={() => setPasteMode((v) => !v)}
+              className="py-2.5 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11.5px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
+            >
+              {pasteMode ? "بستن کادر متن" : "بازیابی با الصاق متن"}
+            </button>
+          </div>
+
+          {pasteMode && (
+            <div className="space-y-2 pt-1">
+              <textarea
+                value={pasteText}
+                onChange={(e) => setPasteText(e.target.value)}
+                rows={4}
+                dir="ltr"
+                placeholder={"{\n  \"app\": \"ShiftKar\",\n  \"notes\": [...]\n}"}
+                className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border)] p-3 text-[11.5px] font-mono focus:outline-none focus:border-[var(--sk-primary)]"
+              />
+              <button
+                type="button"
+                onClick={doRestoreFromText}
+                className="w-full py-2.5 rounded-xl bg-[var(--sk-primary)] text-white text-[12px] font-bold"
               >
-                {c.icon}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="text-[13.5px] font-bold text-[var(--sk-text)] group-hover:text-[var(--sk-primary)] transition-colors">
-                  {c.fa}
-                </div>
-                <div className="text-[11px] text-[var(--sk-text-muted)] mt-0.5 truncate">
-                  {c.sub}
-                </div>
-              </div>
-              <span className="size-8 rounded-xl bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] grid place-items-center text-[var(--sk-text-faint)] group-hover:text-[var(--sk-primary)] transition-colors shrink-0">
-                <ExternalIcon size={14} />
-              </span>
-            </a>
-          ))}
+                اعمال و بازیابی متن پشتیبان
+              </button>
+            </div>
+          )}
         </div>
       </Section>
 
-      {/* ============ 9. یادآور هوشمند شیفت و یادداشت‌ها ============ */}
+      {/* ============ Row 4 Right: 7. یادآور هوشمند شیفت و یادداشت‌ها ============ */}
       <Section
         icon={<CalendarIcon size={16} />}
         title="یادآور هوشمند شیفت و یادداشت‌ها"
         desc="اعلان خودکار پیش از شروع نوبت صبح‌کار و شب‌کار و یادآوری روزهایی که یادداشت شخصی دارند."
       >
-        <div className="space-y-2.5">
+        <div className="flex flex-col justify-between gap-2.5 flex-1">
           {/* Shift Reminder Toggle Row */}
           <button
             type="button"
@@ -805,8 +801,7 @@ export function SettingsView({
           </button>
 
           {shiftReminderOn && (
-            <div className="space-y-2">
-              {/* 1. Morning Shift Reminder */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div
                 className="rounded-2xl p-3 space-y-2"
                 style={{
@@ -814,22 +809,17 @@ export function SettingsView({
                   border: "1px solid color-mix(in srgb, var(--sk-day-ink) 40%, transparent)",
                 }}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="size-[30px] rounded-[9px] bg-[var(--sk-surface-strong)] text-[var(--sk-day-ink)] grid place-items-center shrink-0">
-                      <SunIcon size={16} />
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="size-[28px] rounded-[8px] bg-[var(--sk-surface-strong)] text-[var(--sk-day-ink)] grid place-items-center shrink-0">
+                      <SunIcon size={15} />
                     </span>
-                    <div>
-                      <div className="text-[12px] font-extrabold text-[var(--sk-day-ink)]">
-                        یادآور نوبت صبح‌کار
-                      </div>
-                      <div className="text-[10px] text-[var(--sk-text-muted)]">
-                        اعلان در شبِ قبل از شروع شیفت
-                      </div>
+                    <div className="text-[11.5px] font-extrabold text-[var(--sk-day-ink)] truncate">
+                      نوبت صبح‌کار
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-[10px] bg-[var(--sk-surface-strong)] text-[12px] font-black text-[var(--sk-day-ink)]">
-                    ساعت {toPersianDigits(dayReminderHour)}:۰۰
+                  <span className="px-2 py-0.5 rounded-[8px] bg-[var(--sk-surface-strong)] text-[11px] font-black text-[var(--sk-day-ink)] shrink-0">
+                    {toPersianDigits(dayReminderHour)}:۰۰
                   </span>
                 </div>
                 <input
@@ -846,7 +836,6 @@ export function SettingsView({
                 />
               </div>
 
-              {/* 2. Night Shift Reminder */}
               <div
                 className="rounded-2xl p-3 space-y-2"
                 style={{
@@ -854,22 +843,17 @@ export function SettingsView({
                   border: "1px solid color-mix(in srgb, var(--sk-night-ink) 40%, transparent)",
                 }}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="size-[30px] rounded-[9px] bg-[var(--sk-surface-strong)] text-[var(--sk-night-ink)] grid place-items-center shrink-0">
-                      <MoonIcon size={16} />
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="size-[28px] rounded-[8px] bg-[var(--sk-surface-strong)] text-[var(--sk-night-ink)] grid place-items-center shrink-0">
+                      <MoonIcon size={15} />
                     </span>
-                    <div>
-                      <div className="text-[12px] font-extrabold text-[var(--sk-night-ink)]">
-                        یادآور نوبت شب‌کار
-                      </div>
-                      <div className="text-[10px] text-[var(--sk-text-muted)]">
-                        اعلان در بعدازظهرِ همان روز
-                      </div>
+                    <div className="text-[11.5px] font-extrabold text-[var(--sk-night-ink)] truncate">
+                      نوبت شب‌کار
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-[10px] bg-[var(--sk-surface-strong)] text-[12px] font-black text-[var(--sk-night-ink)]">
-                    ساعت {toPersianDigits(nightReminderHour)}:۰۰
+                  <span className="px-2 py-0.5 rounded-[8px] bg-[var(--sk-surface-strong)] text-[11px] font-black text-[var(--sk-night-ink)] shrink-0">
+                    {toPersianDigits(nightReminderHour)}:۰۰
                   </span>
                 </div>
                 <input
@@ -922,111 +906,13 @@ export function SettingsView({
         </div>
       </Section>
 
-      {/* ============ 10. پشتیبان‌گیری و بازیابی یادداشت‌ها ============ */}
-      <Section
-        icon={<NotesIcon size={16} />}
-        title="پشتیبان‌گیری و بازیابی یادداشت‌ها"
-        desc="از یادداشت‌های شخصی، اضافه‌کاری‌ها، الگوهای سفارشی و فهرست همکاران فایل پشتیبان بسازید (کاملاً سازگار با نسخهٔ اندروید)."
-      >
-        <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] px-3 py-2.5 mb-2.5 space-y-2">
-          <div className="text-[11.5px] font-bold text-[var(--sk-text-muted)]">
-            اطلاعات آمادهٔ پشتیبان‌گیری:
-          </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            {(
-              [
-                `${toPersianDigits(notesCount)} یادداشت`,
-                `${toPersianDigits(recordsCount)} اضافه‌کاری`,
-                `${toPersianDigits(employees.length)} همکار`,
-              ] as const
-            ).map((badgeText) => (
-              <div
-                key={badgeText}
-                className="rounded-[10px] bg-[var(--sk-primary-soft)] py-1.5 px-1 text-center text-[10.5px] font-black text-[var(--sk-primary)] truncate"
-                style={{
-                  border: "1px solid color-mix(in srgb, var(--sk-primary) 35%, transparent)",
-                }}
-              >
-                {badgeText}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={doExport}
-            className="py-3 rounded-2xl bg-[var(--sk-primary)] text-white text-[12.5px] font-bold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform"
-          >
-            <DownloadIcon size={16} />
-            <span>ذخیرهٔ پشتیبان</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="py-3 rounded-2xl bg-[var(--sk-surface)] text-[var(--sk-primary)] text-[12.5px] font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
-            style={{
-              border: "1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent)",
-            }}
-          >
-            <RefreshIcon size={16} />
-            <span>بازیابی از فایل</span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="*/*,.json,application/json,text/plain"
-            onChange={onFile}
-            className="hidden"
-          />
-        </div>
-
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={doCopyBackup}
-            className="flex-1 py-2 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
-          >
-            کپی متن پشتیبان
-          </button>
-          <button
-            type="button"
-            onClick={() => setPasteMode((v) => !v)}
-            className="flex-1 py-2 px-3 rounded-xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[11px] font-bold text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)] transition-colors"
-          >
-            {pasteMode ? "بستن کادر متن" : "بازیابی با الصاق متن"}
-          </button>
-        </div>
-
-        {pasteMode && (
-          <div className="mt-2.5 space-y-2">
-            <textarea
-              value={pasteText}
-              onChange={(e) => setPasteText(e.target.value)}
-              rows={4}
-              dir="ltr"
-              placeholder={"{\n  \"app\": \"ShiftKar\",\n  \"notes\": [...]\n}"}
-              className="w-full rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border)] p-3 text-[11.5px] font-mono focus:outline-none focus:border-[var(--sk-primary)]"
-            />
-            <button
-              type="button"
-              onClick={doRestoreFromText}
-              className="w-full py-2.5 rounded-xl bg-[var(--sk-primary)] text-white text-[12px] font-bold"
-            >
-              اعمال و بازیابی متن پشتیبان
-            </button>
-          </div>
-        )}
-      </Section>
-
-      {/* ============ 11. راهنمای شروع ============ */}
+      {/* ============ Row 4 Left: 8. راهنمای شروع ============ */}
       <Section
         icon={<RefreshIcon size={16} />}
         title="راهنمای شروع"
         desc="تور راهنمای برنامه را دوباره ببینید یا تنظیمات اولیهٔ نرم‌افزار را از نو شروع کنید."
       >
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col justify-between gap-2.5 flex-1">
           <button
             type="button"
             onClick={() => {
@@ -1034,22 +920,143 @@ export function SettingsView({
               toast("تور راهنما در صفحهٔ تقویم اجرا می‌شود");
               onRestartTour();
             }}
-            className="py-3.5 px-4 rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--sk-primary-soft)]/50 transition-colors"
+            className="w-full py-3.5 px-4 rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--sk-primary-soft)]/50 transition-colors"
           >
-            <InfoIcon size={15} />
-            <span>تور راهنمای برنامه</span>
+            <InfoIcon size={16} className="text-[var(--sk-primary)]" />
+            <span>اجرای دوبارهٔ تور راهنمای برنامه</span>
           </button>
           <button
             type="button"
             onClick={() => {
               haptic(hapticOn);
-              toast("راهنما دوباره نمایش داده می‌شود؛ تنظیمات شما حفظ می‌شود");
+              toast("راهنمای خوش‌آمدگویی نمایش داده می‌شود؛ تنظیمات شما حفظ می‌شود");
               onRestartOnboarding();
             }}
-            className="py-3.5 px-4 rounded-2xl border-2 border-[var(--sk-holiday)]/30 text-[var(--sk-holiday)] text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--sk-holiday-soft)] transition-colors"
+            className="w-full py-3.5 px-4 rounded-2xl border-2 border-[var(--sk-holiday)]/35 text-[var(--sk-holiday)] text-[13px] font-bold flex items-center justify-center gap-2 hover:bg-[var(--sk-holiday-soft)] transition-colors"
           >
-            راه‌اندازی مجدد تنظیمات اولیهٔ نرم‌افزار
+            <SparkIcon size={15} />
+            <span>راه‌اندازی مجدد تنظیمات اولیهٔ نرم‌افزار</span>
           </button>
+        </div>
+      </Section>
+
+      {/* ============ Row 5 Right: 9. درباره ما ============ */}
+      <Section icon={<InfoIcon size={16} />} title="درباره ما">
+        <div className="flex flex-col justify-between flex-1 gap-3">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <ShiftKarAppEmblem size={56} />
+              <div className="min-w-0">
+                <div className="text-[15px] font-black">{APP.name}</div>
+                <div className="text-[11.5px] text-[var(--sk-text-muted)]">
+                  {APP.nameEn} — نسخهٔ {toPersianDigits(APP.version)}
+                </div>
+                <div className="text-[11px] text-[var(--sk-text-faint)]">{APP.tagline}</div>
+              </div>
+            </div>
+            <div className="text-[12px] leading-6 text-[var(--sk-text-muted)] flex flex-col gap-2">
+              <p>
+                این نرم‌افزار برای سهولت در برنامه‌ریزی وقت کارکنان شیفت ۱۲ ساعته شاغل در شرکت پتروشیمی بندر امام خمینی (ره) می‌باشد.
+              </p>
+              <p>
+                با تشکر و سپاس از تمامی همکاران و دوستانی که با پیشنهادات مفید خود ما را در پیشرفت برنامه یاری نموده‌اند.
+              </p>
+              <p>
+                لطفاً انتقادات و پیشنهادات خود را از قسمت «راه‌های ارتباط با ما» در میان بگذارید.
+              </p>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-[var(--sk-border-soft)] flex items-center justify-between">
+            <span className="text-[11px] text-[var(--sk-text-faint)]">تهیه شده توسط</span>
+            <span className="text-[12px] font-bold">سید حسین موسوی سعیدی — واحد SBR</span>
+          </div>
+        </div>
+      </Section>
+
+      {/* ============ Row 5 Left: 10. راه‌های ارتباط با ما ============ */}
+      <Section
+        icon={<EitaaIcon size={16} />}
+        title="راه‌های ارتباط با ما"
+        desc="لطفاً انتقادات و پیشنهادات خود را از طریق کانال‌های ارتباطی زیر با ما در میان بگذارید."
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 items-stretch" role="list">
+          {CONTACTS.map((c, idx) => (
+            <a
+              key={c.id}
+              href={c.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="listitem"
+              aria-label={c.fa}
+              className={`group rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] hover:border-[var(--sk-primary)] px-3 py-2.5 flex items-center gap-2.5 transition-all active:scale-[0.99] ${
+                idx === CONTACTS.length - 1 ? "sm:col-span-2" : ""
+              }`}
+            >
+              <span
+                className="size-[38px] rounded-[12px] grid place-items-center shrink-0 transition-transform group-hover:scale-105"
+                style={{
+                  background: c.badgeBg,
+                  border: `1px solid ${c.badgeBorder}`,
+                  color: c.badgeInk,
+                }}
+              >
+                {c.icon}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-bold text-[var(--sk-text)] group-hover:text-[var(--sk-primary)] transition-colors truncate">
+                  {c.fa}
+                </div>
+                <div className="text-[10.5px] text-[var(--sk-text-muted)] mt-0.5 truncate">
+                  {c.sub}
+                </div>
+              </div>
+              <span className="size-7 rounded-lg bg-[var(--sk-surface-strong)] border border-[var(--sk-border-soft)] grid place-items-center text-[var(--sk-text-faint)] group-hover:text-[var(--sk-primary)] transition-colors shrink-0">
+                <ExternalIcon size={13} />
+              </span>
+            </a>
+          ))}
+        </div>
+      </Section>
+
+      {/* ============ Row 6 (Full Width on Desktop): 11. راهنما ============ */}
+      <Section
+        icon={<HelpIcon size={16} />}
+        title="راهنمای جامع امکانات"
+        desc="پاسخ به پرسش‌های متداول و توضیح کامل قابلیت‌های تقویم، مدیریت شیفت، لوحه و پشتیبان‌گیری."
+        className="lg:col-span-2"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-6 divide-y lg:divide-y-0 divide-[var(--sk-border-soft)]">
+          {HELP_ITEMS.map((h, idx) => {
+            const open = openFaq === idx;
+            return (
+              <div
+                key={h.title}
+                className="lg:border-b lg:border-[var(--sk-border-soft)] lg:last:border-b-0"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(open ? null : idx)}
+                  aria-expanded={open}
+                  className={`w-full py-3 text-[13px] font-bold text-start flex items-center justify-between gap-2 transition-colors ${
+                    open ? "text-[var(--sk-primary)]" : "hover:text-[var(--sk-primary)]"
+                  }`}
+                >
+                  <span>{h.title}</span>
+                  <ChevronDown
+                    size={15}
+                    className={`text-[var(--sk-text-faint)] transition-transform shrink-0 ${
+                      open ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {open && (
+                  <p className="pb-3 text-[12px] leading-6 text-[var(--sk-text-muted)] whitespace-pre-line">
+                    {h.body}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </Section>
     </div>
@@ -1060,23 +1067,25 @@ function Section({
   icon,
   title,
   desc,
+  className = "",
   children,
 }: {
   icon: React.ReactNode;
   title: string;
   desc?: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="glass rounded-3xl p-4">
-      <h2 className="flex items-center gap-2 text-[14px] font-extrabold text-[var(--sk-primary)]">
+    <section className={`glass rounded-3xl p-4 md:p-5 h-full flex flex-col ${className}`}>
+      <h2 className="flex items-center gap-2 text-[14.5px] font-extrabold text-[var(--sk-primary)] shrink-0">
         {icon}
         {title}
       </h2>
       {desc && (
-        <p className="text-[11.5px] text-[var(--sk-text-muted)] mt-1 mb-3 leading-5">{desc}</p>
+        <p className="text-[11.5px] text-[var(--sk-text-muted)] mt-1 mb-3 leading-5 shrink-0">{desc}</p>
       )}
-      <div className={desc ? "" : "mt-3"}>{children}</div>
+      <div className={`flex-1 flex flex-col ${desc ? "" : "mt-3"}`}>{children}</div>
     </section>
   );
 }

@@ -1,15 +1,14 @@
 "use client";
 /**
- * Install sheet — the single install UI used by Settings, Onboarding and the
- * one-time auto prompt. Shows the CTA first; if no native prompt is available
- * at tap-time it swaps in the exact manual guide for the user's browser.
+ * Install sheet — Unified PWA installation sheet with automatic browser/OS detection
+ * and step-by-step instructions for Chrome, Edge, Firefox, Vivaldi, Opera, Brave, Safari, etc.
  */
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { Sheet } from "./sheet";
-import { getInstallState, promptInstall, isFirefox, isMiBrowser, isSamsung, isOpera, isEdge } from "@/lib/install";
+import { getInstallState, promptInstall, getBrowserInstallGuide } from "@/lib/install";
 import { useShiftKar, haptic } from "@/lib/store";
-import { DownloadIcon } from "./icons";
+import { DownloadIcon, CheckIcon } from "./icons";
 
 function subscribeInstallState(cb: () => void) {
   const events = ["shiftkar-neo:install-state", "shiftkar-neo:install-ready", "appinstalled"] as const;
@@ -22,132 +21,65 @@ const readInstalled = () => getInstallState().installed;
 const readCanPrompt = () => getInstallState().canPrompt;
 const readServerFalse = () => false;
 
-function Steps({ items }: { items: string[] }) {
-  return (
-    <ol className="install-steps list-decimal ps-5 space-y-1.5 text-[12.5px] leading-6 text-[var(--sk-text-muted)]">
-      {items.map((s, i) => (
-        <li key={i}>{s}</li>
-      ))}
-    </ol>
-  );
-}
-
-/** The exact menu path per browser — so no user ever hits a dead end. */
-function browserGuide(): { label: string; items: string[] } {
-  const android = /Android/.test(navigator.userAgent || "");
-
-  if (isMiBrowser()) {
-    return {
-      label: "می‌بروزر",
-      items: [
-        "روی دکمهٔ منو (☰ یا ⋮ در نوار پایین مرورگر) بزنید.",
-        "گزینهٔ «افزودن به صفحهٔ اصلی» (Add to Home screen) را انتخاب کنید.",
-        "با تأیید، آیکون شیفت‌کار روی صفحهٔ اصلی قرار می‌گیرد.",
-      ],
-    };
-  }
-  if (isSamsung()) {
-    return {
-      label: "اینترنت سامسونگ",
-      items: [
-        "روی منوی ☰ در نوار پایین بزنید.",
-        "گزینهٔ «افزودن به صفحهٔ اصلی» یا «نصب برنامه» را انتخاب کنید.",
-        "با تأیید، برنامه مثل یک اپلیکیشن واقعی نصب می‌شود.",
-      ],
-    };
-  }
-  if (isOpera()) {
-    return {
-      label: "اپرا",
-      items: [
-        "روی منوی مرورگر (O یا ⋮) بزنید.",
-        "گزینهٔ «افزودن به صفحهٔ اصلی» (Add to Home screen) را انتخاب کنید.",
-        "با تأیید، آیکون برنامه روی صفحهٔ اصلی قرار می‌گیرد.",
-      ],
-    };
-  }
-  if (isEdge()) {
-    return {
-      label: "اج",
-      items: android
-        ? [
-            "روی منوی ⋯ در نوار پایین بزنید.",
-            "گزینهٔ «افزودن به تلفن» یا «نصب برنامه» را انتخاب کنید.",
-            "با تأیید، شیفت‌کار مثل یک اپلیکیشن واقعی نصب می‌شود.",
-          ]
-        : [
-            "روی منوی ⋯ در گوشهٔ مرورگر بزنید.",
-            "به بخش «Apps» و سپس «Install this site as an app» بروید.",
-            "با تأیید، برنامه به‌صورت پنجرهٔ مستقل اجرا می‌شود.",
-          ],
-    };
-  }
-  if (isFirefox()) {
-    return {
-      label: "فایرفاکس",
-      items: android
-        ? [
-            "روی دکمهٔ ⋮ (سه‌نقطه) در نوار پایین فایرفاکس بزنید.",
-            "گزینهٔ «افزودن به صفحهٔ اصلی» (Add to Home screen) را انتخاب کنید.",
-            "روی «افزودن» بزنید؛ آیکون برنامه روی صفحهٔ اصلی قرار می‌گیرد.",
-          ]
-        : [
-            "می‌توانید تب را به نوار ابزار سنجاق کنید: روی ⋮ بروید و «Pin to Taskbar» را انتخاب کنید.",
-            "برای باز شدن سریع، تب را بوک‌مارک کنید.",
-          ],
-    };
-  }
-  /* Chrome / Brave / Vivaldi / سایر مرورگرها */
-  return {
-    label: "کروم و مرورگرهای مشابه",
-    items: [
-      "منوی مرورگر را باز کنید (⋮ در بالای مرورگر).",
-      "گزینهٔ «نصب برنامه» (Install app) را بزنید.",
-      "با تأیید، شیفت‌کار مثل یک اپلیکیشن واقعی نصب می‌شود.",
-    ],
-  };
-}
-
-function Guide({ busy }: { busy: boolean }) {
+export function BrowserInstallGuideBox({
+  busy,
+  forceShowSteps,
+}: {
+  busy?: boolean;
+  forceShowSteps?: boolean;
+}) {
   const canInstall = useSyncExternalStore(subscribeInstallState, readCanPrompt, readServerFalse);
+  const [mounted, setMounted] = useState(false);
 
-  if (getInstallState().isIOS) {
-    return (
-      <div className="rounded-2xl glass px-4 py-3">
-        <p className="text-[12.5px] leading-6 text-[var(--sk-text-muted)] mb-2">
-          در سافاری، دکمهٔ اشتراک‌گذاری را بزنید و «Add to Home Screen» را انتخاب کنید تا شیفت‌کار مثل یک اپ واقعی نصب شود.
-        </p>
-        <Steps
-          items={[
-            "دکمهٔ اشتراک‌گذاری را در نوار پایین سافاری لمس کنید.",
-            "گزینهٔ «Add to Home Screen» را انتخاب کنید.",
-            "روی «Add» بزنید؛ آیکون برنامه روی صفحهٔ اصلی قرار می‌گیرد.",
-          ]}
-        />
-      </div>
-    );
-  }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  if (!canInstall) {
-    const g = browserGuide();
-    return (
-      <div className="rounded-2xl glass px-4 py-3">
-        <p className="text-[12.5px] leading-6 text-[var(--sk-text-muted)] mb-2">
-          {busy
-            ? "در حال آماده‌سازی نصب… اگر دکمهٔ نصب مرورگر باز نشد، این مسیر قطعی است:"
-            : `نصب خودکار همین حالا در دسترس نیست؛ در ${g.label} مستقیم از منوی مرورگر نصب کنید:`}
-        </p>
-        <Steps items={g.items} />
-      </div>
-    );
-  }
+  if (!mounted) return null;
+  const guide = getBrowserInstallGuide();
 
   return (
-    <div className="rounded-2xl glass px-4 py-3 text-[12.5px] leading-6 text-[var(--sk-text-muted)]">
-      دکمهٔ نصب مرورگر شما آماده است؛ روی «نصب برنامه» بزنید و پنجرهٔ تأیید مرورگر را قبول کنید.
-      <div className="mt-2">
-        <Steps items={browserGuide().items} />
+    <div className="rounded-2xl glass px-4 py-3.5 text-start border border-[var(--sk-border-soft)] space-y-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span className="text-[12px] font-black text-[var(--sk-primary)]">
+          راهنمای نصب در {guide.browserName} ({guide.osName})
+        </span>
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+            canInstall
+              ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)]"
+              : "bg-[var(--sk-primary-soft)] text-[var(--sk-primary)]"
+          }`}
+        >
+          {canInstall
+            ? "نصب مستقیم آماده است"
+            : guide.supportsNativePrompt
+              ? "نصب از نوار آدرس / منوی مرورگر"
+              : "نصب دستی از منوی مرورگر"}
+        </span>
       </div>
+
+      <p className="text-[12px] leading-6 text-[var(--sk-text-muted)]">
+        {busy
+          ? "در حال بررسی قابلیت نصب خودکار مرورگر… اگر پنجرهٔ نصب باز نشد، از مراحل زیر استفاده کنید:"
+          : canInstall && !forceShowSteps
+            ? "دکمهٔ نصب خودکار مرورگر شما آماده است؛ روی «نصب برنامه» بزنید یا از مسیر زیر در مرورگر استفاده کنید:"
+            : !guide.supportsNativePrompt
+              ? `مرورگر ${guide.browserName} در ${guide.osName} پنجرهٔ نصب خودکار ندارد؛ برای نصب برنامه این مراحل را انجام دهید:`
+              : `برای نصب در ${guide.browserName} (${guide.osName})، مراحل زیر را دنبال کنید:`}
+      </p>
+
+      <ol className="install-steps list-decimal ps-5 space-y-1.5 text-[12px] leading-6 text-[var(--sk-text)] font-medium">
+        {guide.items.map((s, i) => (
+          <li key={i}>{s}</li>
+        ))}
+      </ol>
+
+      {guide.note && (
+        <div className="pt-1 text-[11px] font-bold text-[var(--sk-primary)] border-t border-[var(--sk-border-soft)]">
+          {guide.note}
+        </div>
+      )}
     </div>
   );
 }
@@ -162,6 +94,7 @@ export function InstallSheet({
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const installed = useSyncExternalStore(subscribeInstallState, readInstalled, readServerFalse);
   const [busy, setBusy] = useState(false);
+  const [showManualHint, setShowManualHint] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -175,11 +108,13 @@ export function InstallSheet({
     try {
       const res = await promptInstall();
       if (res === "installed") {
-        toast("شیفت‌کار نصب شد 🎉");
+        toast.success("شیفت‌کار با موفقیت نصب شد 🎉");
       } else if (res === "dismissed") {
-        toast("برای نصب، از منوی مرورگر «نصب برنامه» را انتخاب کنید");
-      } else if (res === "unavailable") {
-        toast("دوباره تلاش کنید؛ نصب برنامه فعلاً ممکن نشد");
+        setShowManualHint(true);
+        toast("می‌توانید از مراحل راهنمای زیر در مرورگر خود نیز برنامه را نصب کنید");
+      } else {
+        setShowManualHint(true);
+        toast("لطفاً طبق راهنمای مرورگر نمایش‌داده‌شده در پایین دکمه عمل کنید");
       }
     } finally {
       setBusy(false);
@@ -187,17 +122,17 @@ export function InstallSheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="نصب برنامه">
-      <div className="px-4 pb-8 pt-3">
+    <Sheet open={open} onClose={onClose} title="نصب وب‌اپلیکیشن شیفت‌کار">
+      <div className="px-4 pb-8 pt-3 space-y-3">
         {installed ? (
           <div className="rounded-2xl bg-[var(--sk-rest-soft)] border-2 border-[var(--sk-rest)]/30 px-4 py-4 flex items-center gap-2.5 text-[13.5px] font-bold text-[var(--sk-rest-ink)]">
-            <DownloadIcon size={18} />
+            <CheckIcon size={18} />
             شیفت‌کار روی دستگاه شما نصب است.
           </div>
         ) : (
           <>
-            <p className="text-[13px] leading-6 text-[var(--sk-text-muted)] mb-3">
-              شیفت‌کار را به صفحهٔ اصلی دستگاه خود اضافه کنید تا مثل یک اپلیکیشن واقعی، سریع‌تر باز شود و حتی بدون اینترنت هم کار کند.
+            <p className="text-[13px] leading-6 text-[var(--sk-text-muted)]">
+              شیفت‌کار را به دستگاه خود اضافه کنید تا مثل یک اپلیکیشن بومی، در پنجرهٔ مستقل باز شود و بدون اینترنت هم کار کند.
             </p>
             <button
               onClick={run}
@@ -207,9 +142,7 @@ export function InstallSheet({
               <DownloadIcon size={17} />
               {busy ? "در حال آماده‌سازی…" : "نصب برنامه"}
             </button>
-            <div className="mt-3">
-              <Guide busy={busy} />
-            </div>
+            <BrowserInstallGuideBox busy={busy} forceShowSteps={showManualHint} />
           </>
         )}
       </div>

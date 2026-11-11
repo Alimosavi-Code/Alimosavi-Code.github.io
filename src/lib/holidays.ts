@@ -34,7 +34,7 @@ export type SyncOutcome = "UPDATED" | "UP_TO_DATE";
 
 const DEFAULT_CALENDAR_SYNC_URL =
   "https://raw.githubusercontent.com/Alimosavi-Code/Shiftkar/refs/heads/main/calendar-sync.json";
-const STORAGE_KEY_SYNC_JSON = "shiftkar_calendar_sync_json_v1";
+const STORAGE_KEY_SYNC_JSON = "shiftkar_neo_calendar_sync_json_v1";
 
 let _syncVersion = 1;
 let _updatedAt = "پیش‌فرض برنامه";

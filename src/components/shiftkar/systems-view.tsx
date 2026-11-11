@@ -39,8 +39,8 @@ const SYSTEMS: System[] = [
   { icon: PlaneIcon, fa: "برنامه پروازها", desc: "مشاهده برنامه پروازها", href: "https://www.posc.ir/fa/publicservices/mosaferat" },
   { icon: FoodIcon, fa: "رزرو غذا", desc: "سامانه رزرو غذا", href: "https://pooneh.bipc.ir/" },
   { icon: ChartIcon, fa: "سهام", desc: "سامانه سهام", href: "https://sahamfasl.bipc.ir/" },
-  { icon: GlobeIcon, fa: "شیفت‌کار تحت وب", desc: "نسخه تحت وب نرم‌افزار", href: "https://shiftkar.ir" },
-  { icon: DownloadIcon, fa: "دانلود شیفت‌کار", desc: "دانلود نسخه موبایل و دسکتاپ", href: "https://shiftkar.ir/download" },
+  { icon: GlobeIcon, fa: "شیفت‌کار تحت وب", desc: "نسخه تحت وب نرم‌افزار", href: "https://alimosavi-code.github.io" },
+  { icon: DownloadIcon, fa: "دانلود شیفت‌کار", desc: "دانلود نسخه موبایل و دسکتاپ", href: "https://alimosavi-code.github.io/download" },
 ];
 
 export function SystemsView() {
