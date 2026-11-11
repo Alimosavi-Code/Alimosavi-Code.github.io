@@ -108,6 +108,10 @@ const CONTACTS = [
     icon: <TelegramIcon size={20} />,
     href: "https://t.me/h_mosavi_s",
   },
+  {
+    title: "میانبرهای صفحه‌کلید دسکتاپ و اسکرول افقی (Shift + Scroll)",
+    body: "در نسخهٔ دسکتاپ و وب می‌توانید بدون نیاز به ماوس، با کلیدهای میانبر در برنامه جابه‌جا شوید:\n• فلش راست و چپ (ArrowRight / ArrowLeft): رفتن به ماه قبل و ماه بعد در تقویم و جدول (یا سال قبل و بعد در تب لوحه).\n• فلش بالا و پایین (ArrowUp / ArrowDown) و PageUp / PageDown: اسکرول عمودی سریع در نمای جدولی و لوحه.\n• نگه‌داشتن کلید Shift + چرخ اسکرول ماوس (Shift + Scroll): اسکرول افقی نرم در جدول‌ها، لوحهٔ سالانه و نوارهای افقی در دسکتاپ.\n• کلید V: تغییر سریع بین نمای تقویم (شبکه‌ای) و نمای جدولی.\n• کلید F: باز و بسته کردن حالت تمام‌صفحه در نمای جدولی.\n• کلید T: پرش سریع به تاریخ امروز.\n• کلید N: باز کردن پنجرهٔ همهٔ یادداشت‌ها.\n• کلیدهای ۱ تا ۵: جابه‌جایی سریع بین ۵ تب اصلی برنامه (تقویم، سامانه‌ها، لوحه، مدیریت شیفت و تنظیمات).\n• کلید Esc: بستن پنجره‌های باز یا خروج از حالت تمام‌صفحه.",
+  },
 ];
 
 const HELP_ITEMS: { title: string; body: string }[] = [
@@ -223,6 +227,7 @@ export function SettingsView({
   const theme = useShiftKar((s) => s.theme);
   const themeMode = useShiftKar((s) => s.themeMode);
   const viewType = useShiftKar((s) => s.viewType);
+  const showSecondaryCalendars = useShiftKar((s) => s.showSecondaryCalendars);
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const dayRecords = useShiftKar((s) => s.dayRecords);
   const employees = useShiftKar((s) => s.employees);
@@ -537,39 +542,76 @@ export function SettingsView({
       {/* ============ Row 2 Left: 4. نمای تقویم ============ */}
       <Section
         icon={<GridIcon size={16} />}
-        title="نمای تقویم"
-        desc="حالت نمایش تقویم (شبکه‌ای) یا جدولی را انتخاب کنید."
+        title="نمای تقویم و تاریخ‌های فرعی"
+        desc="حالت نمایش تقویم (شبکه‌ای یا جدولی) و نمایش تاریخ قمری و میلادی را تنظیم کنید."
       >
-        <div className="grid grid-cols-2 gap-2.5 flex-1 items-stretch" role="radiogroup" aria-label="نمای تقویم">
-          {(
-            [
-              { id: "grid" as const, fa: "تقویم (شبکه‌ای)", preview: <GridPreview /> },
-              { id: "table" as const, fa: "جدولی (فهرست ماه)", preview: <TablePreview /> },
-            ]
-          ).map((v) => {
-            const active = viewType === v.id;
-            return (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => pickView(v.id)}
-                className={`relative rounded-2xl p-3.5 flex flex-col items-center justify-center gap-3 sk-outline ${
-                  active ? "is-active" : ""
-                }`}
-                role="radio"
-                aria-checked={active}
-              >
-                {v.preview}
-                <span
-                  className={`text-[12.5px] font-bold ${
-                    active ? "text-[var(--sk-primary)]" : "text-[var(--sk-text-muted)]"
+        <div className="flex flex-col justify-between gap-2.5 flex-1">
+          <div className="grid grid-cols-2 gap-2.5 flex-1 items-stretch" role="radiogroup" aria-label="نمای تقویم">
+            {(
+              [
+                { id: "grid" as const, fa: "تقویم (شبکه‌ای)", preview: <GridPreview /> },
+                { id: "table" as const, fa: "جدولی (فهرست ماه)", preview: <TablePreview /> },
+              ]
+            ).map((v) => {
+              const active = viewType === v.id;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => pickView(v.id)}
+                  className={`relative rounded-2xl p-3 flex flex-col items-center justify-center gap-2.5 sk-outline ${
+                    active ? "is-active" : ""
                   }`}
+                  role="radio"
+                  aria-checked={active}
                 >
-                  {v.fa}
-                </span>
-              </button>
-            );
-          })}
+                  {v.preview}
+                  <span
+                    className={`text-[12px] font-bold ${
+                      active ? "text-[var(--sk-primary)]" : "text-[var(--sk-text-muted)]"
+                    }`}
+                  >
+                    {v.fa}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              haptic(hapticOn);
+              const next = !showSecondaryCalendars;
+              set({ showSecondaryCalendars: next });
+              toast(
+                next
+                  ? "نمایش تاریخ قمری و میلادی در برنامه فعال شد"
+                  : "تاریخ قمری و میلادی مخفی شد (محاسبه در موتور برنامه فعال است)",
+              );
+            }}
+            className={`w-full rounded-2xl bg-[var(--sk-surface)] px-3.5 py-2.5 flex items-center justify-between gap-3 text-start border transition-all ${
+              showSecondaryCalendars
+                ? "border-[var(--sk-primary)]"
+                : "border-[var(--sk-border-soft)]"
+            }`}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="text-[12.5px] font-bold">نمایش تاریخ قمری و میلادی</div>
+              <div className="text-[10.5px] text-[var(--sk-text-muted)] truncate">
+                نمایش در نمای جدولی، پنجرهٔ جزئیات روز و خروجی تصویر روز
+              </div>
+            </div>
+            <span
+              className={`px-3 py-1 rounded-full text-[11px] font-black shrink-0 ${
+                showSecondaryCalendars
+                  ? "bg-[var(--sk-primary)] text-white"
+                  : "bg-[var(--sk-surface-strong)] text-[var(--sk-text-muted)]"
+              }`}
+            >
+              {showSecondaryCalendars ? "روشن" : "خاموش"}
+            </span>
+          </button>
         </div>
       </Section>
 
@@ -1023,7 +1065,7 @@ export function SettingsView({
         icon={<HelpIcon size={16} />}
         title="راهنمای جامع امکانات"
         desc="پاسخ به پرسش‌های متداول و توضیح کامل قابلیت‌های تقویم، مدیریت شیفت، لوحه و پشتیبان‌گیری."
-        className="lg:col-span-2"
+        className="lg:col-span-2 !h-auto"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-6 divide-y lg:divide-y-0 divide-[var(--sk-border-soft)]">
           {HELP_ITEMS.map((h, idx) => {
@@ -1077,7 +1119,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className={`glass rounded-3xl p-4 md:p-5 h-full flex flex-col ${className}`}>
+    <section className={`glass rounded-3xl p-4 md:p-5 shrink-0 lg:h-full flex flex-col overflow-hidden ${className}`}>
       <h2 className="flex items-center gap-2 text-[14.5px] font-extrabold text-[var(--sk-primary)] shrink-0">
         {icon}
         {title}

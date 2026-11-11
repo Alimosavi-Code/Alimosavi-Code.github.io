@@ -12,7 +12,7 @@
  *      3. `ماتریس ۴ شیفت` (`MATRIX_4`) — Two 16-day half strips per month (`تاریخ / A / B / C / D` with `ص / ع / ش / ا`).
  *  - Single-group 2-column 12-month grid with 2-stop shift gradients (normal Fridays not red).
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   JALALI_MONTHS,
   jalaaliMonthLength,
@@ -89,16 +89,16 @@ export function RosterView({
       if (e.key === "ArrowRight") {
         e.preventDefault();
         haptic(hapticOn);
-        set({ viewYear: Math.max(1300, viewYear - 1) });
+        set({ rosterYear: Math.max(1300, rosterYear - 1) });
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         haptic(hapticOn);
-        set({ viewYear: Math.min(1500, viewYear + 1) });
+        set({ rosterYear: Math.min(1500, rosterYear + 1) });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [viewYear, exportOpen, hapticOn, set]);
+  }, [rosterYear, exportOpen, hapticOn, set]);
 
   const activeGroups = useMemo(() => getActiveGroups(pat), [pat]);
   const groupFilters = useMemo(() => getActiveGroupFilters(pat), [pat]);

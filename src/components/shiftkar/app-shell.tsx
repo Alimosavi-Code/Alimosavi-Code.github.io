@@ -109,7 +109,27 @@ export function AppShell() {
     return () => mq.removeEventListener("change", fn);
   }, [hydrated, theme, themeMode]);
 
-  /* Global Desktop Keyboard Shortcuts (Tabs 1..5, Notes N) */
+  /* Global Desktop Keyboard Shortcuts (Tabs 1..5, Notes N) & Shift+Scroll Horizontal Helper */
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (!e.shiftKey || Math.abs(e.deltaY) === 0 || Math.abs(e.deltaX) > 0) return;
+      let el = e.target as HTMLElement | null;
+      while (el && el !== document.body) {
+        if (el.scrollWidth > el.clientWidth + 2) {
+          const style = window.getComputedStyle(el);
+          if (style.overflowX === "auto" || style.overflowX === "scroll") {
+            e.preventDefault();
+            el.scrollLeft -= e.deltaY;
+            return;
+          }
+        }
+        el = el.parentElement;
+      }
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, []);
+
   useEffect(() => {
     if (!hydrated || showOnboarding) return;
     const onKeyDown = (e: KeyboardEvent) => {

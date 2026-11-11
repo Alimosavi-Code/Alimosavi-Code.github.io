@@ -532,7 +532,7 @@ function PatternsSubTab() {
             </div>
 
             {/* Quick Presets Row */}
-            <div className="flex items-center gap-1.5 overflow-x-auto md:flex-wrap sk-scroll pb-0.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
               {(
                 [
                   { lbl: "چهار گروه (A..D)", isNoGrp: false, list: ["A", "B", "C", "D"] },
@@ -562,7 +562,7 @@ function PatternsSubTab() {
                         setGroupCells([...preset.list]);
                       }
                     }}
-                    className={`shrink-0 h-8 px-2.5 rounded-[10px] text-[10.5px] font-bold border transition-all ${
+                    className={`h-8 px-2 rounded-[10px] text-[10.5px] font-bold border transition-all flex items-center justify-center text-center truncate ${
                       active
                         ? "bg-[var(--sk-primary-soft)] border-[1.4px] border-[var(--sk-primary)] text-[var(--sk-primary)]"
                         : "bg-[var(--sk-surface)] border-[var(--sk-border-soft)] text-[var(--sk-text-muted)]"

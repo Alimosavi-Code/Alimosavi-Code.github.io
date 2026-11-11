@@ -59,6 +59,7 @@ interface ShiftKarState {
   onboardingDone: boolean;
   tourDone: boolean;
   showEvents: boolean;
+  showSecondaryCalendars: boolean;
   hapticOn: boolean;
   showEmployeesOnCalendar: boolean;
   shiftReminderOn: boolean;
@@ -123,6 +124,7 @@ export const useShiftKar = create<ShiftKarState>()(
         onboardingDone: false,
         tourDone: false,
         showEvents: true,
+        showSecondaryCalendars: false,
         hapticOn: true,
         showEmployeesOnCalendar: true,
         shiftReminderOn: false,
@@ -284,6 +286,7 @@ export const useShiftKar = create<ShiftKarState>()(
         onboardingDone: s.onboardingDone,
         tourDone: s.tourDone,
         showEvents: s.showEvents,
+        showSecondaryCalendars: s.showSecondaryCalendars,
         hapticOn: s.hapticOn,
         showEmployeesOnCalendar: s.showEmployeesOnCalendar,
         shiftReminderOn: s.shiftReminderOn,

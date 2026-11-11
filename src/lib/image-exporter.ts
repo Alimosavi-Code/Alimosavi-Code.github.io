@@ -1609,9 +1609,11 @@ export function renderDayCanvas(
   ctx.font = `900 46px ${FONT}`;
   ctx.fillText(formatJalali(jy, jm, jd), innerRight, curY + 84);
 
-  ctx.fillStyle = sk.textMuted;
-  ctx.font = `700 21px ${FONT}`;
-  ctx.fillText(`${formatHijri(jy, jm, jd)}  •  ${formatGregorian(jy, jm, jd)}`, innerRight, curY + 132);
+  if (useShiftKar.getState().showSecondaryCalendars) {
+    ctx.fillStyle = sk.textMuted;
+    ctx.font = `700 21px ${FONT}`;
+    ctx.fillText(`${formatHijri(jy, jm, jd)}  •  ${formatGregorian(jy, jm, jd)}`, innerRight, curY + 132);
+  }
 
   const mine = calculateShift(dateKey, myGroup);
   const effKind = dayRecord?.swapKind ?? mine.type;

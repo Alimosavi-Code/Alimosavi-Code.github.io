@@ -190,6 +190,7 @@ export function CalendarView({
   const myGroup = useShiftKar((s) => s.myGroup);
   const selectedDateKey = useShiftKar((s) => s.selectedDateKey);
   const showEvents = useShiftKar((s) => s.showEvents);
+  const showSecondaryCalendars = useShiftKar((s) => s.showSecondaryCalendars);
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const dayRecords = useShiftKar((s) => s.dayRecords);
   const activePatternId = useShiftKar((s) => s.activePatternId);
@@ -416,7 +417,7 @@ export function CalendarView({
       const greg = toGregorian(viewYear, viewMonth, d);
       const jdn = gregorianToJdn(greg.gy, greg.gm, greg.gd);
       const hijri = jdnToIslamic(jdn);
-      const lunarStr = `${toPersianDigits(hijri.id)} ${HIJRI_MONTHS[hijri.im - 1]}`;
+      const lunarStr = `${toPersianDigits(hijri.hd)} ${HIJRI_MONTHS[hijri.hm - 1]}`;
       const gregStr = `${toPersianDigits(greg.gd)} ${GREGORIAN_MONTHS[greg.gm - 1]}`;
 
       info.push({
@@ -496,7 +497,7 @@ export function CalendarView({
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
-      if (viewType !== "grid") return;
+      if (viewType !== "grid" || e.shiftKey) return;
       const dx = e.deltaX;
       const dy = e.deltaY;
       if (Math.abs(dx) < 24 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
@@ -750,6 +751,7 @@ export function CalendarView({
                 dayInfo={dayInfo}
                 filterGroup={effectiveFilterGroup}
                 myGroup={myGroup}
+                showSecondaryCalendars={showSecondaryCalendars}
                 onOpenDay={openDay}
                 scrollRef={tableScrollRef}
               />
@@ -798,6 +800,7 @@ export function CalendarView({
           dayInfo={dayInfo}
           filterGroup={effectiveFilterGroup}
           myGroup={myGroup}
+          showSecondaryCalendars={showSecondaryCalendars}
           isCurrentMonth={isCurrentMonth}
           onGoMonth={goMonth}
           onGoToday={goToday}
@@ -1355,10 +1358,11 @@ function TableView(props: {
   dayInfo: DayInfo[];
   filterGroup: GroupFilter;
   myGroup: ShiftGroup;
+  showSecondaryCalendars: boolean;
   onOpenDay: (k: string) => void;
   scrollRef?: React.RefObject<HTMLDivElement | null>;
 }) {
-  const { dayInfo, filterGroup, myGroup, onOpenDay, scrollRef } = props;
+  const { dayInfo, filterGroup, myGroup, showSecondaryCalendars, onOpenDay, scrollRef } = props;
   const all = filterGroup === "ALL";
   const pat = getActivePattern();
   const internalRef = useRef<HTMLDivElement>(null);
@@ -1398,7 +1402,7 @@ function TableView(props: {
         ) : (
           <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--sk-text-faint)]">
             <InfoIcon size={13} />
-            برای جزئیات، ثبت یادداشت یا اضافه‌کاری روی هر ردیف کلیک کنید (اسکرول افقی و عمودی فعال است)
+            برای جزئیات روی هر ردیف کلیک کنید (اسکرول افقی با لمس یا Shift + اسکرول ماوس)
           </span>
         )}
       </div>
@@ -1408,7 +1412,7 @@ function TableView(props: {
         className="flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain"
         style={{ touchAction: "pan-x pan-y" }}
       >
-        <table className="w-full text-[13px] min-w-[680px]">
+        <table className={`w-full text-[13px] ${showSecondaryCalendars ? "min-w-[680px]" : "min-w-[500px]"}`}>
           <thead className="sticky top-0 z-10 backdrop-blur-md">
             <tr className="text-[11.5px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
               <th className="py-2.5 font-bold w-12 text-center whitespace-nowrap">روز</th>
@@ -1416,8 +1420,12 @@ function TableView(props: {
               <th className="py-2.5 font-bold w-28 text-center whitespace-nowrap">
                 {all ? "شیفت گروه‌ها" : `شیفت ${getGroupLetter(filterGroup as ShiftGroup, pat)}`}
               </th>
-              <th className="py-2.5 font-bold w-24 text-center whitespace-nowrap">قمری</th>
-              <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">میلادی</th>
+              {showSecondaryCalendars && (
+                <>
+                  <th className="py-2.5 font-bold w-24 text-center whitespace-nowrap">قمری</th>
+                  <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">میلادی</th>
+                </>
+              )}
               <th className="py-2.5 font-bold text-start ps-4 pe-4 whitespace-nowrap">
                 مناسبت و یادداشت
               </th>
@@ -1506,12 +1514,16 @@ function TableView(props: {
                       )}
                     </span>
                   </td>
-                  <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-muted)] whitespace-nowrap">
-                    {info.lunarStr}
-                  </td>
-                  <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-faint)] whitespace-nowrap">
-                    {info.gregStr}
-                  </td>
+                  {showSecondaryCalendars && (
+                    <>
+                      <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-muted)] whitespace-nowrap">
+                        {info.lunarStr}
+                      </td>
+                      <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-faint)] whitespace-nowrap">
+                        {info.gregStr}
+                      </td>
+                    </>
+                  )}
                   <td className="py-2 ps-4 pe-5 text-start text-[12px] whitespace-nowrap">
                     {parts.length === 0 ? (
                       <span className="text-[var(--sk-text-faint)]">—</span>
@@ -1541,6 +1553,7 @@ function TableFullscreen(props: {
   dayInfo: DayInfo[];
   filterGroup: GroupFilter;
   myGroup: ShiftGroup;
+  showSecondaryCalendars: boolean;
   isCurrentMonth: boolean;
   onGoMonth: (d: 1 | -1) => void;
   onGoToday: () => void;
@@ -1555,6 +1568,7 @@ function TableFullscreen(props: {
     dayInfo,
     filterGroup,
     myGroup,
+    showSecondaryCalendars,
     isCurrentMonth,
     onGoMonth,
     onGoToday,
@@ -1685,7 +1699,7 @@ function TableFullscreen(props: {
           className="glass rounded-[22px] border border-[var(--sk-border-soft)] w-full flex-1 min-h-0 overflow-auto sk-scroll overscroll-contain"
           style={{ touchAction: "pan-x pan-y" }}
         >
-          <table className="w-full text-[13px] min-w-[680px]">
+          <table className={`w-full text-[13px] ${showSecondaryCalendars ? "min-w-[680px]" : "min-w-[500px]"}`}>
             <thead className="sticky top-0 z-10 backdrop-blur-md">
               <tr className="text-[11.5px] font-bold text-[var(--sk-text-faint)] border-b border-[var(--sk-border-soft)] sk-thead">
                 <th className="py-2.5 font-bold w-12 text-center whitespace-nowrap">روز</th>
@@ -1693,8 +1707,12 @@ function TableFullscreen(props: {
                 <th className="py-2.5 font-bold w-28 text-center whitespace-nowrap">
                   {all ? "شیفت گروه‌ها" : `شیفت ${getGroupLetter(filterGroup as ShiftGroup, pat)}`}
                 </th>
-                <th className="py-2.5 font-bold w-24 text-center whitespace-nowrap">قمری</th>
-                <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">میلادی</th>
+                {showSecondaryCalendars && (
+                  <>
+                    <th className="py-2.5 font-bold w-24 text-center whitespace-nowrap">قمری</th>
+                    <th className="py-2.5 font-bold w-20 text-center whitespace-nowrap">میلادی</th>
+                  </>
+                )}
                 <th className="py-2.5 font-bold text-start ps-4 pe-4 whitespace-nowrap">
                   مناسبت و یادداشت
                 </th>
@@ -1775,12 +1793,16 @@ function TableFullscreen(props: {
                         )}
                       </span>
                     </td>
-                    <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-muted)] whitespace-nowrap">
-                      {info.lunarStr}
-                    </td>
-                    <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-faint)] whitespace-nowrap">
-                      {info.gregStr}
-                    </td>
+                    {showSecondaryCalendars && (
+                      <>
+                        <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-muted)] whitespace-nowrap">
+                          {info.lunarStr}
+                        </td>
+                        <td className="py-2 px-2 text-center text-[11.5px] text-[var(--sk-text-faint)] whitespace-nowrap">
+                          {info.gregStr}
+                        </td>
+                      </>
+                    )}
                     <td className="py-2 ps-4 pe-5 text-start text-[12px] whitespace-nowrap">
                       {parts.length === 0 ? (
                         <span className="text-[var(--sk-text-faint)]">—</span>

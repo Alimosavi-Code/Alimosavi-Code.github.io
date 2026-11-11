@@ -121,6 +121,7 @@ function DaySheetBody({
 }) {
   const myGroup = useShiftKar((s) => s.myGroup);
   const showEvents = useShiftKar((s) => s.showEvents);
+  const showSecondaryCalendars = useShiftKar((s) => s.showSecondaryCalendars);
   const hapticOn = useShiftKar((s) => s.hapticOn);
   const dayRecords = useShiftKar((s) => s.dayRecords);
   const setDayOvertime = useShiftKar((s) => s.setDayOvertime);
@@ -245,9 +246,11 @@ function DaySheetBody({
           <div className="text-[22px] font-black mt-0.5 leading-tight">
             {formatJalali(jy, jm, jd)}
           </div>
-          <div className="text-[11.5px] text-[var(--sk-text-faint)] mt-1 leading-5">
-            {formatHijri(jy, jm, jd)} · {formatGregorian(jy, jm, jd)}
-          </div>
+          {showSecondaryCalendars && (
+            <div className="text-[11.5px] text-[var(--sk-text-faint)] mt-1 leading-5">
+              {formatHijri(jy, jm, jd)} · {formatGregorian(jy, jm, jd)}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
