@@ -177,83 +177,27 @@
       padding-inline: 20px;
     }
 
-    /* 6-Theme Animated Glass Aurora Backdrop */
+    /* 6-Theme GPU-Accelerated Glass Aurora Backdrop (Zero Scroll Lag on Mobile) */
     .aurora {
       z-index: -2;
       pointer-events: none;
-      background: var(--sk-bg);
       position: fixed;
       inset: 0;
       overflow: hidden;
+      transform: translateZ(0);
+      background:
+        radial-gradient(62vmax circle at 85% 6%, color-mix(in srgb, var(--sk-primary) 26%, transparent), transparent 68%),
+        radial-gradient(56vmax circle at 12% 18%, rgba(139, 92, 246, 0.22), transparent 68%),
+        radial-gradient(54vmax circle at 84% 88%, rgba(16, 185, 129, 0.20), transparent 68%),
+        radial-gradient(50vmax circle at 14% 84%, rgba(34, 184, 207, 0.18), transparent 68%),
+        var(--sk-bg);
     }
-    .blob {
-      filter: blur(115px);
-      border-radius: 50%;
-      position: absolute;
-      opacity: 0.85;
-    }
-    html.light .blob {
-      opacity: 0.42;
-    }
-    .blob-blue {
-      top: -22vmax;
-      inset-inline-start: -10vmax;
-      width: 54vmax;
-      height: 54vmax;
-      background: radial-gradient(circle, rgba(61, 107, 245, 0.52), transparent 68%);
-      animation: 26s ease-in-out infinite alternate drift-a;
-    }
-    .blob-purple {
-      top: -16vmax;
-      inset-inline-end: -12vmax;
-      width: 50vmax;
-      height: 50vmax;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.46), transparent 68%);
-      animation: 32s ease-in-out infinite alternate drift-b;
-    }
-    .blob-emerald {
-      bottom: -20vmax;
-      inset-inline-end: -10vmax;
-      width: 52vmax;
-      height: 52vmax;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.42), transparent 68%);
-      animation: 34s ease-in-out infinite alternate drift-c;
-    }
-    .blob-teal {
-      bottom: -18vmax;
-      inset-inline-start: -12vmax;
-      width: 48vmax;
-      height: 48vmax;
-      background: radial-gradient(circle, rgba(34, 184, 207, 0.42), transparent 68%);
-      animation: 30s ease-in-out infinite alternate drift-a;
-    }
-    .blob-rose {
-      top: 32%;
-      inset-inline-start: 28%;
-      width: 40vmax;
-      height: 40vmax;
-      background: radial-gradient(circle, rgba(244, 63, 94, 0.24), transparent 70%);
-      animation: 38s ease-in-out infinite alternate drift-b;
-    }
-    .blob-orange {
-      top: 52%;
-      inset-inline-end: 24%;
-      width: 38vmax;
-      height: 38vmax;
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.22), transparent 70%);
-      animation: 36s ease-in-out infinite alternate drift-c;
-    }
-    @keyframes drift-a {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(-6vmax, 7vmax) scale(1.1); }
-    }
-    @keyframes drift-b {
-      0% { transform: translate(0, 0) scale(1.04); }
-      100% { transform: translate(7vmax, -6vmax) scale(0.94); }
-    }
-    @keyframes drift-c {
-      0% { transform: translate(-3vmax, 0) scale(1); }
-      100% { transform: translate(5vmax, -5vmax) scale(1.14); }
+    html.light .aurora {
+      background:
+        radial-gradient(62vmax circle at 85% 6%, color-mix(in srgb, var(--sk-primary) 15%, transparent), transparent 68%),
+        radial-gradient(56vmax circle at 12% 18%, rgba(139, 92, 246, 0.12), transparent 68%),
+        radial-gradient(54vmax circle at 84% 88%, rgba(16, 185, 129, 0.12), transparent 68%),
+        var(--sk-bg);
     }
     .noise {
       opacity: 0.04;
@@ -262,12 +206,10 @@
       inset: 0;
     }
 
-    /* Core Frost Glass Surface (matching original download page) */
+    /* Core Frost Glass Surface (Hardware-accelerated, ultra-smooth scrolling on Android) */
     .glass {
-      background: var(--sk-glass);
+      background: linear-gradient(155deg, var(--sk-glass-2) 0%, var(--sk-glass) 100%);
       border: 1px solid var(--sk-border);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      backdrop-filter: blur(22px) saturate(160%);
       border-radius: 26px;
       position: relative;
       box-shadow: var(--sk-shadow);
@@ -282,31 +224,84 @@
       inset: 0 0 auto;
     }
     .lift {
-      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+      transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
     }
     .lift:hover {
       border-color: var(--sk-border-hover);
       background: var(--sk-glass-2);
-      transform: translateY(-3px);
+      transform: translateY(-2px);
       box-shadow: var(--sk-shadow-hover);
     }
 
-    /* Non-Sticky Top Bar inside Hero */
-    .top-bar {
-      margin-top: 20px;
-      padding: 12px 18px;
-      border-radius: 22px;
+    /* Sticky Glass Header (Single-row on Android & Desktop) */
+    .navbar {
+      position: sticky;
+      top: 10px;
+      z-index: 50;
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
+      background: linear-gradient(155deg, var(--sk-glass-2) 0%, var(--sk-glass) 100%);
+      -webkit-backdrop-filter: blur(20px) saturate(165%);
+      backdrop-filter: blur(20px) saturate(165%);
+      border: 1px solid var(--sk-border);
+      box-shadow: var(--sk-shadow);
     }
-    .top-bar-right {
+    .nav-brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .nav-brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      flex-shrink: 0;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+    .nav-brand-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .nav-brand-title {
+      font-size: 14.5px;
+      font-weight: 900;
+      line-height: 1.25;
+      color: var(--sk-text);
+      white-space: nowrap;
+    }
+    .nav-brand-sub {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--sk-muted);
+      white-space: nowrap;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+    .chip-btn-icon {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+    .hero-theme-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 14px;
     }
     .theme-swatches {
       display: inline-flex;
@@ -420,8 +415,6 @@
       color: var(--sk-text);
       background: var(--sk-glass);
       border: 1px solid var(--sk-border);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
-      backdrop-filter: blur(18px) saturate(140%);
       border-radius: 999px;
       align-items: center;
       gap: 8px;
@@ -435,11 +428,8 @@
       border-color: var(--sk-border-hover);
       transform: translateY(-1px);
     }
-    /* The live version text mixes digits, dots, slashes and an interpunct — without
-       LTR isolation the RTL bidi algorithm scrambles it (e.g. ۶/۴/۲۰۲۵۰/۵/۱۴). */
     .version-pill strong {
-      direction: ltr;
-      unicode-bidi: isolate;
+      font-weight: 900;
     }
     .version-dot {
       border-radius: 999px;
@@ -485,10 +475,86 @@
       gap: 20px;
     }
     @media (max-width: 640px) {
+      .container-sk {
+        padding-inline: 12px;
+      }
+      .navbar {
+        top: 8px;
+        padding: 8px 11px;
+        border-radius: 16px;
+      }
+      .nav-brand-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+      }
+      .nav-brand-title {
+        font-size: 13.5px;
+      }
+      .nav-brand-sub {
+        font-size: 10px;
+      }
+      .chip-btn {
+        padding: 6px 11px;
+        font-size: 11.5px;
+        border-radius: 11px;
+      }
+      .chip-btn-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+      }
+      .hero {
+        padding: 20px 0 16px;
+      }
+      .app-icon-wrap, .app-icon {
+        width: 82px;
+        height: 82px;
+        border-radius: 22px;
+      }
+      .version-pills-row {
+        gap: 7px;
+        margin-top: 16px;
+      }
+      .version-pill {
+        font-size: 11.5px;
+        padding: 5px 12px;
+      }
       .smart-box {
+        margin: 18px auto 28px;
         padding: 16px 14px;
         border-radius: 22px;
         gap: 14px;
+      }
+      .smart-body {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+      }
+      .smart-main {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        min-width: 0;
+        width: 100%;
+      }
+      .smart-os-emblem {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+      }
+      .smart-badge-row {
+        justify-content: center;
+        gap: 6px;
+      }
+      .smart-title {
+        font-size: 16.5px;
+        margin-top: 8px;
+      }
+      .smart-sub {
+        font-size: 12px;
+        line-height: 1.65;
       }
       .plat-card {
         padding: 16px 14px;
@@ -1311,22 +1377,42 @@
   </svg>
 
   <div class="page-root">
-    <!-- 6-Theme Animated Glassmorphic Aurora Backdrop -->
-    <div class="aurora" aria-hidden="true">
-      <div class="blob blob-blue"></div>
-      <div class="blob blob-purple"></div>
-      <div class="blob blob-emerald"></div>
-      <div class="blob blob-teal"></div>
-      <div class="blob blob-rose"></div>
-      <div class="blob blob-orange"></div>
-      <div class="noise"></div>
-    </div>
+    <!-- 6-Theme Glassmorphic Aurora Backdrop -->
+    <div class="aurora" aria-hidden="true"></div>
 
     <main>
       <div class="container-sk">
-        <!-- Non-Sticky Glass Utility & 6-Theme Switcher Bar -->
-        <div class="glass top-bar">
-          <div class="top-bar-right">
+        <!-- Sticky Compact Glass Navbar -->
+        <nav class="navbar" aria-label="نوار ابزار بالای صفحه">
+          <div class="nav-brand">
+            <img class="nav-brand-icon" src="./icons/icon-512.png?v=701" width="38" height="38" alt="شیفت‌کار" decoding="async" />
+            <div class="nav-brand-text">
+              <span class="nav-brand-title">شیفت‌کار</span>
+              <span class="nav-brand-sub">مرکز دانلود رسمی</span>
+            </div>
+          </div>
+
+          <div class="nav-actions">
+            <a href="https://alimosavi-code.github.io" class="chip-btn chip-btn-primary" title="ورود به وب‌اپلیکیشن شیفت‌کار">
+              <svg width="15" height="15"><use href="#ico-web"/></svg>
+              <span>وب‌اپلیکیشن</span>
+            </a>
+            <button type="button" class="chip-btn chip-btn-icon" onclick="toggleTheme()" title="تغییر حالت روشن و تاریک" aria-label="تغییر حالت روشن و تاریک">
+              <svg width="15" height="15"><use href="#ico-theme"/></svg>
+            </button>
+            <button type="button" class="chip-btn chip-btn-icon" onclick="sharePage()" title="اشتراک‌گذاری صفحه دانلود" aria-label="اشتراک‌گذاری صفحه دانلود">
+              <svg width="14" height="14"><use href="#ico-share"/></svg>
+            </button>
+          </div>
+        </nav>
+
+        <!-- Hero Header -->
+        <header class="hero">
+          <div class="app-icon-wrap">
+            <img class="app-icon" src="./icons/icon-512.png?v=701" width="96" height="96"
+                 alt="آیکون برنامهٔ شیفت‌کار" decoding="async" />
+          </div>
+          <div class="hero-theme-bar">
             <div class="theme-swatches" role="group" aria-label="انتخاب تم رنگی">
               <button type="button" class="theme-dot" data-theme-btn="blue" style="background:#3d6bf5;color:#3d6bf5" onclick="setAccentTheme('blue')" title="تم آبی"></button>
               <button type="button" class="theme-dot" data-theme-btn="emerald" style="background:#10b981;color:#10b981" onclick="setAccentTheme('emerald')" title="تم زمردی"></button>
@@ -1335,31 +1421,6 @@
               <button type="button" class="theme-dot" data-theme-btn="rose" style="background:#f43f5e;color:#f43f5e" onclick="setAccentTheme('rose')" title="تم رز"></button>
               <button type="button" class="theme-dot" data-theme-btn="teal" style="background:#22b8cf;color:#22b8cf" onclick="setAccentTheme('teal')" title="تم فیروزه‌ای"></button>
             </div>
-            <button type="button" class="chip-btn" onclick="toggleTheme()" aria-label="تغییر حالت روشن و تاریک">
-              <svg width="15" height="15"><use href="#ico-theme"/></svg>
-              <span>تغییر حالت روشن/تاریک</span>
-            </button>
-          </div>
-
-          <div class="top-bar-actions">
-            <a href="https://alimosavi-code.github.io" class="chip-btn chip-btn-primary">
-              <svg width="15" height="15"><use href="#ico-web"/></svg>
-              <span>اجرای نسخهٔ تحت وب (PWA)</span>
-            </a>
-            <button type="button" class="chip-btn" onclick="sharePage()">
-              <svg width="14" height="14"><use href="#ico-share"/></svg>
-              <span>اشتراک‌گذاری صفحه</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Hero Header -->
-        <header class="hero">
-          <div class="app-icon-wrap">
-            <!-- REAL ShiftKar app icon — the same artwork as the Android launcher
-                 icon, the PWA manifest icons and the site favicon (no web badge). -->
-            <img class="app-icon" src="./icons/icon-512.png?v=701" width="96" height="96"
-                 alt="آیکون برنامهٔ شیفت‌کار" decoding="async" />
           </div>
           <h1>شیفت‌کار</h1>
           <p class="tagline">تقویم هوشمند شیفت کاری — ویندوز، لینوکس، مک، اندروید و وب</p>
@@ -2165,11 +2226,11 @@
 
       var pillAnd = document.getElementById("pill-ver-android");
       if (pillAnd) {
-        pillAnd.textContent = andVerFa + (LIVE_STATE.android.releaseDate ? " · " + toFaDigits(LIVE_STATE.android.releaseDate) : "");
+        pillAnd.textContent = andVerFa + (LIVE_STATE.android.releaseDate ? " (" + toFaDigits(LIVE_STATE.android.releaseDate) + ")" : "");
       }
       var pillDsk = document.getElementById("pill-ver-desktop");
       if (pillDsk) {
-        pillDsk.textContent = dskVerFa + (LIVE_STATE.desktop.releaseDate ? " · " + toFaDigits(LIVE_STATE.desktop.releaseDate) : "");
+        pillDsk.textContent = dskVerFa + (LIVE_STATE.desktop.releaseDate ? " (" + toFaDigits(LIVE_STATE.desktop.releaseDate) + ")" : "");
       }
       var pillPwa = document.getElementById("pill-ver-pwa");
       if (pillPwa) {
@@ -2655,12 +2716,11 @@
         if (el) el.classList.toggle("active", tabs[i] === mode);
       }
 
-      /* On narrow screens the tab row scrolls horizontally — keep the ACTIVE
-         tab comfortably in view instead of leaving it clipped at an edge. */
+      /* Scroll active tab into view only after initial load (when user taps a tab) */
       var activeTabEl = document.getElementById("tab-" + mode);
-      if (activeTabEl && activeTabEl.scrollIntoView) {
+      if (window.__pageInitialized && activeTabEl && activeTabEl.scrollIntoView) {
         try {
-          activeTabEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          activeTabEl.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" });
         } catch (e) {}
       }
 
@@ -2735,6 +2795,7 @@
 
       applyLiveStateToDom();
       selectHeroPlatform("auto");
+      window.__pageInitialized = true;
       fetchLiveUpdates();
 
       if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {

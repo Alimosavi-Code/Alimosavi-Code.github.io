@@ -351,7 +351,7 @@ function PatternsSubTab() {
         style={{ backgroundColor: "var(--sk-primary-soft)" }}
       >
         <div className="flex items-center gap-2.5">
-          <span className="size-9 rounded-xl bg-[var(--sk-primary)] text-white grid place-items-center shrink-0">
+          <span className="size-9 rounded-xl bg-[var(--sk-primary-soft)] border border-[var(--sk-primary)]/55 text-[var(--sk-primary)] shadow-[0_6px_16px_-8px_var(--sk-glow-a),inset_0_1px_0_var(--sk-specular)] grid place-items-center shrink-0">
             <SparkIcon size={18} />
           </span>
           <div className="flex-1 min-w-0">
@@ -1088,7 +1088,7 @@ function PatternCard({
             onClick={onActivate}
             className={`px-3 py-1.5 rounded-full text-[11px] font-black border ${
               isActive
-                ? "bg-[var(--sk-primary)] border-[var(--sk-primary)] text-white"
+                ? "bg-[var(--sk-primary-soft)] border-[1.4px] border-[var(--sk-primary)] text-[var(--sk-primary)] shadow-[0_6px_16px_-8px_var(--sk-glow-a),inset_0_1px_0_var(--sk-specular)]"
                 : "bg-[var(--sk-surface-strong)] border-[var(--sk-border-soft)] text-[var(--sk-primary)]"
             }`}
           >

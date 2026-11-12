@@ -637,6 +637,8 @@
 .sk-scroll {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 .sk-scroll::-webkit-scrollbar {
   display: none;
@@ -874,21 +876,28 @@ body.sk-sheet-open {
   color: var(--sk-primary);
 }
 .sk-seg-item.is-active {
-  background: var(--sk-surface-strong);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sk-primary) 24%, var(--sk-surface-strong)),
+    color-mix(in srgb, var(--sk-primary) 10%, var(--sk-surface))
+  );
   color: var(--sk-primary);
   box-shadow:
-    0 3px 10px -4px rgba(0, 0, 0, 0.25),
-    inset 0 0 0 1.5px var(--sk-primary);
+    0 6px 18px -8px var(--sk-glow-a),
+    inset 0 1px 0 var(--sk-specular),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--sk-primary) 72%, transparent);
 }
-/* Dark mode: solid primary-gradient pill with white text — high contrast on
- * every theme (especially blue & purple) instead of a translucent wash. */
 .dark .sk-seg-item.is-active {
-  background: linear-gradient(180deg, var(--sk-primary), var(--sk-primary-strong));
-  color: #ffffff;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sk-primary) 26%, rgba(255, 255, 255, 0.08)),
+    color-mix(in srgb, var(--sk-primary) 10%, rgba(255, 255, 255, 0.03))
+  );
+  color: var(--sk-primary);
   box-shadow:
-    0 6px 18px -6px var(--sk-glow-a),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    0 6px 18px -8px var(--sk-glow-a),
+    inset 0 1px 0 var(--sk-specular),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--sk-primary) 68%, transparent);
 }
 
 .sk-swatch {

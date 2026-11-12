@@ -138,12 +138,24 @@ function MiniBadge({
 /**
  * GroupNumBadge — Displays `${group.faLetter()}${ord}` (e.g. `A۱`, `B۲`) inside `همه` calendar cells.
  */
-function GroupNumBadge({ label, code }: { label: string; code: ShiftCode }) {
+function GroupNumBadge({
+  label,
+  code,
+  compact = false,
+}: {
+  label: string;
+  code: ShiftCode;
+  compact?: boolean;
+}) {
   const kind = codeToKind(code);
   const ord = toPersianDigits(shiftCodeIndex(code));
   return (
     <span
-      className={`inline-flex items-center justify-center w-[20px] h-[13.5px] sm:w-[23px] sm:h-[15.5px] rounded-[5px] text-[7.5px] sm:text-[8.5px] font-black leading-none ${KIND_GRAD[kind]}`}
+      className={`inline-flex items-center justify-center w-full ${
+        compact
+          ? "h-[11px] sm:h-[13.5px] rounded-[4px] text-[7px] sm:text-[8px]"
+          : "h-[15px] sm:h-[16.5px] rounded-[5px] text-[8px] sm:text-[9px]"
+      } font-black leading-none truncate px-0.5 ${KIND_GRAD[kind]}`}
       title={`شیفت ${label}: ${CODE_FA[code]}`}
     >
       {label}
@@ -163,7 +175,7 @@ function ShiftDayOrdinalBadge({
 }) {
   return (
     <span
-      className={`inline-flex items-center justify-center gap-[2px] h-[20px] sm:h-[22px] px-1.5 sm:px-2 rounded-[7px] border border-current/35 text-[9.5px] sm:text-[10.5px] font-black leading-none ${KIND_GRAD[kind]}`}
+      className={`inline-flex items-center justify-center gap-[3px] h-[22px] sm:h-[24px] px-2 sm:px-2.5 rounded-[8px] border border-current/35 text-[10.5px] sm:text-[11px] font-black leading-none ${KIND_GRAD[kind]}`}
     >
       {KIND_ICON_SM[kind]}
       <span>{swapped ? "*" : toPersianDigits(ordinal)}</span>
@@ -713,48 +725,49 @@ export function CalendarView({
       </div>
 
       {/* Filter chips + PNG Export + Fullscreen + Today chip */}
-      <div className="flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5 shrink-0" data-tour="group-filter">
-        {!pat.hasGroups ? (
-          <span className="shrink-0 h-9 px-3 rounded-full bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] shadow-[inset_0_0_0_1.5px_var(--sk-primary)] text-[12px] font-bold inline-flex items-center">
-            شیفت فردی (بدون گروه)
-          </span>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 glass rounded-full p-1">
-            {groupFilters.map((g) => {
-              const active = effectiveFilterGroup === g;
-              const isCompared = g !== "ALL" && compareGroup === (g as ShiftGroup);
-              const label = g === "ALL" ? "همه" : getGroupLetter(g as ShiftGroup, pat);
-              return (
-                <button
-                  key={g}
-                  onClick={() => setFilter(g)}
-                  onContextMenu={(e) => {
-                    if (g !== "ALL") {
-                      e.preventDefault();
-                      toggleCompare(g as ShiftGroup);
+      <div className="flex items-center justify-between gap-1.5 pb-0.5 shrink-0 min-w-0" data-tour="group-filter">
+        <div className="min-w-0 flex-1 flex items-center">
+          {!pat.hasGroups ? (
+            <span className="shrink-0 h-9 px-3 rounded-full bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] shadow-[inset_0_0_0_1.5px_var(--sk-primary)] text-[12px] font-bold inline-flex items-center">
+              شیفت فردی (بدون گروه)
+            </span>
+          ) : (
+            <div className="max-w-full min-w-0 overflow-x-auto sk-scroll flex items-center gap-1 glass rounded-full p-1">
+              {groupFilters.map((g) => {
+                const active = effectiveFilterGroup === g;
+                const isCompared = g !== "ALL" && compareGroup === (g as ShiftGroup);
+                const label = g === "ALL" ? "همه" : getGroupLetter(g as ShiftGroup, pat);
+                return (
+                  <button
+                    key={g}
+                    onClick={() => setFilter(g)}
+                    onContextMenu={(e) => {
+                      if (g !== "ALL") {
+                        e.preventDefault();
+                        toggleCompare(g as ShiftGroup);
+                      }
+                    }}
+                    className={`shrink-0 min-w-9 h-7 px-2.5 rounded-full text-[12.5px] font-bold transition-all ${
+                      active
+                        ? "bg-gradient-to-b from-[var(--sk-primary)]/24 to-[var(--sk-primary)]/10 text-[var(--sk-primary)] shadow-[0_4px_14px_-6px_var(--sk-glow-a),inset_0_0_0_1.5px_var(--sk-primary)]"
+                        : isCompared
+                          ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] shadow-[inset_0_0_0_1.5px_var(--sk-rest-ink)]"
+                          : "text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)]"
+                    }`}
+                    aria-pressed={active}
+                    title={
+                      g === "ALL"
+                        ? "نمایش همه گروه‌ها"
+                        : `شیفت ${label} (نگه‌داشتن یا کلیک راست برای مقایسه استراحت مشترک)`
                     }
-                  }}
-                  className={`shrink-0 min-w-9 h-7 px-2.5 rounded-full text-[12.5px] font-bold transition-all ${
-                    active
-                      ? "bg-[var(--sk-surface-strong)] text-[var(--sk-primary)] shadow-[inset_0_0_0_1.5px_var(--sk-primary)]"
-                      : isCompared
-                        ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] shadow-[inset_0_0_0_1.5px_var(--sk-rest-ink)]"
-                        : "text-[var(--sk-text-muted)] hover:text-[var(--sk-primary)]"
-                  }`}
-                  aria-pressed={active}
-                  title={
-                    g === "ALL"
-                      ? "نمایش همه گروه‌ها"
-                      : `شیفت ${label} (نگه‌داشتن یا کلیک راست برای مقایسه استراحت مشترک)`
-                  }
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        )}
-        <div className="flex-1 min-w-1" />
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
         <button
           onClick={() => {
             haptic(hapticOn);
@@ -833,7 +846,7 @@ export function CalendarView({
         >
           {/* Right Main Panel on Desktop (8 cols): Either GridView or TableView */}
           {viewType === "grid" ? (
-            <div className="flex-1 min-h-0 flex flex-col lg:col-span-8 lg:glass lg:rounded-[26px] lg:p-3.5">
+            <div className="flex-1 min-h-0 flex flex-col justify-center lg:justify-start lg:col-span-8 lg:glass lg:rounded-[26px] lg:p-3.5">
               <GridView
                 dayInfo={dayInfo}
                 firstWeekday={firstWeekday}
@@ -984,17 +997,25 @@ function TodayBanner({
           <span className="text-[10.5px] text-[var(--sk-text-muted)]">{dateLine}</span>
         </div>
         <div
-          className="grid gap-1.5"
-          style={{
-            gridTemplateColumns: `repeat(${Math.min(4, activeGroups.length)}, minmax(0, 1fr))`,
-          }}
+          className={
+            activeGroups.length > 4
+              ? "flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5"
+              : "grid gap-1.5"
+          }
+          style={
+            activeGroups.length <= 4
+              ? { gridTemplateColumns: `repeat(${Math.max(1, activeGroups.length)}, minmax(0, 1fr))` }
+              : undefined
+          }
         >
-          {activeGroups.slice(0, 4).map((g) => {
+          {activeGroups.map((g) => {
             const s = calculateShift(todayKey, g);
             return (
               <div
                 key={g}
-                className={`rounded-[12px] py-1.5 px-1 flex flex-col items-center gap-0.5 ${KIND_GRAD[s.type]}`}
+                className={`rounded-[12px] py-1.5 px-1.5 flex flex-col items-center gap-0.5 ${
+                  activeGroups.length > 4 ? "min-w-[64px] flex-1 shrink-0" : ""
+                } ${KIND_GRAD[s.type]}`}
               >
                 <span className="text-[9.5px] font-black leading-none">
                   {getGroupLetter(g, pat)}
@@ -1299,8 +1320,11 @@ const DayCell = memo(function DayCell({
     <button
       onClick={() => onOpenDay(info.key)}
       data-tour={isTourCell ? "today-cell" : undefined}
-      className={`sk-cell-in touch-pan-y relative rounded-[14px] sm:rounded-[16px] h-full w-full overflow-hidden flex flex-col items-center justify-center gap-[3px] sm:gap-[4px] p-0.5 select-none
-        transition-[transform,border-color] active:scale-[0.97]
+      className={`sk-cell-in touch-pan-y relative rounded-[15px] sm:rounded-[16px] h-full w-full overflow-hidden flex flex-col items-center justify-center ${
+        filterGroup === "ALL" && info.all.length > 4
+          ? "gap-[2px] p-[2px]"
+          : "gap-[5px] sm:gap-[6px] p-1"
+      } select-none transition-[transform,border-color] active:scale-[0.97]
         ${
           holiday
             ? "bg-[var(--sk-holiday-soft)] border border-[var(--sk-holiday)]/25"
@@ -1315,7 +1339,11 @@ const DayCell = memo(function DayCell({
     >
       <span className="flex items-center gap-0.5 leading-none">
         <span
-          className={`text-[13.5px] sm:text-[15px] font-extrabold leading-none ${
+          className={`${
+            filterGroup === "ALL" && info.all.length > 4
+              ? "text-[11.5px] sm:text-[13.5px]"
+              : "text-[15px] sm:text-[16px]"
+          } font-extrabold leading-none ${
             holiday
               ? "text-[var(--sk-holiday)]"
               : info.isFriday
@@ -1325,23 +1353,30 @@ const DayCell = memo(function DayCell({
         >
           {toPersianDigits(info.d)}
         </span>
-        {info.note && <span className="size-1 rounded-full bg-[var(--sk-primary)]" />}
+        {info.note && <span className="size-1.5 rounded-full bg-[var(--sk-primary)]" />}
         {(hasOvertime || swapKind !== null) && (
-          <span className="size-1 rounded-full bg-[var(--sk-primary)]" />
+          <span className="size-1.5 rounded-full bg-[var(--sk-primary)]" />
         )}
         {info.hasColleagueSharedRest && (
-          <span className="size-1 rounded-full bg-[var(--sk-rest)]" />
+          <span className="size-1.5 rounded-full bg-[var(--sk-rest)]" />
         )}
       </span>
 
       {filterGroup === "ALL" ? (
         <span
-          className={`grid ${
-            info.all.length > 4 ? "grid-cols-3" : "grid-cols-2"
-          } gap-[2.5px] sm:gap-[3px] place-items-center`}
+          className={`grid w-full px-0.5 ${
+            info.all.length > 4
+              ? "grid-cols-2 sm:grid-cols-4 gap-[1.5px]"
+              : "grid-cols-2 gap-[2.5px] sm:gap-[3px]"
+          } place-items-center`}
         >
-          {info.all.slice(0, 6).map((s) => (
-            <GroupNumBadge key={s.group} label={s.label} code={s.code} />
+          {info.all.slice(0, 8).map((s) => (
+            <GroupNumBadge
+              key={s.group}
+              label={s.label}
+              code={s.code}
+              compact={info.all.length > 4}
+            />
           ))}
         </span>
       ) : (
@@ -1376,8 +1411,8 @@ function GridView(props: {
     <div
       className={`sk-cal-grid-wrap flex-1 min-h-0 flex flex-col lg:max-h-none ${
         rows >= 6
-          ? "max-h-[348px] sm:max-h-[396px] md:max-h-[436px]"
-          : "max-h-[296px] sm:max-h-[340px] md:max-h-[376px]"
+          ? "max-h-[468px] sm:max-h-[510px] md:max-h-[548px]"
+          : "max-h-[396px] sm:max-h-[436px] md:max-h-[468px]"
       }`}
     >
       <div className="grid grid-cols-7 mb-1.5 shrink-0" aria-hidden>

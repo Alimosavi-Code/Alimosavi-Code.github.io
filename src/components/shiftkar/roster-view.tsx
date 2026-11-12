@@ -196,7 +196,7 @@ export function RosterView({
               <button
                 key={g}
                 onClick={() => setGroupFilter(g)}
-                className={`sk-seg-item !text-[11.5px] !min-h-9 px-2 whitespace-nowrap ${
+                className={`sk-seg-item !text-[11.5px] !min-h-9 px-3 shrink-0 whitespace-nowrap ${
                   active ? "is-active" : ""
                 }`}
               >
@@ -442,7 +442,7 @@ function Classic1405LoheView({
       {/* 1. Sleek Glassy Pill Title Header */}
       <div className="flex justify-center">
         <div className="glass rounded-full px-4 py-1.5 border border-[var(--sk-primary)]/50 inline-flex items-center gap-2">
-          <span className="size-[22px] rounded-full bg-[var(--sk-primary)] text-white grid place-items-center">
+          <span className="size-[24px] rounded-full bg-[var(--sk-primary-soft)] border border-[var(--sk-primary)]/50 text-[var(--sk-primary)] shadow-[inset_0_1px_0_var(--sk-specular)] grid place-items-center">
             <RosterIcon size={12} />
           </span>
           <span className="text-[13px] font-black">
