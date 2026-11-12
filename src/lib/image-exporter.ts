@@ -73,6 +73,7 @@ export interface ClassicLoheRowData {
   codeB: ShiftCode;
   codeC: ShiftCode;
   codeD: ShiftCode;
+  codesByGroup: Record<ShiftGroup, ShiftCode>;
   monthCells: (ClassicLoheCellData | null)[];
 }
 
@@ -138,6 +139,7 @@ export function buildClassic1405LoheData(jy: number, showEvents = true): Classic
       codeB: all.B,
       codeC: all.C,
       codeD: all.D,
+      codesByGroup: all,
       monthCells: Array.from({ length: 12 }, (_, col) => monthColumns[col][r]),
     });
   }
@@ -822,29 +824,71 @@ export function renderClassic1405RosterCanvas(jy: number, dark = true): HTMLCanv
   const availRowsH = tableBottom - rowsTop;
   const rowH = availRowsH / 32;
 
+  const patForCols = getActivePattern();
+  const activeGroups = getActiveGroups(patForCols);
+  const numGrp = activeGroups.length;
+  const totalCols = 12 + numGrp;
+  const grpWeight = numGrp > 4 ? 1.08 : 1.24;
+
   const totalTableW = tableRight - tableLeft;
-  const monthColW = totalTableW / (12 + 4 * 1.24);
-  const groupColW = monthColW * 1.24;
+  const monthColW = totalTableW / (12 + numGrp * grpWeight);
+  const groupColW = monthColW * grpWeight;
 
   const colLefts: number[] = [];
   const colRights: number[] = [];
   let curX = tableLeft;
-  for (let c = 0; c < 16; c++) {
-    const cw = c >= 6 && c <= 9 ? groupColW : monthColW;
+  for (let c = 0; c < totalCols; c++) {
+    const cw = c >= 6 && c < 6 + numGrp ? groupColW : monthColW;
     colLefts.push(curX);
     colRights.push(curX + cw);
     curX += cw;
   }
 
   const colHeaderColors = dark
-    ? ["rgba(2,132,199,0.56)", "rgba(217,119,6,0.56)", "rgba(5,150,105,0.56)", "rgba(219,39,119,0.56)"]
-    : ["rgba(125,211,252,0.68)", "rgba(251,191,36,0.72)", "rgba(74,222,128,0.68)", "rgba(244,114,182,0.68)"];
+    ? [
+        "rgba(2,132,199,0.56)",
+        "rgba(217,119,6,0.56)",
+        "rgba(5,150,105,0.56)",
+        "rgba(219,39,119,0.56)",
+        "rgba(124,58,237,0.56)",
+        "rgba(8,145,178,0.56)",
+        "rgba(234,88,12,0.56)",
+        "rgba(79,70,229,0.56)",
+      ]
+    : [
+        "rgba(125,211,252,0.68)",
+        "rgba(251,191,36,0.72)",
+        "rgba(74,222,128,0.68)",
+        "rgba(244,114,182,0.68)",
+        "rgba(196,181,253,0.72)",
+        "rgba(103,232,249,0.68)",
+        "rgba(253,186,116,0.72)",
+        "rgba(165,180,252,0.72)",
+      ];
   const colBodyColors = dark
-    ? ["rgba(56,189,248,0.24)", "rgba(251,191,36,0.24)", "rgba(52,211,153,0.24)", "rgba(244,114,182,0.24)"]
-    : ["rgba(186,230,253,0.68)", "rgba(253,224,71,0.72)", "rgba(134,239,172,0.68)", "rgba(249,168,212,0.68)"];
+    ? [
+        "rgba(56,189,248,0.24)",
+        "rgba(251,191,36,0.24)",
+        "rgba(52,211,153,0.24)",
+        "rgba(244,114,182,0.24)",
+        "rgba(167,139,250,0.24)",
+        "rgba(34,211,238,0.24)",
+        "rgba(251,146,60,0.24)",
+        "rgba(129,140,248,0.24)",
+      ]
+    : [
+        "rgba(186,230,253,0.68)",
+        "rgba(253,224,71,0.72)",
+        "rgba(134,239,172,0.68)",
+        "rgba(249,168,212,0.68)",
+        "rgba(221,214,254,0.72)",
+        "rgba(165,243,252,0.68)",
+        "rgba(254,215,170,0.72)",
+        "rgba(199,210,254,0.72)",
+      ];
   const colInks = dark
-    ? ["#7dd3fc", "#fde047", "#6ee7b7", "#f9a8d4"]
-    : ["#0369a1", "#92400e", "#065f46", "#9d174d"];
+    ? ["#7dd3fc", "#fde047", "#6ee7b7", "#f9a8d4", "#ddd6fe", "#67e8f9", "#fed7aa", "#c7d2fe"]
+    : ["#0369a1", "#92400e", "#065f46", "#9d174d", "#5b21b6", "#0e7490", "#9a3412", "#3730a3"];
 
   const redHolColor = dark ? "rgba(251,113,133,0.82)" : "#ef4444";
   const yellowFriColor = dark ? "rgba(251,191,36,0.36)" : "#facc15";
@@ -865,21 +909,22 @@ export function renderClassic1405RosterCanvas(jy: number, dark = true): HTMLCanv
     "بهمن",
     "اسفند",
   ];
-  const groupLetters = ["A", "B", "C", "D"];
+  const groupLetters = activeGroups.map((g) => getGroupLetter(g, patForCols));
 
-  for (let c = 0; c < 16; c++) {
+  for (let c = 0; c < totalCols; c++) {
     const x = colLefts[c];
     const w = colRights[c] - x;
-    if (c >= 6 && c <= 9) {
+    if (c >= 6 && c < 6 + numGrp) {
       const gIdx = c - 6;
-      ctx.fillStyle = colHeaderColors[gIdx];
+      const pIdx = gIdx % colHeaderColors.length;
+      ctx.fillStyle = colHeaderColors[pIdx];
       ctx.fillRect(x, tableTop, w, headerH);
       ctx.strokeStyle = thickBorder;
       ctx.lineWidth = 1.5;
       ctx.strokeRect(x, tableTop, w, headerH);
 
-      ctx.fillStyle = colInks[gIdx];
-      ctx.font = `900 32px ${FONT}`;
+      ctx.fillStyle = colInks[pIdx];
+      ctx.font = `900 ${numGrp > 4 ? 26 : 32}px ${FONT}`;
       ctx.textAlign = "center";
       ctx.fillText(groupLetters[gIdx], x + w / 2, tableTop + headerH / 2);
     } else {
@@ -889,12 +934,12 @@ export function renderClassic1405RosterCanvas(jy: number, dark = true): HTMLCanv
       ctx.lineWidth = 1.2;
       ctx.strokeRect(x, tableTop, w, headerH);
 
-      const mLabel = c < 6 ? firstHalfNames[c] : secondHalfNames[c - 10];
+      const mLabel = c < 6 ? firstHalfNames[c] : secondHalfNames[c - (6 + numGrp)];
       ctx.save();
       ctx.translate(x + w / 2, tableTop + headerH / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.fillStyle = textMainColor;
-      ctx.font = `900 24px ${FONT}`;
+      ctx.font = `900 ${numGrp > 4 ? 21 : 24}px ${FONT}`;
       ctx.textAlign = "center";
       ctx.fillText(mLabel, 0, 0);
       ctx.restore();
@@ -905,25 +950,27 @@ export function renderClassic1405RosterCanvas(jy: number, dark = true): HTMLCanv
     const row = rowsData[r];
     const rTop = rowsTop + r * rowH;
 
-    for (let c = 0; c < 16; c++) {
+    for (let c = 0; c < totalCols; c++) {
       const x = colLefts[c];
       const w = colRights[c] - x;
 
-      if (c >= 6 && c <= 9) {
+      if (c >= 6 && c < 6 + numGrp) {
         const gIdx = c - 6;
-        const code = gIdx === 0 ? row.codeA : gIdx === 1 ? row.codeB : gIdx === 2 ? row.codeC : row.codeD;
-        ctx.fillStyle = colBodyColors[gIdx];
+        const pIdx = gIdx % colBodyColors.length;
+        const grpKey = activeGroups[gIdx];
+        const code = row.codesByGroup[grpKey] ?? row.codeA;
+        ctx.fillStyle = colBodyColors[pIdx];
         ctx.fillRect(x, rTop, w, rowH);
         ctx.strokeStyle = thinBorder;
         ctx.lineWidth = 1.2;
         ctx.strokeRect(x, rTop, w, rowH);
 
-        ctx.fillStyle = colInks[gIdx];
-        ctx.font = `900 20px ${FONT}`;
+        ctx.fillStyle = colInks[pIdx];
+        ctx.font = `900 ${numGrp > 4 ? 17 : 20}px ${FONT}`;
         ctx.textAlign = "center";
         ctx.fillText(code, x + w / 2, rTop + rowH / 2 + 1);
       } else {
-        const mColIdx = c < 6 ? c : c - 4;
+        const mColIdx = c < 6 ? c : c - numGrp;
         const cell = row.monthCells[mColIdx];
         if (!cell) {
           ctx.fillStyle = emptyCellBg;

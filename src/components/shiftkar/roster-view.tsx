@@ -218,7 +218,7 @@ export function RosterView({
             [
               { id: "CLASSIC_1405", fa: "لوحه کلاسیک" },
               { id: "OFFICIAL_LOHE", fa: "لوحه رسمی (نوبت‌ها)" },
-              { id: "MATRIX_4", fa: "ماتریس ۴ شیفت" },
+              { id: "MATRIX_4", fa: `ماتریس ${toPersianDigits(activeGroups.length)} شیفت` },
             ] as const
           ).map((m) => {
             const active = allMode === m.id;
@@ -301,7 +301,7 @@ export function RosterView({
                 [
                   { id: "CLASSIC_1405", fa: "لوحه کلاسیک" },
                   { id: "OFFICIAL_LOHE", fa: "لوحه رسمی" },
-                  { id: "MATRIX_4", fa: "ماتریس ۴ شیفت" },
+                  { id: "MATRIX_4", fa: `ماتریس ${toPersianDigits(activeGroups.length)} شیفت` },
                 ] as const
               ).map((m) => (
                 <button
@@ -386,7 +386,42 @@ function MonthBlock({
   );
 }
 
-/* ================= 2. Classic 1405 4-Shift Chart (17 Columns × 32 Rows, matching RosterScreen.kt) ================= */
+/* ================= 2. Classic Dynamic N-Shift Chart (Adapts to 1, 2, 3, 4 .. 8 Shift Groups!) ================= */
+const CLASSIC_GROUP_PALETTE = [
+  {
+    headCls: "bg-sky-500/45 text-sky-300 light:text-sky-800",
+    cellCls: "bg-sky-400/22 text-sky-300 light:bg-sky-200/70 light:text-sky-900",
+  },
+  {
+    headCls: "bg-amber-500/45 text-amber-300 light:text-amber-900",
+    cellCls: "bg-amber-400/22 text-amber-300 light:bg-amber-200/70 light:text-amber-900",
+  },
+  {
+    headCls: "bg-emerald-500/45 text-emerald-300 light:text-emerald-900",
+    cellCls: "bg-emerald-400/22 text-emerald-300 light:bg-emerald-200/70 light:text-emerald-900",
+  },
+  {
+    headCls: "bg-pink-500/45 text-pink-300 light:text-pink-900",
+    cellCls: "bg-pink-400/22 text-pink-300 light:bg-pink-200/70 light:text-pink-900",
+  },
+  {
+    headCls: "bg-violet-500/45 text-violet-300 light:text-violet-900",
+    cellCls: "bg-violet-400/22 text-violet-300 light:bg-violet-200/70 light:text-violet-900",
+  },
+  {
+    headCls: "bg-cyan-500/45 text-cyan-300 light:text-cyan-900",
+    cellCls: "bg-cyan-400/22 text-cyan-300 light:bg-cyan-200/70 light:text-cyan-900",
+  },
+  {
+    headCls: "bg-orange-500/45 text-orange-300 light:text-orange-900",
+    cellCls: "bg-orange-400/22 text-orange-300 light:bg-orange-200/70 light:text-orange-900",
+  },
+  {
+    headCls: "bg-indigo-500/45 text-indigo-300 light:text-indigo-900",
+    cellCls: "bg-indigo-400/22 text-indigo-300 light:bg-indigo-200/70 light:text-indigo-900",
+  },
+];
+
 function Classic1405LoheView({
   jy,
   today,
@@ -399,43 +434,34 @@ function Classic1405LoheView({
   onOpenMonth: (jy: number, jm: number) => void;
 }) {
   const pat = getActivePattern();
+  const activeGroups = useMemo(() => getActiveGroups(pat), [pat]);
   const hasEvening = (pat.eveningCount ?? 0) > 0;
   /* Rebuild when the remote calendar-sync lands so holiday colors stay fresh. */
   const calendarSyncRev = useShiftKar((s) => s.calendarSyncRev);
   const rowsData = useMemo(
     () => buildClassic1405LoheData(jy, showEvents),
-    [jy, showEvents, calendarSyncRev],
+    [jy, showEvents, calendarSyncRev, pat],
   );
 
   const firstHalfMonths = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور"];
   const secondHalfMonths = ["مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
 
-  const grpCols = [
-    {
-      letter: "A",
-      headCls: "bg-sky-500/45 text-sky-300 light:text-sky-800",
-      cellCls: "bg-sky-400/22 text-sky-300 light:bg-sky-200/70 light:text-sky-900",
-    },
-    {
-      letter: "B",
-      headCls: "bg-amber-500/45 text-amber-300 light:text-amber-900",
-      cellCls: "bg-amber-400/22 text-amber-300 light:bg-amber-200/70 light:text-amber-900",
-    },
-    {
-      letter: "C",
-      headCls: "bg-emerald-500/45 text-emerald-300 light:text-emerald-900",
-      cellCls: "bg-emerald-400/22 text-emerald-300 light:bg-emerald-200/70 light:text-emerald-900",
-    },
-    {
-      letter: "D",
-      headCls: "bg-pink-500/45 text-pink-300 light:text-pink-900",
-      cellCls: "bg-pink-400/22 text-pink-300 light:bg-pink-200/70 light:text-pink-900",
-    },
-  ];
+  const grpCols = useMemo(
+    () =>
+      activeGroups.map((g, idx) => ({
+        group: g,
+        letter: pat.hasGroups ? getGroupLetter(g, pat) : "شیفت",
+        ...CLASSIC_GROUP_PALETTE[idx % CLASSIC_GROUP_PALETTE.length],
+      })),
+    [activeGroups, pat],
+  );
 
-  // Grid template: 6 left months (1fr each) + 4 center groups (1.22fr each) + 6 right months (1fr each)
-  const gridCols =
-    "repeat(6, minmax(0, 1fr)) repeat(4, minmax(0, 1.22fr)) repeat(6, minmax(0, 1fr))";
+  const numGrp = grpCols.length;
+  const isManyGroups = numGrp > 4;
+  // Dynamic grid template: 6 left months + N center groups + 6 right months
+  const gridCols = isManyGroups
+    ? `repeat(6, minmax(21px, 1fr)) repeat(${numGrp}, minmax(25px, 1.1fr)) repeat(6, minmax(21px, 1fr))`
+    : `repeat(6, minmax(0, 1fr)) repeat(${numGrp}, minmax(0, 1.22fr)) repeat(6, minmax(0, 1fr))`;
 
   return (
     <div className="space-y-2">
@@ -451,132 +477,140 @@ function Classic1405LoheView({
         </div>
       </div>
 
-      {/* 2. 16-Column × 32-Row Chart Card (LTR layout direction matching RosterScreen.kt) */}
-      <div dir="ltr" className="glass rounded-[18px] p-1 border border-[var(--sk-border)]">
-        {/* Header Row */}
-        <div
-          className="grid h-[58px] rounded-t-[13px] bg-[var(--sk-surface-strong)] border border-[var(--sk-border)] overflow-hidden"
-          style={{ gridTemplateColumns: gridCols }}
-        >
-          {firstHalfMonths.map((mName, idx) => (
-            <button
-              key={`lh-${idx}`}
-              type="button"
-              onClick={() => onOpenMonth(jy, idx + 1)}
-              className="h-full border-r border-[var(--sk-border-soft)] flex items-center justify-center overflow-hidden"
-            >
-              <span className="-rotate-90 whitespace-nowrap text-[8px] sm:text-[9.5px] font-extrabold">
-                {mName}
-              </span>
-            </button>
-          ))}
-
-          {grpCols.map((g) => (
-            <div
-              key={g.letter}
-              className={`h-full border-x border-[var(--sk-border)] flex items-center justify-center text-[10.5px] sm:text-[12px] font-black ${g.headCls}`}
-            >
-              {g.letter}
-            </div>
-          ))}
-
-          {secondHalfMonths.map((mName, idx) => {
-            const targetMonth = idx + 7;
-            return (
+      {/* 2. Dynamic (12 + N)-Column × 32-Row Chart Card */}
+      <div dir="ltr" className="glass rounded-[18px] p-1 border border-[var(--sk-border)] overflow-x-auto sk-scroll">
+        <div className={isManyGroups ? "min-w-[468px] sm:min-w-0" : "w-full"}>
+          {/* Header Row */}
+          <div
+            className="grid h-[58px] rounded-t-[13px] bg-[var(--sk-surface-strong)] border border-[var(--sk-border)] overflow-hidden"
+            style={{ gridTemplateColumns: gridCols }}
+          >
+            {firstHalfMonths.map((mName, idx) => (
               <button
-                key={`rh-${idx}`}
+                key={`lh-${idx}`}
                 type="button"
-                onClick={() => onOpenMonth(jy, targetMonth)}
-                className="h-full border-l border-[var(--sk-border-soft)] flex items-center justify-center overflow-hidden"
+                onClick={() => onOpenMonth(jy, idx + 1)}
+                className="h-full border-r border-[var(--sk-border-soft)] flex items-center justify-center overflow-hidden"
               >
                 <span className="-rotate-90 whitespace-nowrap text-[8px] sm:text-[9.5px] font-extrabold">
                   {mName}
                 </span>
               </button>
-            );
-          })}
-        </div>
+            ))}
 
-        {/* 32 Cycle Rows */}
-        <div>
-          {rowsData.map((row, rIdx) => {
-            const codes = [row.codeA, row.codeB, row.codeC, row.codeD];
-            const thickBottom = rIdx % 2 === 1 && rIdx < rowsData.length - 1;
-            return (
+            {grpCols.map((g) => (
               <div
-                key={row.rowIndex}
-                className={`grid h-[20px] sm:h-[23px] ${
-                  thickBottom
-                    ? "border-b-[1.5px] border-[var(--sk-border)]"
-                    : "border-b border-[var(--sk-border-soft)]"
-                }`}
-                style={{ gridTemplateColumns: gridCols }}
+                key={g.group}
+                className={`h-full border-x border-[var(--sk-border)] flex items-center justify-center ${
+                  isManyGroups ? "text-[9.5px] sm:text-[11.5px]" : "text-[10.5px] sm:text-[12px]"
+                } font-black ${g.headCls}`}
               >
-                {/* Left 6 months (0..5) */}
-                {Array.from({ length: 6 }, (_, mIdx) => {
-                  const cell = row.monthCells[mIdx];
-                  const isToday =
-                    cell != null &&
-                    today.jy === cell.jy &&
-                    today.jm === cell.jm &&
-                    today.jd === cell.day;
-                  return (
-                    <div
-                      key={`lc-${mIdx}`}
-                      className={`h-full border-r border-[var(--sk-border-soft)] grid place-items-center text-[8px] sm:text-[9.5px] font-bold ${
-                        !cell
-                          ? "bg-transparent"
-                          : cell.isOfficialHoliday
-                            ? "bg-[var(--sk-holiday)]/80 text-white font-black"
-                            : cell.isFriday
-                              ? "bg-[var(--sk-day)]/35 text-[var(--sk-day-ink)]"
-                              : "bg-[var(--sk-surface)]"
-                      } ${isToday ? "ring-1 ring-inset ring-[var(--sk-primary)]" : ""}`}
-                    >
-                      {cell ? toPersianDigits(cell.day) : ""}
-                    </div>
-                  );
-                })}
-
-                {/* Center 4 groups (A, B, C, D) */}
-                {codes.map((code, gIdx) => (
-                  <div
-                    key={`gc-${gIdx}`}
-                    className={`h-full border-x border-[var(--sk-border)] grid place-items-center text-[7.5px] sm:text-[9px] font-black ${grpCols[gIdx].cellCls}`}
-                  >
-                    {code}
-                  </div>
-                ))}
-
-                {/* Right 6 months (6..11) */}
-                {Array.from({ length: 6 }, (_, idx) => {
-                  const mIdx = 6 + idx;
-                  const cell = row.monthCells[mIdx];
-                  const isToday =
-                    cell != null &&
-                    today.jy === cell.jy &&
-                    today.jm === cell.jm &&
-                    today.jd === cell.day;
-                  return (
-                    <div
-                      key={`rc-${mIdx}`}
-                      className={`h-full border-l border-[var(--sk-border-soft)] grid place-items-center text-[8px] sm:text-[9.5px] font-bold ${
-                        !cell
-                          ? "bg-transparent"
-                          : cell.isOfficialHoliday
-                            ? "bg-[var(--sk-holiday)]/80 text-white font-black"
-                            : cell.isFriday
-                              ? "bg-[var(--sk-day)]/35 text-[var(--sk-day-ink)]"
-                              : "bg-[var(--sk-surface)]"
-                      } ${isToday ? "ring-1 ring-inset ring-[var(--sk-primary)]" : ""}`}
-                    >
-                      {cell ? toPersianDigits(cell.day) : ""}
-                    </div>
-                  );
-                })}
+                {g.letter}
               </div>
-            );
-          })}
+            ))}
+
+            {secondHalfMonths.map((mName, idx) => {
+              const targetMonth = idx + 7;
+              return (
+                <button
+                  key={`rh-${idx}`}
+                  type="button"
+                  onClick={() => onOpenMonth(jy, targetMonth)}
+                  className="h-full border-l border-[var(--sk-border-soft)] flex items-center justify-center overflow-hidden"
+                >
+                  <span className="-rotate-90 whitespace-nowrap text-[8px] sm:text-[9.5px] font-extrabold">
+                    {mName}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 32 Cycle Rows */}
+          <div>
+            {rowsData.map((row, rIdx) => {
+              const thickBottom = rIdx % 2 === 1 && rIdx < rowsData.length - 1;
+              return (
+                <div
+                  key={row.rowIndex}
+                  className={`grid h-[20px] sm:h-[23px] ${
+                    thickBottom
+                      ? "border-b-[1.5px] border-[var(--sk-border)]"
+                      : "border-b border-[var(--sk-border-soft)]"
+                  }`}
+                  style={{ gridTemplateColumns: gridCols }}
+                >
+                  {/* Left 6 months (0..5) */}
+                  {Array.from({ length: 6 }, (_, mIdx) => {
+                    const cell = row.monthCells[mIdx];
+                    const isToday =
+                      cell != null &&
+                      today.jy === cell.jy &&
+                      today.jm === cell.jm &&
+                      today.jd === cell.day;
+                    return (
+                      <div
+                        key={`lc-${mIdx}`}
+                        className={`h-full border-r border-[var(--sk-border-soft)] grid place-items-center text-[8px] sm:text-[9.5px] font-bold ${
+                          !cell
+                            ? "bg-transparent"
+                            : cell.isOfficialHoliday
+                              ? "bg-[var(--sk-holiday)]/80 text-white font-black"
+                              : cell.isFriday
+                                ? "bg-[var(--sk-day)]/35 text-[var(--sk-day-ink)]"
+                                : "bg-[var(--sk-surface)]"
+                        } ${isToday ? "ring-1 ring-inset ring-[var(--sk-primary)]" : ""}`}
+                      >
+                        {cell ? toPersianDigits(cell.day) : ""}
+                      </div>
+                    );
+                  })}
+
+                  {/* Center N groups (adapts to 1, 2, 3, 4 .. 8 shifts) */}
+                  {grpCols.map((g) => {
+                    const code = row.codesByGroup[g.group] ?? row.codeA;
+                    return (
+                      <div
+                        key={`gc-${g.group}`}
+                        className={`h-full border-x border-[var(--sk-border)] grid place-items-center ${
+                          isManyGroups ? "text-[7px] sm:text-[8.5px]" : "text-[7.5px] sm:text-[9px]"
+                        } font-black ${g.cellCls}`}
+                      >
+                        {code}
+                      </div>
+                    );
+                  })}
+
+                  {/* Right 6 months (6..11) */}
+                  {Array.from({ length: 6 }, (_, idx) => {
+                    const mIdx = 6 + idx;
+                    const cell = row.monthCells[mIdx];
+                    const isToday =
+                      cell != null &&
+                      today.jy === cell.jy &&
+                      today.jm === cell.jm &&
+                      today.jd === cell.day;
+                    return (
+                      <div
+                        key={`rc-${mIdx}`}
+                        className={`h-full border-l border-[var(--sk-border-soft)] grid place-items-center text-[8px] sm:text-[9.5px] font-bold ${
+                          !cell
+                            ? "bg-transparent"
+                            : cell.isOfficialHoliday
+                              ? "bg-[var(--sk-holiday)]/80 text-white font-black"
+                              : cell.isFriday
+                                ? "bg-[var(--sk-day)]/35 text-[var(--sk-day-ink)]"
+                                : "bg-[var(--sk-surface)]"
+                        } ${isToday ? "ring-1 ring-inset ring-[var(--sk-primary)]" : ""}`}
+                      >
+                        {cell ? toPersianDigits(cell.day) : ""}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

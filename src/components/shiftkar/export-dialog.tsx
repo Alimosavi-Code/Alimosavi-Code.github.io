@@ -156,7 +156,7 @@ export function ExportImageDialog({
             type="button"
             onClick={handleShare}
             disabled={!dataUrl || busy}
-            className="h-[46px] rounded-[14px] bg-[var(--sk-primary)] text-white text-[13px] font-black flex items-center justify-center gap-1.5 shadow-[0_10px_26px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform disabled:opacity-50"
+            className="h-[46px] rounded-[14px] sk-btn-glass-primary text-[13px] font-black flex items-center justify-center gap-1.5 active:scale-[0.98] disabled:opacity-50"
           >
             <ShareIcon size={16} />
             <span>اشتراک‌گذاری</span>

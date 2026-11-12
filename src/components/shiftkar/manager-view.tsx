@@ -696,7 +696,7 @@ function PatternsSubTab() {
             <div className="text-[11px] font-bold text-[var(--sk-text-muted)]">
               پیش‌نمایش چرخه ({toPersianDigits(previewCycle.length)} روزه — برای انتخاب روزِ امروز لمس کنید):
             </div>
-            <div className="flex items-center gap-1 overflow-x-auto sk-scroll pb-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto sk-scroll py-1.5 px-1 -mx-1">
               {previewCycle.map((c, idx) => {
                 const k = codeToKind(c);
                 const isPickedToday = idx === safeStep;
@@ -708,10 +708,10 @@ function PatternsSubTab() {
                       haptic(hapticOn);
                       setTodayCycleStep(idx);
                     }}
-                    className={`shrink-0 h-[30px] px-2 rounded-[8px] text-[10px] font-black transition-all ${KIND_GRAD[k]} ${
+                    className={`shrink-0 h-[32px] px-2.5 rounded-[9px] text-[10.5px] font-black transition-all ${KIND_GRAD[k]} ${
                       isPickedToday
-                        ? "ring-2 ring-[var(--sk-primary)]"
-                        : "border border-current/35"
+                        ? "border-[1.8px] border-[var(--sk-primary)] shadow-[0_4px_12px_-3px_var(--sk-glow-a),inset_0_1px_0_var(--sk-specular)] scale-[1.03]"
+                        : "border border-current/35 opacity-85 hover:opacity-100"
                     }`}
                   >
                     {CODE_NUM_FA[c]}
@@ -767,7 +767,7 @@ function PatternsSubTab() {
               <button
                 type="button"
                 onClick={handleSaveBuilder}
-                className="flex-[2] py-3 rounded-[14px] bg-[var(--sk-primary)] text-white text-[13px] font-black flex items-center justify-center gap-2 shadow-[0_10px_24px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform"
+                className="flex-[2] py-3 rounded-[14px] sk-btn-glass-primary text-[13px] font-black flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 <CheckIcon size={16} />
                 <span>

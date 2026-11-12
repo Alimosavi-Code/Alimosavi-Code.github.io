@@ -137,7 +137,7 @@ export function InstallSheet({
             <button
               onClick={run}
               disabled={busy}
-              className="w-full h-12 rounded-2xl bg-[var(--sk-primary)] text-white text-[14px] font-black flex items-center justify-center gap-2 shadow-[0_10px_26px_-10px_var(--sk-glow-a)] transition-all active:scale-[0.98] disabled:opacity-60"
+              className="w-full h-12 rounded-2xl sk-btn-glass-primary text-[14px] font-black flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60"
             >
               <DownloadIcon size={17} />
               {busy ? "در حال آماده‌سازی…" : "نصب برنامه"}

@@ -216,7 +216,7 @@ export function MonthPicker({
                 onClose();
                 onOpenDay?.(previewKey);
               }}
-              className="py-2.5 rounded-xl bg-[var(--sk-primary)] text-white text-[12px] font-bold active:scale-[0.98] transition-transform"
+              className="py-2.5 rounded-xl sk-btn-glass-primary text-[12px] font-extrabold active:scale-[0.98]"
             >
               جزئیات این روز
             </button>

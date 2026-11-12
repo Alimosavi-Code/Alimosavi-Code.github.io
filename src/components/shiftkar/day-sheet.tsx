@@ -638,7 +638,7 @@ function DaySheetBody({
               <button
                 type="button"
                 onClick={onSave}
-                className="px-4 py-2 rounded-xl bg-[var(--sk-primary)] text-white text-[13px] font-bold flex items-center gap-1.5 active:scale-95 transition-transform"
+                className="px-4 py-2 rounded-xl sk-btn-glass-primary text-[13px] font-extrabold flex items-center gap-1.5 active:scale-95"
               >
                 {saved && <CheckIcon size={14} />}
                 <span>{saved ? "ذخیره شد" : "ذخیره"}</span>
@@ -698,7 +698,7 @@ function DaySheetBody({
                   `تصویر ${formatJalali(jy, jm, jd)}`,
                 );
               }}
-              className="h-[46px] rounded-[14px] bg-[var(--sk-primary)] text-white text-[13px] font-black flex items-center justify-center gap-1.5"
+              className="h-[46px] rounded-[14px] sk-btn-glass-primary text-[13px] font-black flex items-center justify-center gap-1.5 active:scale-[0.98]"
             >
               <ShareIcon size={16} />
               <span>اشتراک‌گذاری</span>

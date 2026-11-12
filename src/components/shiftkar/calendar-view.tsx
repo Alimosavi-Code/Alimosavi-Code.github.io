@@ -1015,22 +1015,30 @@ function TodayBanner({
         >
           {activeGroups.map((g) => {
             const s = calculateShift(todayKey, g);
+            const isMany = activeGroups.length > 4;
             return (
               <div
                 key={g}
                 className={`h-[46px] lg:h-[52px] rounded-[11px] px-1 py-1 flex flex-col items-center justify-between border border-current/25 ${
-                  activeGroups.length > 4 ? "min-w-[54px] flex-1 shrink-0" : "min-w-0"
+                  isMany ? "min-w-[38px] sm:min-w-[44px] flex-1 shrink-0" : "min-w-0"
                 } ${KIND_GRAD[s.type]}`}
+                title={`شیفت ${getGroupLetter(g, pat)}: ${CODE_FA[s.code]}`}
               >
-                <div className="flex items-center justify-center gap-1 leading-none">
-                  <span className="text-[10px] sm:text-[10.5px] font-black leading-none">
+                <div className="flex items-center justify-center gap-0.5 leading-none">
+                  <span className="text-[9.5px] sm:text-[10.5px] font-black leading-none">
                     {getGroupLetter(g, pat)}
                   </span>
-                  <span className="scale-90 shrink-0">{KIND_ICON_SM[s.type]}</span>
+                  <span className="scale-[0.85] shrink-0">{KIND_ICON_SM[s.type]}</span>
                 </div>
-                <span className="text-[8.5px] sm:text-[9.5px] font-extrabold leading-none truncate max-w-full">
-                  {CODE_NUM_FA[s.code]}
-                </span>
+                {isMany ? (
+                  <span dir="ltr" className="text-[9.5px] sm:text-[10.5px] font-black leading-none tracking-tight">
+                    {s.code}
+                  </span>
+                ) : (
+                  <span className="text-[8.5px] sm:text-[9.5px] font-extrabold leading-none truncate max-w-full">
+                    {CODE_NUM_FA[s.code]}
+                  </span>
+                )}
               </div>
             );
           })}
