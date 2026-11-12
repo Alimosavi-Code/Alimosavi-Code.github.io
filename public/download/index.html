@@ -596,6 +596,24 @@
     html.light .guide-step-num {
       color: var(--sk-primary);
     }
+    .win-compat-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 13px;
+      background: rgba(245, 158, 11, 0.11);
+      border: 1px solid rgba(245, 158, 11, 0.32);
+      color: #fcd34d;
+      font-size: 11.2px;
+      font-weight: 700;
+      line-height: 1.65;
+    }
+    html.light .win-compat-note {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(217, 119, 6, 0.35);
+      color: #92400e;
+    }
     .guide-cmd {
       display: block;
       margin-top: 4px;
@@ -1683,7 +1701,7 @@
             </button>
             <button type="button" class="os-tab" id="tab-windows" onclick="selectHeroPlatform('windows')">
               <svg width="14" height="14"><use href="#ico-windows"/></svg>
-              <span>ویندوز ۱۱ / ۱۰</span>
+              <span>ویندوز ۷ به بالا <bdi>(7 / 8 / 10 / 11)</bdi></span>
             </button>
             <button type="button" class="os-tab" id="tab-linux" onclick="selectHeroPlatform('linux')">
               <svg width="15" height="15"><use href="#ico-linux"/></svg>
@@ -1774,7 +1792,7 @@
           </div>
 
           <div class="platforms-grid">
-            <!-- 1. Windows 10 / 11 (x64 & ARM64: Setup EXE & MSI Installer) -->
+            <!-- 1. Windows 7+ (7 / 8 / 10 / 11 — x64 & ARM64: Setup EXE & MSI Installer) -->
             <article class="glass lift plat-card" id="card-windows">
               <div class="plat-top">
                 <div class="plat-head">
@@ -1782,11 +1800,16 @@
                     <svg width="24" height="24"><use href="#ico-windows"/></svg>
                   </div>
                   <div>
-                    <div class="plat-name">ویندوز ۱۱ و ۱۰ <bdi>(Windows)</bdi></div>
+                    <div class="plat-name">ویندوز ۷ به بالا <bdi>(Windows 7 / 8 / 10 / 11)</bdi></div>
                     <div class="plat-desc">معماری ۶۴ بیتی (x64) و آرم (ARM64) — فایل نصبی EXE و بسته نصبی MSI</div>
                   </div>
                 </div>
                 <span class="plat-tag" id="card-ver-windows">نسخه ۶٫۷٫۳</span>
+              </div>
+
+              <div class="win-compat-note">
+                <span>💡</span>
+                <span>قابل نصب روی <strong>ویندوز ۷ به بالا</strong>؛ با این حال ممکن است روی ویندوز ۷ و ۸ برخی جلوه‌ها به‌خوبی کار نکند و <strong>ترجیحاً استفاده از ویندوز ۱۰ و ۱۱</strong> پیشنهاد می‌شود.</span>
               </div>
 
               <div class="dl-list">
@@ -1796,7 +1819,7 @@
                       <span>فایل نصبی استاندارد ویندوز <bdi>(Setup EXE)</bdi></span>
                       <span class="dl-arch">x64</span>
                     </div>
-                    <div class="dl-meta">پیشنهادی برای تمامی کامپیوترها و لپ‌تاپ‌های ویندوز ۱۰ و ۱۱ (۶۴ بیتی)</div>
+                    <div class="dl-meta">قابل اجرا روی ویندوز ۷ به بالا (۶۴ بیتی — پیشنهادی برای ویندوز ۱۰ و ۱۱)</div>
                   </div>
                   <div class="dl-btns">
                     <a class="btn-dl" data-dl-role="win-x64-exe" href="https://github.com/Alimosavi-Code/shiftkar-desktop/releases/download/v6.7.3/ShiftKar-6.7.3-windows-x64-setup.exe">
@@ -1872,7 +1895,7 @@
                 <summary class="install-guide-summary">
                   <span class="install-guide-head">
                     <span class="install-guide-ico"><svg width="16" height="16"><use href="#ico-book"/></svg></span>
-                    <span class="install-guide-title">آموزش نصب در ویندوز ۱۱ و ۱۰</span>
+                    <span class="install-guide-title">آموزش نصب در ویندوز (۷ به بالا)</span>
                   </span>
                   <span class="install-guide-right">
                     <span class="install-guide-tag">راهنمای گام‌به‌گام</span>
@@ -1882,7 +1905,7 @@
                 <div class="install-guide-body">
                   <div class="guide-step">
                     <span class="guide-step-num">۱</span>
-                    <div>برای اکثر کامپیوترها و لپ‌تاپ‌ها فایل نصبی <strong>Setup EXE (x64)</strong> یا بستهٔ <strong>MSI (x64)</strong> را دانلود و اجرا کنید (نسخه‌های <strong>ARM64</strong> مخصوص سرفیس و پردازنده‌های Snapdragon هستند).</div>
+                    <div>فایل نصبی <strong>Setup EXE (x64)</strong> یا بستهٔ <strong>MSI (x64)</strong> را دانلود و اجرا کنید. برنامه روی <strong>ویندوز ۷ به بالا</strong> اجرا می‌شود، اما از آنجا که ممکن است روی ویندوز ۷ و ۸ برخی امکانات گرافیکی به‌خوبی کار نکند، <strong>ترجیحاً از ویندوز ۱۰ یا ۱۱</strong> استفاده فرمایید.</div>
                   </div>
                   <div class="guide-step">
                     <span class="guide-step-num">۲</span>
@@ -2952,7 +2975,7 @@
             name: "فایل نصبی استاندارد \u2066(Setup EXE)\u2069",
             arch: "x64",
             isArm: false,
-            sub: "پیشنهادی برای ویندوز ۱۰ و ۱۱ (۶۴ بیتی)",
+            sub: "ویندوز ۷ به بالا (ترجیحاً ویندوز ۱۰ و ۱۱ — ۶۴ بیتی)",
             url: u["win-x64-exe"],
             btn: "دانلود EXE"
           },
@@ -2988,18 +3011,18 @@
         var winSecondaryId = IS_ARM_ARCH ? "win-arm64-msi" : "win-x64-msi";
         return {
           icon: "#ico-windows",
-          tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: ویندوز ۱۱ / ۱۰" : "نسخه ویندوز ۱۱ / ۱۰",
-          arch: IS_ARM_ARCH ? "Windows ARM64 & x64" : "Windows 64-bit (x64 & ARM64)",
+          tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: ویندوز (۷ به بالا)" : "نسخه ویندوز (۷ به بالا)",
+          arch: IS_ARM_ARCH ? "Windows 7+ (ARM64 & x64)" : "Windows 7+ 64-bit (x64 & ARM64)",
           verText: "نسخه " + dskVerFa,
-          title: "شیفت‌کار برای ویندوز ۱۱ و ۱۰ \u2066(Setup EXE / MSI)\u2069",
-          sub: "فایل نصبی استاندارد \u2066EXE\u2069 و بسته نصبی \u2066MSI\u2069 برای پردازنده‌های \u2066x64\u2069 و \u2066ARM64\u2069",
+          title: "شیفت‌کار برای ویندوز ۷ به بالا \u2066(Setup EXE / MSI)\u2069",
+          sub: "قابل نصب روی ویندوز ۷ به بالا در معماری‌های \u2066x64\u2069 و \u2066ARM64\u2069 (توجه: ممکن است روی ویندوز ۷ و ۸ به‌خوبی کار نکند؛ ترجیحاً از ویندوز ۱۰ و ۱۱ استفاده شود)",
           primaryUrl: winPrimaryUrl,
           primaryText: winPrimaryText,
           secondaryUrl: IS_ARM_ARCH ? u["win-arm64-msi"] : u["win-x64-msi"],
           secondaryText: IS_ARM_ARCH
             ? "بسته نصبی \u2066MSI (ARM64)\u2069"
             : "بسته نصبی \u2066MSI (x64)\u2069",
-          shareLabel: "شیفت‌کار برای ویندوز ۱۱ و ۱۰ (نسخه " + LIVE_STATE.desktop.version + ")",
+          shareLabel: "شیفت‌کار برای ویندوز (نسخه " + LIVE_STATE.desktop.version + ")",
           cardId: "card-windows",
           variantsTitle: IS_ARM_ARCH
             ? "سایر معماری‌های ویندوز (نسخه‌های ۶۴ بیتی x64):"
@@ -3195,7 +3218,7 @@
         },
         windows: {
           guideId: "guide-windows",
-          title: "آموزش نصب در ویندوز ۱۱ و ۱۰",
+          title: "آموزش نصب در ویندوز (۷ به بالا)",
           sub: "راهنمای گام‌به‌گام نصب Setup EXE و MSI و عبور از SmartScreen"
         },
         linux: {

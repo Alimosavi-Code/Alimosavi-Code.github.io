@@ -13,6 +13,7 @@ import { useShiftKar, applyThemeToDom, haptic, type TabId } from "@/lib/store";
 import { initInstallPrompt, maybeAutoPromptInstall } from "@/lib/install";
 import { ensureCalendarSyncLoaded, syncCalendarNow } from "@/lib/holidays";
 import { toPersianDigits } from "@/lib/jalali";
+import { useToday } from "@/lib/use-today";
 import { APP } from "@/lib/models";
 import { getActivePattern } from "@/lib/shift-engine";
 import { CalendarView } from "./calendar-view";
@@ -36,6 +37,8 @@ import {
   SunsetIcon,
   MoonIcon,
   RestIcon,
+  InfoIcon,
+  CheckIcon,
   ShiftKarAppEmblem,
 } from "./icons";
 
@@ -59,9 +62,12 @@ export function AppShell() {
   const onboardingDone = useShiftKar((s) => s.onboardingDone);
   const tourDone = useShiftKar((s) => s.tourDone);
   const hapticOn = useShiftKar((s) => s.hapticOn);
+  const viewYear = useShiftKar((s) => s.viewYear);
+  const rosterYear = useShiftKar((s) => s.rosterYear);
   const isTableFullscreen = useShiftKar((s) => s.isTableFullscreen);
   const bumpCalendarSyncRev = useShiftKar((s) => s.bumpCalendarSyncRev);
   const set = useShiftKar((s) => s.set);
+  const today = useToday();
 
   const [hydrated, setHydrated] = useState(false);
   const [splashPhase, setSplashPhase] = useState<"show" | "leave" | "gone">("show");
@@ -165,6 +171,41 @@ export function AppShell() {
     if (!hydrated) return;
     if (!onboardingDone) setShowOnboarding(true);
   }, [hydrated, onboardingDone]);
+
+  /* One-time 10-second non-dismissible Future-Year Lunar & Holiday Disclaimer Popup */
+  const [futureDisclaimerYear, setFutureDisclaimerYear] = useState<number | null>(null);
+  const [futureDisclaimerSec, setFutureDisclaimerSec] = useState(10);
+
+  useEffect(() => {
+    if (!hydrated || showOnboarding) return;
+    const baseCurrentYear = Math.max(today.jy, 1405);
+    const targetFutureYear =
+      activeTab === "roster" && rosterYear > baseCurrentYear
+        ? rosterYear
+        : viewYear > baseCurrentYear
+          ? viewYear
+          : null;
+    if (!targetFutureYear) return;
+
+    const STORAGE_KEY = "shiftkar_future_year_lunar_disclaimer_v1";
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === "1") return;
+      localStorage.setItem(STORAGE_KEY, "1");
+    } catch {
+      /* ignore storage errors */
+    }
+    setFutureDisclaimerSec(10);
+    setFutureDisclaimerYear(targetFutureYear);
+  }, [hydrated, showOnboarding, activeTab, viewYear, rosterYear, today.jy]);
+
+  useEffect(() => {
+    if (futureDisclaimerYear === null) return;
+    if (futureDisclaimerSec <= 0) return;
+    const timer = setInterval(() => {
+      setFutureDisclaimerSec((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [futureDisclaimerYear, futureDisclaimerSec]);
 
   /* One-time auto install prompt (never while onboarding or tour is active) */
   useEffect(() => {
@@ -322,6 +363,97 @@ export function AppShell() {
               set({ tourDone: true });
             }}
           />
+
+          {/* 10-Second Non-Dismissible Future-Year Lunar Disclaimer Modal (Shown Once Ever) */}
+          {futureDisclaimerYear !== null && (
+            <div
+              className="fixed inset-0 z-[190] flex items-center justify-center p-4"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="future-lunar-disclaimer-title"
+            >
+              <div className="sk-scrim-in absolute inset-0 sk-scrim" />
+              <div className="sk-pop-in relative z-10 w-full max-w-[440px] glass-strong rounded-3xl p-5 space-y-3.5 border-[1.5px] border-[var(--sk-primary)]/55 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.75)] overflow-hidden">
+                <div className="flex items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="size-10 rounded-2xl sk-grad-day border border-[var(--sk-day-ink)]/40 grid place-items-center shrink-0">
+                      <InfoIcon size={20} />
+                    </span>
+                    <div className="min-w-0">
+                      <h3
+                        id="future-lunar-disclaimer-title"
+                        className="text-[14.5px] sm:text-[15.5px] font-black leading-snug"
+                      >
+                        تذکر مهم تقویم سال {toPersianDigits(futureDisclaimerYear)}
+                      </h3>
+                      <p className="text-[11px] font-bold text-[var(--sk-primary)] mt-0.5">
+                        اختلاف تقویم قمری و شمسی در سال‌های آینده
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-black shrink-0 ${
+                      futureDisclaimerSec > 0 ? "sk-grad-day" : "sk-pill-glass-on"
+                    }`}
+                  >
+                    {futureDisclaimerSec > 0
+                      ? `${toPersianDigits(futureDisclaimerSec)} ثانیه`
+                      : "قابل بستن"}
+                  </span>
+                </div>
+
+                <div className="rounded-2xl bg-[var(--sk-surface)] border border-[var(--sk-border-soft)] p-3.5 space-y-2.5 text-[12px] leading-6 text-[var(--sk-text)]">
+                  <p>
+                    <strong className="text-[var(--sk-primary)]">چرا تاریخ قمری ممکن است تغییر کند؟</strong>{" "}
+                    تقویم شمسی بر پایهٔ گردش زمین به دور خورشید کاملاً ثابت است، اما ماه‌های قمری بر اساس{" "}
+                    <strong>رؤیت هلال ماه (۲۹ یا ۳۰ روزه بودن)</strong> تعیین می‌شوند و هر سال حدود ۱۱ روز نسبت به تقویم شمسی جابه‌جا می‌گردند؛ بنابراین تاریخ دقیق روزها و تعطیلات قمریِ سال{" "}
+                    {toPersianDigits(futureDisclaimerYear)} تا زمان استهلال و انتشار تقویم رسمی کشور قطعی نیست و ممکن است یک روز اختلاف داشته باشد.
+                  </p>
+                  <p className="text-[11.5px] text-[var(--sk-text-muted)]">
+                    • <strong>نوبت‌کاری و شیفت‌های شما</strong> بر پایهٔ تقویم شمسی است و برای تمام سال‌های آینده{" "}
+                    <strong className="text-[var(--sk-text)]">۱۰۰٪ دقیق و بدون تغییر</strong> می‌باشد.
+                  </p>
+                  <p className="rounded-xl bg-[var(--sk-holiday-soft)] border border-[var(--sk-holiday)]/35 px-3 py-2 text-[11.5px] font-bold text-[var(--sk-holiday)] leading-5">
+                    لطفاً برای تاریخ‌ها و تعطیلات قمری سال‌های آینده منتظر به‌روزرسانی تقویم برنامه بمانید و به آن‌ها به‌طور قطعی اعتماد نکنید؛ مسئولیت برنامه‌ریزی بر اساس تاریخ‌های قمریِ سال‌های آتی بر عهدهٔ شخص کاربر است.
+                  </p>
+                </div>
+
+                {/* 10-second visual progress bar */}
+                <div className="w-full h-1.5 rounded-full bg-[var(--sk-surface-strong)] overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--sk-primary)] transition-all duration-1000 ease-linear rounded-full"
+                    style={{ width: `${((10 - futureDisclaimerSec) / 10) * 100}%` }}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  disabled={futureDisclaimerSec > 0}
+                  onClick={() => {
+                    if (futureDisclaimerSec > 0) return;
+                    haptic(hapticOn);
+                    setFutureDisclaimerYear(null);
+                  }}
+                  className={`w-full py-3 rounded-2xl text-[13px] font-black flex items-center justify-center gap-2 transition-all ${
+                    futureDisclaimerSec > 0
+                      ? "bg-[var(--sk-surface-strong)] border border-[var(--sk-border)] text-[var(--sk-text-muted)] opacity-75 cursor-not-allowed"
+                      : "sk-btn-glass-primary active:scale-[0.98]"
+                  }`}
+                >
+                  {futureDisclaimerSec > 0 ? (
+                    <span>
+                      لطفاً تذکر بالا را مطالعه فرمایید ({toPersianDigits(futureDisclaimerSec)} ثانیه)
+                    </span>
+                  ) : (
+                    <>
+                      <CheckIcon size={16} />
+                      <span>متوجه شدم و مسئولیت آن را می‌پذیرم</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
