@@ -984,23 +984,28 @@ function TodayBanner({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onOpenDay(todayKey);
         }}
-        className="glass rounded-2xl px-3 py-2.5 flex flex-col gap-1.5 cursor-pointer hover:bg-[var(--sk-primary-soft)]/30 transition-colors shrink-0"
+        className="glass rounded-2xl lg:rounded-[24px] px-3 lg:px-3.5 h-[62px] lg:h-[72px] flex items-center justify-between gap-2 sm:gap-2.5 w-full cursor-pointer hover:bg-[var(--sk-primary-soft)]/30 transition-colors shrink-0"
         data-tour="today-banner"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="size-[24px] rounded-[8px] bg-[var(--sk-primary-soft)] text-[var(--sk-primary)] grid place-items-center">
-              <CalendarIcon size={13} />
+        <div className="shrink-0 flex flex-col justify-center min-w-0">
+          <span className="block text-[10px] sm:text-[11px] text-[var(--sk-text-muted)] leading-tight whitespace-nowrap">
+            {dateLine}
+          </span>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="size-[20px] sm:size-[22px] rounded-[7px] bg-[var(--sk-primary-soft)] border border-[var(--sk-primary)]/40 text-[var(--sk-primary)] grid place-items-center shrink-0">
+              <CalendarIcon size={12} />
             </span>
-            <span className="text-[13px] font-extrabold">شیفت امروز</span>
+            <span className="text-[12.5px] sm:text-[13.5px] font-black leading-none whitespace-nowrap">
+              شیفت امروز
+            </span>
           </div>
-          <span className="text-[10.5px] text-[var(--sk-text-muted)]">{dateLine}</span>
         </div>
+
         <div
           className={
             activeGroups.length > 4
-              ? "flex items-center gap-1.5 overflow-x-auto sk-scroll pb-0.5"
-              : "grid gap-1.5"
+              ? "flex-1 min-w-0 flex items-center gap-1 overflow-x-auto sk-scroll py-0.5"
+              : "flex-1 min-w-0 grid gap-1 sm:gap-1.5"
           }
           style={
             activeGroups.length <= 4
@@ -1013,15 +1018,17 @@ function TodayBanner({
             return (
               <div
                 key={g}
-                className={`rounded-[12px] py-1.5 px-1.5 flex flex-col items-center gap-0.5 ${
-                  activeGroups.length > 4 ? "min-w-[64px] flex-1 shrink-0" : ""
+                className={`h-[46px] lg:h-[52px] rounded-[11px] px-1 py-1 flex flex-col items-center justify-between border border-current/25 ${
+                  activeGroups.length > 4 ? "min-w-[54px] flex-1 shrink-0" : "min-w-0"
                 } ${KIND_GRAD[s.type]}`}
               >
-                <span className="text-[9.5px] font-black leading-none">
-                  {getGroupLetter(g, pat)}
-                </span>
-                {KIND_ICON_SM[s.type]}
-                <span className="text-[8.5px] font-bold leading-none truncate max-w-full">
+                <div className="flex items-center justify-center gap-1 leading-none">
+                  <span className="text-[10px] sm:text-[10.5px] font-black leading-none">
+                    {getGroupLetter(g, pat)}
+                  </span>
+                  <span className="scale-90 shrink-0">{KIND_ICON_SM[s.type]}</span>
+                </div>
+                <span className="text-[8.5px] sm:text-[9.5px] font-extrabold leading-none truncate max-w-full">
                   {CODE_NUM_FA[s.code]}
                 </span>
               </div>
@@ -1046,13 +1053,13 @@ function TodayBanner({
   return (
     <button
       onClick={() => onOpenDay(todayKey)}
-      className="glass rounded-2xl lg:rounded-[24px] px-3.5 lg:px-4 py-2.5 lg:py-3.5 flex items-center justify-between gap-3 w-full text-start hover:bg-[var(--sk-primary-soft)]/40 transition-colors shrink-0"
+      className="glass rounded-2xl lg:rounded-[24px] px-3.5 lg:px-4 h-[62px] lg:h-[72px] flex items-center justify-between gap-3 w-full text-start hover:bg-[var(--sk-primary-soft)]/40 transition-colors shrink-0"
       data-tour="today-banner"
       aria-label={`شیفت امروز — ${dateLine}، باز کردن جزئیات`}
     >
       <span className="min-w-0">
-        <span className="block text-[11px] lg:text-[11.5px] text-[var(--sk-text-muted)]">{dateLine}</span>
-        <span className="block text-[15.5px] lg:text-[17px] font-extrabold mt-0.5 truncate">
+        <span className="block text-[11px] lg:text-[11.5px] text-[var(--sk-text-muted)] leading-tight">{dateLine}</span>
+        <span className="block text-[15px] lg:text-[16.5px] font-extrabold mt-0.5 truncate leading-tight">
           شیفت امروز: <span className="text-gradient">{label}</span>
         </span>
       </span>
@@ -1251,20 +1258,29 @@ function MonthlySummaryStrip({
     { label: restLabel, count: restValue, cls: "sk-grad-rest", icon: <RestIcon size={12} /> },
   ];
 
+  const isFiveItems = items.length >= 5;
+
   return (
     <div
-      className="glass rounded-[15px] sm:rounded-[16px] px-1.5 py-1 sm:py-1.5 flex items-center gap-1 sm:gap-1.5 shrink-0"
+      className={`glass rounded-[15px] sm:rounded-[16px] ${
+        isFiveItems ? "px-1 py-1 gap-1" : "px-1.5 py-1 sm:py-1.5 gap-1 sm:gap-1.5"
+      } flex items-center shrink-0`}
       data-tour="summary-strip"
     >
       {items.map((it) => (
         <div
           key={it.label}
-          className={`flex-1 h-[31px] sm:h-[36px] md:h-[40px] rounded-[10px] sm:rounded-[12px] px-1 sm:px-2 flex items-center justify-center gap-1 sm:gap-1.5 text-[10.5px] sm:text-[12px] md:text-[13px] font-extrabold truncate ${it.cls}`}
+          className={`flex-1 min-w-0 h-[32px] sm:h-[36px] md:h-[40px] rounded-[10px] sm:rounded-[12px] ${
+            isFiveItems
+              ? "px-1 sm:px-2 gap-[3px] sm:gap-1.5 text-[9.5px] sm:text-[12px] md:text-[13px]"
+              : "px-1.5 sm:px-2 gap-1 sm:gap-1.5 text-[10.5px] sm:text-[12px] md:text-[13px]"
+          } flex items-center justify-center font-extrabold ${it.cls}`}
         >
-          {it.icon}
-          <span className="truncate">
-            {it.label} {toPersianDigits(it.count)}
+          <span className={isFiveItems ? "scale-90 sm:scale-100 shrink-0 flex" : "shrink-0 flex"}>
+            {it.icon}
           </span>
+          <span className="whitespace-nowrap leading-none">{it.label}</span>
+          <span className="font-black leading-none shrink-0">{toPersianDigits(it.count)}</span>
         </div>
       ))}
     </div>

@@ -814,6 +814,150 @@ body.sk-sheet-open {
   to   { opacity: 1; }
 }
 
+
+/* ============ Unified Glassmorphic Primary Buttons, State Pills & Toggle Switch ============ */
+.sk-btn-glass-primary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sk-primary) 26%, var(--sk-surface-strong)),
+    color-mix(in srgb, var(--sk-primary) 12%, var(--sk-surface))
+  );
+  color: var(--sk-primary);
+  border: 1.5px solid color-mix(in srgb, var(--sk-primary) 68%, transparent);
+  box-shadow:
+    0 8px 22px -8px var(--sk-glow-a),
+    inset 0 1px 0 var(--sk-specular);
+  -webkit-backdrop-filter: blur(16px) saturate(1.65);
+  backdrop-filter: blur(16px) saturate(1.65);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.dark .sk-btn-glass-primary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sk-primary) 30%, rgba(255, 255, 255, 0.10)),
+    color-mix(in srgb, var(--sk-primary) 12%, rgba(255, 255, 255, 0.03))
+  );
+  color: var(--sk-primary);
+  border: 1.5px solid color-mix(in srgb, var(--sk-primary) 72%, rgba(255, 255, 255, 0.22));
+  box-shadow:
+    0 10px 26px -8px var(--sk-glow-a),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+.sk-btn-glass-primary:hover {
+  border-color: var(--sk-primary);
+  box-shadow:
+    0 12px 28px -6px var(--sk-glow-a),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+}
+
+.sk-pill-glass-on {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sk-primary) 28%, var(--sk-surface-strong)),
+    color-mix(in srgb, var(--sk-primary) 12%, var(--sk-surface))
+  );
+  color: var(--sk-primary);
+  border: 1.5px solid color-mix(in srgb, var(--sk-primary) 72%, transparent);
+  box-shadow:
+    0 5px 14px -5px var(--sk-glow-a),
+    inset 0 1px 0 var(--sk-specular);
+}
+.dark .sk-pill-glass-on {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sk-primary) 32%, rgba(255, 255, 255, 0.10)),
+    color-mix(in srgb, var(--sk-primary) 14%, rgba(255, 255, 255, 0.03))
+  );
+  color: var(--sk-primary);
+  border: 1.5px solid color-mix(in srgb, var(--sk-primary) 74%, rgba(255, 255, 255, 0.2));
+  box-shadow:
+    0 6px 16px -5px var(--sk-glow-a),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.sk-pill-glass-off {
+  background: linear-gradient(180deg, var(--sk-glass-hi), var(--sk-glass-lo));
+  color: var(--sk-text-muted);
+  border: 1px solid var(--sk-border);
+  box-shadow: inset 0 1px 0 var(--sk-specular);
+}
+
+/* Glassmorphic Switch Toggle */
+.sk-glass-toggle {
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  background: linear-gradient(160deg, var(--sk-glass-hi), var(--sk-glass-lo));
+  border: 1.5px solid var(--sk-border-strong);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 var(--sk-specular);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  backdrop-filter: blur(14px) saturate(1.6);
+  transition: all 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sk-glass-toggle.is-on {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--sk-primary) 36%, rgba(255, 255, 255, 0.14)),
+    color-mix(in srgb, var(--sk-primary) 16%, rgba(255, 255, 255, 0.04))
+  );
+  border-color: color-mix(in srgb, var(--sk-primary) 78%, rgba(255, 255, 255, 0.28));
+  box-shadow:
+    0 6px 18px -4px var(--sk-glow-a),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+.sk-glass-toggle-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle at 32% 28%,
+    rgba(255, 255, 255, 0.96),
+    rgba(255, 255, 255, 0.68)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.32),
+    inset 0 1px 2px #ffffff;
+  transition: all 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sk-glass-toggle.is-on .sk-glass-toggle-thumb {
+  background: radial-gradient(
+    circle at 32% 28%,
+    #ffffff,
+    color-mix(in srgb, var(--sk-primary) 32%, rgba(255, 255, 255, 0.85))
+  );
+  border-color: #ffffff;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 12px var(--sk-glow-a),
+    inset 0 1px 2px #ffffff;
+}
+.sk-glass-toggle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sk-text-faint);
+  opacity: 0.45;
+  transition: all 0.24s ease;
+}
+.sk-glass-toggle.is-on .sk-glass-toggle-dot {
+  background: var(--sk-primary);
+  opacity: 0.95;
+  box-shadow: 0 0 6px var(--sk-primary);
+}
+
 /* ============ Outlined option cards & Segmented control ============ */
 .sk-outline {
   border: 2px solid var(--sk-border-soft);

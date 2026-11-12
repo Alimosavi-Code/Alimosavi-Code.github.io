@@ -360,40 +360,261 @@
       color: var(--sk-primary);
     }
 
-    /* Hero Section */
+    /* Hero Section (Optimized & Balanced) */
     .hero {
       text-align: center;
-      padding: 36px 0 24px;
+      padding: 22px 0 14px;
       position: relative;
     }
     .app-icon-wrap {
       position: relative;
-      width: 96px;
-      height: 96px;
+      width: 88px;
+      height: 88px;
       margin-inline: auto;
     }
     .app-icon {
       border: 1.5px solid rgba(255, 255, 255, 0.28);
-      border-radius: 26px;
-      width: 96px;
-      height: 96px;
+      border-radius: 24px;
+      width: 88px;
+      height: 88px;
       display: block;
-      box-shadow: 0 18px 50px rgba(2, 4, 14, 0.65), 0 0 44px var(--sk-primary-glow);
+      box-shadow: 0 16px 42px rgba(2, 4, 14, 0.55), 0 0 38px var(--sk-primary-glow);
     }
     .hero h1 {
-      margin-top: 18px;
-      font-size: clamp(32px, 7vw, 44px);
+      margin-top: 12px;
+      font-size: clamp(28px, 6.2vw, 38px);
       font-weight: 900;
-      line-height: 1.35;
+      line-height: 1.3;
       background: linear-gradient(135deg, var(--sk-text) 30%, var(--sk-primary-2) 100%);
       -webkit-background-clip: text;
       background-clip: text;
     }
     .tagline {
       color: var(--sk-accent);
-      font-size: clamp(15.5px, 3.8vw, 19px);
+      font-size: clamp(14px, 3.5vw, 17.5px);
       font-weight: 800;
       margin-top: 4px;
+      max-width: 540px;
+      margin-inline: auto;
+    }
+
+    /* Quick Install Guide Card inside Smart Box + Dedicated Platform Guide Box */
+    .smart-guide-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 16px;
+      background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--sk-primary) 20%, rgba(255, 255, 255, 0.08)),
+        color-mix(in srgb, var(--sk-primary) 8%, rgba(255, 255, 255, 0.03))
+      );
+      border: 1.5px solid color-mix(in srgb, var(--sk-primary) 52%, var(--sk-border));
+      color: var(--sk-text);
+      text-align: start;
+      box-shadow: 0 8px 22px -10px var(--sk-primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      transition: all 0.22s ease;
+    }
+    .smart-guide-card:hover {
+      border-color: var(--sk-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px -8px var(--sk-primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    }
+    .smart-guide-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+    .smart-guide-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: var(--sk-primary-soft);
+      border: 1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent);
+      color: var(--sk-primary-2);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    html.light .smart-guide-icon {
+      color: var(--sk-primary);
+    }
+    .smart-guide-titles {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .smart-guide-title {
+      font-size: 12.5px;
+      font-weight: 900;
+      color: var(--sk-text);
+      line-height: 1.35;
+    }
+    .smart-guide-sub {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--sk-muted);
+      margin-top: 1px;
+    }
+    .smart-guide-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--sk-primary-soft);
+      border: 1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent);
+      color: var(--sk-primary-2);
+      font-size: 10.5px;
+      font-weight: 900;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    html.light .smart-guide-badge {
+      color: var(--sk-primary);
+    }
+
+    /* Dedicated Installation Guide Card inside each Platform Card */
+    .install-guide-box {
+      margin-top: 4px;
+      border-radius: 18px;
+      background: linear-gradient(
+        155deg,
+        color-mix(in srgb, var(--sk-primary) 12%, rgba(255, 255, 255, 0.06)),
+        rgba(255, 255, 255, 0.025)
+      );
+      border: 1.5px solid color-mix(in srgb, var(--sk-primary) 38%, var(--sk-border));
+      overflow: hidden;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    html.light .install-guide-box {
+      background: linear-gradient(
+        155deg,
+        color-mix(in srgb, var(--sk-primary) 10%, rgba(255, 255, 255, 0.9)),
+        rgba(255, 255, 255, 0.78)
+      );
+    }
+    .install-guide-box.guide-pulse {
+      border-color: var(--sk-primary);
+      box-shadow: 0 0 0 3px var(--sk-primary-soft), 0 16px 38px -10px var(--sk-primary-glow);
+    }
+    .install-guide-summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .install-guide-summary::-webkit-details-marker {
+      display: none;
+    }
+    .install-guide-head {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+    .install-guide-ico {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--sk-primary-soft);
+      border: 1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent);
+      color: var(--sk-primary-2);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    html.light .install-guide-ico {
+      color: var(--sk-primary);
+    }
+    .install-guide-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--sk-text);
+    }
+    .install-guide-right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+    .install-guide-tag {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--sk-primary-soft);
+      color: var(--sk-primary-2);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    html.light .install-guide-tag {
+      color: var(--sk-primary);
+    }
+    .install-guide-chev {
+      color: var(--sk-muted);
+      transition: transform 0.22s ease;
+    }
+    details.install-guide-box[open] .install-guide-chev {
+      transform: rotate(180deg);
+      color: var(--sk-primary-2);
+    }
+    .install-guide-body {
+      padding: 0 14px 14px;
+      border-top: 1px solid var(--sk-border);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .guide-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--sk-text);
+    }
+    .guide-step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 8px;
+      background: var(--sk-primary-soft);
+      border: 1px solid color-mix(in srgb, var(--sk-primary) 45%, transparent);
+      color: var(--sk-primary-2);
+      font-size: 11px;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    html.light .guide-step-num {
+      color: var(--sk-primary);
+    }
+    .guide-cmd {
+      display: block;
+      margin-top: 4px;
+      padding: 6px 10px;
+      border-radius: 9px;
+      background: rgba(0, 0, 0, 0.32);
+      border: 1px solid var(--sk-border);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: #a7f3d0;
+      direction: ltr;
+      text-align: left;
+      overflow-x: auto;
+      user-select: all !important;
+      -webkit-user-select: all !important;
+    }
+    html.light .guide-cmd {
+      background: rgba(15, 23, 42, 0.07);
+      color: #0f766e;
     }
     .hero-sub {
       max-width: 610px;
@@ -1340,9 +1561,24 @@
         <circle cx="18" cy="19" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
         <path fill="none" stroke="currentColor" stroke-width="2" d="M8.59 13.51l6.83 3.98m-.01-10.98l-6.82 3.98"/>
       </symbol>
-      <!-- Sun / Moon Theme -->
+      <!-- Sun / Moon Theme Icons -->
       <symbol id="ico-theme" viewBox="0 0 24 24">
         <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+      </symbol>
+      <symbol id="ico-moon" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
+      </symbol>
+      <symbol id="ico-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2v2.5M12 19.5V22M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M2 12h2.5M19.5 12H22M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77"/>
+      </symbol>
+      <!-- Book / Installation Guide Icon -->
+      <symbol id="ico-book" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20M8 7h6M8 11h8"/>
+      </symbol>
+      <!-- Chevron Down -->
+      <symbol id="ico-chevron" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
       </symbol>
       <!-- Spark / Auto Detect -->
       <symbol id="ico-spark" viewBox="0 0 24 24">
@@ -1397,8 +1633,8 @@
               <svg width="15" height="15"><use href="#ico-web"/></svg>
               <span>وب‌اپلیکیشن</span>
             </a>
-            <button type="button" class="chip-btn chip-btn-icon" onclick="toggleTheme()" title="تغییر حالت روشن و تاریک" aria-label="تغییر حالت روشن و تاریک">
-              <svg width="15" height="15"><use href="#ico-theme"/></svg>
+            <button type="button" class="chip-btn chip-btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="تغییر حالت روشن و تاریک" aria-label="تغییر حالت روشن و تاریک">
+              <svg width="16" height="16" id="themeToggleSvg" style="transition:transform 0.3s cubic-bezier(0.22,1,0.36,1)"><use id="themeToggleIconUse" href="#ico-sun"/></svg>
             </button>
             <button type="button" class="chip-btn chip-btn-icon" onclick="sharePage()" title="اشتراک‌گذاری صفحه دانلود" aria-label="اشتراک‌گذاری صفحه دانلود">
               <svg width="14" height="14"><use href="#ico-share"/></svg>
@@ -1406,10 +1642,10 @@
           </div>
         </nav>
 
-        <!-- Hero Header -->
+        <!-- Hero Header (Clean & Focused) -->
         <header class="hero">
           <div class="app-icon-wrap">
-            <img class="app-icon" src="./icons/icon-512.png?v=701" width="96" height="96"
+            <img class="app-icon" src="./icons/icon-512.png?v=701" width="88" height="88"
                  alt="آیکون برنامهٔ شیفت‌کار" decoding="async" />
           </div>
           <div class="hero-theme-bar">
@@ -1424,9 +1660,8 @@
           </div>
           <h1>شیفت‌کار</h1>
           <p class="tagline">تقویم هوشمند شیفت کاری — ویندوز، لینوکس، مک، اندروید و وب</p>
-          <p class="hero-sub">چرخهٔ شیفت، لوحه کلاسیک سالانه، تعطیلات رسمی، مدیریت پرسنل و یادداشت‌های کاری — همه در یک تقویمِ شیشه‌ایِ زیبا.</p>
 
-          <!-- 3 Independent Live Version Badges (Fetched from update.json & update-desktop.json with localStorage fallback) -->
+          <!-- Live Version Badges (Android & Desktop) -->
           <div class="version-pills-row">
             <div class="version-pill" title="نسخه اندروید به‌صورت زنده از update.json گیت‌هاب بررسی می‌شود">
               <span class="version-dot and" aria-hidden="true"></span>
@@ -1436,21 +1671,6 @@
               <span class="version-dot dsk" aria-hidden="true"></span>
               <span>نسخهٔ دسکتاپ: <strong id="pill-ver-desktop">۶٫۷٫۳</strong></span>
             </div>
-            <div class="version-pill" title="نسخه وب‌اپلیکیشن (PWA) همیشه روی آخرین نسخه فعال است">
-              <span class="version-dot pwa" aria-hidden="true"></span>
-              <span>نسخهٔ وب (PWA): <strong id="pill-ver-pwa">۶٫۷٫۳</strong></span>
-            </div>
-          </div>
-
-          <div class="trust-row">
-            <span class="trust-item">
-              <svg width="16" height="16"><use href="#ico-shield"/></svg>
-              <span>بدون تبلیغ · بدون جمع‌آوری داده</span>
-            </span>
-            <span class="trust-item">
-              <svg width="16" height="16"><use href="#ico-sync"/></svg>
-              <span>بررسی خودکار آخرین نسخه از گیت‌هاب</span>
-            </span>
           </div>
         </header>
 
@@ -1520,6 +1740,19 @@
                   <svg width="17" height="17"><use href="#ico-share"/></svg>
                 </button>
               </div>
+              <!-- Quick Jump to Platform Installation Guide (Shown for Android, Windows, Linux, macOS; Hidden for Web) -->
+              <button type="button" class="smart-guide-card" id="smartGuideCard" onclick="jumpToPlatformGuide()">
+                <span class="smart-guide-left">
+                  <span class="smart-guide-icon">
+                    <svg width="17" height="17"><use href="#ico-book"/></svg>
+                  </span>
+                  <span class="smart-guide-titles">
+                    <span class="smart-guide-title" id="smartGuideTitle">آموزش نصب و راه‌اندازی</span>
+                    <span class="smart-guide-sub" id="smartGuideSub">مشاهده راهنمای گام‌به‌گام نصب در بخش اختصاصی</span>
+                  </span>
+                </span>
+                <span class="smart-guide-badge">آموزش نصب ←</span>
+              </button>
             </div>
           </div>
 
@@ -1652,6 +1885,38 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Windows Installation Guide -->
+              <details class="install-guide-box" id="guide-windows">
+                <summary class="install-guide-summary">
+                  <span class="install-guide-head">
+                    <span class="install-guide-ico"><svg width="16" height="16"><use href="#ico-book"/></svg></span>
+                    <span class="install-guide-title">آموزش نصب در ویندوز ۱۱ و ۱۰</span>
+                  </span>
+                  <span class="install-guide-right">
+                    <span class="install-guide-tag">راهنمای گام‌به‌گام</span>
+                    <svg class="install-guide-chev" width="15" height="15"><use href="#ico-chevron"/></svg>
+                  </span>
+                </summary>
+                <div class="install-guide-body">
+                  <div class="guide-step">
+                    <span class="guide-step-num">۱</span>
+                    <div>برای اکثر کامپیوترها و لپ‌تاپ‌ها فایل نصبی <strong>Setup EXE (x64)</strong> را دانلود و اجرا کنید (نسخهٔ <strong>ARM64</strong> مخصوص سرفیس و پردازنده‌های Snapdragon است).</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۲</span>
+                    <div>در صورت نمایش پنجرهٔ محافظ ویندوز (<bdi>Windows protected your PC / SmartScreen</bdi>)، ابتدا روی عبارت <strong>More info</strong> کلیک کرده و سپس دکمهٔ <strong>Run anyway</strong> را بزنید.</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۳</span>
+                    <div>مراحل نصب را با زدن <strong>Next ← Install</strong> تکمیل کنید تا آیکون شیفت‌کار روی دسکتاپ و منوی Start ساخته شود.</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۴</span>
+                    <div><strong>نکتهٔ سیستم‌های اداری:</strong> اگر دسترسی Administrator برای نصب برنامه ندارید، نسخهٔ <strong>Portable ZIP</strong> را دانلود کرده، از حالت فشرده خارج کنید و فایل <bdi>ShiftKar.exe</bdi> را بدون نیاز به نصب اجرا نمایید.</div>
+                  </div>
+                </div>
+              </details>
             </article>
 
             <!-- 2. Linux Desktop (x64 & ARM64: DEB, RPM, AppImage) -->
@@ -1784,6 +2049,43 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Linux Installation Guide -->
+              <details class="install-guide-box" id="guide-linux">
+                <summary class="install-guide-summary">
+                  <span class="install-guide-head">
+                    <span class="install-guide-ico"><svg width="16" height="16"><use href="#ico-book"/></svg></span>
+                    <span class="install-guide-title">آموزش نصب در لینوکس <bdi>(DEB / RPM / AppImage)</bdi></span>
+                  </span>
+                  <span class="install-guide-right">
+                    <span class="install-guide-tag">راهنمای گام‌به‌گام</span>
+                    <svg class="install-guide-chev" width="15" height="15"><use href="#ico-chevron"/></svg>
+                  </span>
+                </summary>
+                <div class="install-guide-body">
+                  <div class="guide-step">
+                    <span class="guide-step-num">۱</span>
+                    <div style="flex:1;min-width:0">
+                      <strong>اوبونتو، دبیان، مینت و Pop!_OS (بسته DEB):</strong> در پوشهٔ دانلودها ترمینال را باز کرده و دستور زیر را وارد کنید:
+                      <code class="guide-cmd">sudo apt install ./ShiftKar-Linux-*.deb</code>
+                    </div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۲</span>
+                    <div style="flex:1;min-width:0">
+                      <strong>فدورا، ردهت، AlmaLinux و openSUSE (بسته RPM):</strong> دستور زیر را در ترمینال اجرا نمایید:
+                      <code class="guide-cmd">sudo dnf install ./ShiftKar-Linux-*.rpm</code>
+                    </div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۳</span>
+                    <div style="flex:1;min-width:0">
+                      <strong>نسخهٔ مستقل بدون نصب (AppImage برای Arch، Manjaro و تمام توزیع‌ها):</strong> کافی است مجوز اجرا داده و فایل را باز کنید:
+                      <code class="guide-cmd">chmod +x ShiftKar-Linux-*.AppImage && ./ShiftKar-Linux-*.AppImage</code>
+                    </div>
+                  </div>
+                </div>
+              </details>
             </article>
 
             <!-- 3. Android Native App (APK) -->
@@ -1806,9 +2108,9 @@
                   <div class="dl-info">
                     <div class="dl-label">
                       <span>فایل نصبی مستقیم اندروید <bdi>(APK)</bdi></span>
-                      <span class="dl-arch">Universal</span>
+                      <span class="dl-arch">Android 6.0+</span>
                     </div>
-                    <div class="dl-meta">نصب روی نسخهٔ قبلی بدون از دست رفتن داده‌ها (اندروید ۸ به بالا)</div>
+                    <div class="dl-meta">نصب روی نسخهٔ قبلی بدون از دست رفتن داده‌ها (اندروید ۶ به بالا)</div>
                   </div>
                   <div class="dl-btns">
                     <a class="btn-dl" data-dl-role="android-apk" data-apk-link="true" href="https://github.com/Alimosavi-Code/Shiftkar/releases/latest/download/ShiftKar-v6.7.3.apk">
@@ -1820,9 +2122,39 @@
                     </button>
                   </div>
                 </div>
-
-
               </div>
+
+              <!-- Android Installation Guide -->
+              <details class="install-guide-box" id="guide-android">
+                <summary class="install-guide-summary">
+                  <span class="install-guide-head">
+                    <span class="install-guide-ico"><svg width="16" height="16"><use href="#ico-book"/></svg></span>
+                    <span class="install-guide-title">آموزش نصب در اندروید <bdi>(APK)</bdi></span>
+                  </span>
+                  <span class="install-guide-right">
+                    <span class="install-guide-tag">راهنمای گام‌به‌گام</span>
+                    <svg class="install-guide-chev" width="15" height="15"><use href="#ico-chevron"/></svg>
+                  </span>
+                </summary>
+                <div class="install-guide-body">
+                  <div class="guide-step">
+                    <span class="guide-step-num">۱</span>
+                    <div>فایل نصبی <strong>APK</strong> را دانلود کرده و از نوار اعلان بالای گوشی یا پوشهٔ <strong>Downloads</strong> روی آن بزنید (قابل نصب روی <strong>اندروید ۶ به بالا</strong>).</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۲</span>
+                    <div>در صورت نمایش پیام امنیتی مرورگر، روی <strong>Settings (تنظیمات)</strong> زده و گزینهٔ <strong>Allow from this source (مجوز نصب از این منبع)</strong> را فعال کنید.</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۳</span>
+                    <div>دکمهٔ <strong>Install / Update</strong> را بزنید؛ اگر نسخهٔ قبلی شیفت‌کار را دارید، بدون نیاز به حذف آن مستقیماً آپدیت می‌شود و تمام یادداشت‌ها و تنظیمات شما حفظ خواهد شد.</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۴</span>
+                    <div><strong>افزودن ویجت تقویم:</strong> پس از نصب، انگشت خود را روی صفحهٔ اصلی گوشی نگه دارید، وارد بخش <strong>Widgets (ابزارک‌ها)</strong> شوید و ویجت <strong>شیفت‌کار</strong> را به صفحهٔ اصلی اضافه کنید.</div>
+                  </div>
+                </div>
+              </details>
             </article>
 
             <!-- 4. macOS (Apple Silicon ARM64 & Intel x64) -->
@@ -1879,6 +2211,37 @@
                   </div>
                 </div>
               </div>
+
+              <!-- macOS Installation Guide -->
+              <details class="install-guide-box" id="guide-mac">
+                <summary class="install-guide-summary">
+                  <span class="install-guide-head">
+                    <span class="install-guide-ico"><svg width="16" height="16"><use href="#ico-book"/></svg></span>
+                    <span class="install-guide-title">آموزش نصب در مک <bdi>(macOS)</bdi></span>
+                  </span>
+                  <span class="install-guide-right">
+                    <span class="install-guide-tag">راهنمای گام‌به‌گام</span>
+                    <svg class="install-guide-chev" width="15" height="15"><use href="#ico-chevron"/></svg>
+                  </span>
+                </summary>
+                <div class="install-guide-body">
+                  <div class="guide-step">
+                    <span class="guide-step-num">۱</span>
+                    <div>برای مک‌های سری <strong>M1 / M2 / M3 / M4</strong> فایل <strong>ARM64 DMG</strong> و برای مک‌های دارای پردازندهٔ اینتل فایل <strong>Intel x64 DMG</strong> را دانلود کنید.</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۲</span>
+                    <div>فایل <strong>DMG</strong> دانلودشده را باز کرده و آیکون <strong>ShiftKar</strong> را به داخل پوشهٔ <strong>Applications</strong> بکشید (<bdi>Drag &amp; Drop</bdi>).</div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="guide-step-num">۳</span>
+                    <div style="flex:1;min-width:0">
+                      در اولین اجرا، در صورت نمایش پیام امنیتی Gatekeeper اپل، در پوشهٔ <bdi>Applications</bdi> روی آیکون برنامه <strong>راست‌کلیک (Control + Click)</strong> کرده و گزینهٔ <strong>Open</strong> را بزنید، یا دستور زیر را در Terminal اجرا نمایید:
+                      <code class="guide-cmd">sudo xattr -rd com.apple.quarantine /Applications/ShiftKar.app</code>
+                    </div>
+                  </div>
+                </div>
+              </details>
             </article>
 
             <!-- 5. iOS (iPhone / iPad) & Web Application (PWA) — Full Width Card -->
@@ -2051,18 +2414,37 @@
       } catch (e) {}
     }
 
+    function syncThemeToggleIcon() {
+      var isLight = document.documentElement.classList.contains("light");
+      var useEl = document.getElementById("themeToggleIconUse");
+      var svgEl = document.getElementById("themeToggleSvg");
+      var btnEl = document.getElementById("themeToggleBtn");
+      if (useEl) {
+        /* Show Moon icon in Light mode (tap to switch to Dark) and Sun icon in Dark mode (tap to switch to Light) */
+        useEl.setAttribute("href", isLight ? "#ico-moon" : "#ico-sun");
+      }
+      if (svgEl) {
+        svgEl.style.transform = isLight ? "rotate(0deg)" : "rotate(180deg)";
+      }
+      if (btnEl) {
+        btnEl.setAttribute("title", isLight ? "تغییر به حالت تاریک" : "تغییر به حالت روشن");
+      }
+    }
+
     function toggleTheme() {
       var html = document.documentElement;
       var isLight = html.classList.contains("light");
       var next = isLight ? "dark" : "light";
       html.classList.toggle("light", next === "light");
       html.classList.toggle("dark", next !== "light");
+      syncThemeToggleIcon();
       try {
         localStorage.setItem("shiftkar-dl-theme", next);
       } catch (e) {}
     }
 
     syncSwatchHighlight();
+    syncThemeToggleIcon();
 
     /* ============================================================================
        2. Share Helpers
@@ -2643,7 +3025,7 @@
       return {
         icon: "#ico-android",
         tag: key === DETECTED_OS_KEY ? "تشخیص خودکار: اندروید" : "نسخه اندروید (APK)",
-        arch: "Android 8.0+ (Universal)",
+        arch: "Android 6.0+ (Universal)",
         verText: "نسخه " + andVerFa,
         title: "اپلیکیشن بومی اندروید شیفت‌کار (فایل نصبی APK)",
         sub: "مناسب برای تمامی گوشی‌ها و تبلت‌های اندرویدی با ویجت اختصاصی و به‌روزرسانی خودکار درون‌برنامه‌ای",
@@ -2774,7 +3156,68 @@
         };
       }
 
+      /* Configure Quick Installation Guide Card inside Smart Box (for all platforms EXCEPT web) */
+      var gCard = document.getElementById("smartGuideCard");
+      var gTitle = document.getElementById("smartGuideTitle");
+      var gSub = document.getElementById("smartGuideSub");
+      var guideMeta = {
+        android: {
+          guideId: "guide-android",
+          title: "آموزش نصب در اندروید (APK)",
+          sub: "مشاهده راهنمای گام‌به‌گام نصب، بروزرسانی و افزودن ویجت"
+        },
+        windows: {
+          guideId: "guide-windows",
+          title: "آموزش نصب در ویندوز ۱۱ و ۱۰",
+          sub: "راهنمای نصب EXE / MSI، اجرای نسخه Portable و رد کردن SmartScreen"
+        },
+        linux: {
+          guideId: "guide-linux",
+          title: "آموزش نصب در لینوکس (DEB / RPM / AppImage)",
+          sub: "دستورات نصب در اوبونتو، دبیان، فدورا و اجرای مستقیم AppImage"
+        },
+        mac: {
+          guideId: "guide-mac",
+          title: "آموزش نصب در سیستم‌عامل مک (macOS)",
+          sub: "نحوه نصب پکیج DMG روی مک‌های Apple Silicon و Intel"
+        }
+      };
+      if (gCard) {
+        if (targetKey !== "web" && guideMeta[targetKey]) {
+          gCard.style.display = "flex";
+          gCard.setAttribute("data-guide-target", guideMeta[targetKey].guideId);
+          if (gTitle) gTitle.textContent = guideMeta[targetKey].title;
+          if (gSub) gSub.textContent = guideMeta[targetKey].sub;
+        } else {
+          gCard.style.display = "none";
+        }
+      }
+
       renderSmartVariants(spec);
+    }
+
+    function jumpToPlatformGuide() {
+      var gCard = document.getElementById("smartGuideCard");
+      var targetId = gCard ? gCard.getAttribute("data-guide-target") : "";
+      if (!targetId) return;
+      var guideEl = document.getElementById(targetId);
+      if (!guideEl) return;
+
+      /* Open the details accordion and highlight it smoothly */
+      guideEl.setAttribute("open", "open");
+      guideEl.classList.remove("guide-pulse");
+      void guideEl.offsetWidth;
+      guideEl.classList.add("guide-pulse");
+
+      try {
+        guideEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (e) {
+        guideEl.scrollIntoView();
+      }
+
+      setTimeout(function() {
+        guideEl.classList.remove("guide-pulse");
+      }, 2600);
     }
 
     (function initPage() {

@@ -1375,15 +1375,13 @@ function PersonnelSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }
               haptic(hapticOn);
               set({ showEmployeesOnCalendar: !showEmployeesOnCalendar });
             }}
-            className={`w-12 h-7 rounded-full p-0.5 transition-colors flex items-center ${
-              /* RTL: justify-start = right edge, justify-end = left edge.
-               * Persian platform convention: OFF knob at start (right), ON slides to end (left). */
-              showEmployeesOnCalendar
-                ? "bg-[var(--sk-primary)] justify-end"
-                : "bg-[var(--sk-border-strong)] justify-start"
+            className={`sk-glass-toggle ${
+              showEmployeesOnCalendar ? "is-on justify-end" : "justify-start"
             }`}
           >
-            <span className="size-6 rounded-full bg-white shadow" />
+            <span className="sk-glass-toggle-thumb">
+              <span className="sk-glass-toggle-dot" />
+            </span>
           </button>
         </div>
 
@@ -1406,7 +1404,7 @@ function PersonnelSubTab({ onOpenDay }: { onOpenDay: (dateKey: string) => void }
           setEditingEmployee(null);
           setEmployeeModalOpen(true);
         }}
-        className="w-full glass rounded-[18px] border-[1.2px] border-[var(--sk-primary)] bg-[var(--sk-primary-soft)] px-3.5 py-3 flex items-center justify-center gap-2 text-[13.5px] font-black text-[var(--sk-primary)] active:scale-[0.99] transition-transform"
+        className="w-full rounded-[18px] sk-btn-glass-primary px-3.5 py-3 flex items-center justify-center gap-2 text-[13.5px] font-black active:scale-[0.99]"
       >
         <GroupIcon size={17} />
         <span>+ افزودن همکار / پرسنل جدید</span>
@@ -1942,7 +1940,7 @@ function EmployeeEditDialog({
                 dayLogs: initial?.dayLogs ?? {},
               });
             }}
-            className="flex-[1.5] py-3 rounded-[14px] bg-[var(--sk-primary)] text-white text-[13.5px] font-black shadow-[0_10px_24px_-8px_var(--sk-glow-a)]"
+            className="flex-[1.5] py-3 rounded-[14px] sk-btn-glass-primary text-[13.5px] font-black active:scale-[0.98]"
           >
             {initial ? "ذخیرهٔ تغییرات" : "افزودن همکار"}
           </button>

@@ -609,10 +609,8 @@ export function SettingsView({
               </div>
             </div>
             <span
-              className={`px-3 py-1 rounded-full text-[11px] font-black shrink-0 ${
-                showSecondaryCalendars
-                  ? "bg-[var(--sk-primary)] text-white"
-                  : "bg-[var(--sk-surface-strong)] text-[var(--sk-text-muted)]"
+              className={`px-3.5 py-1 rounded-full text-[11px] font-black shrink-0 transition-all ${
+                showSecondaryCalendars ? "sk-pill-glass-on" : "sk-pill-glass-off"
               }`}
             >
               {showSecondaryCalendars ? "روشن" : "خاموش"}
@@ -646,10 +644,10 @@ export function SettingsView({
               haptic(hapticOn);
               onOpenInstall();
             }}
-            className={`w-full flex-1 py-3 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+            className={`w-full flex-1 py-3 rounded-2xl text-[13px] font-extrabold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
               installed
-                ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] border border-[var(--sk-rest)]/30"
-                : "bg-[var(--sk-primary)] text-white shadow-[0_10px_26px_-10px_var(--sk-glow-a)]"
+                ? "bg-[var(--sk-rest-soft)] text-[var(--sk-rest-ink)] border border-[var(--sk-rest)]/40 shadow-[inset_0_1px_0_var(--sk-specular)]"
+                : "sk-btn-glass-primary"
             }`}
           >
             {installed ? <CheckIcon size={16} /> : <DownloadIcon size={16} />}
@@ -738,10 +736,8 @@ export function SettingsView({
               </div>
             </div>
             <span
-              className={`px-3 py-1 rounded-full text-[11px] font-black shrink-0 ${
-                shiftReminderOn
-                  ? "bg-[var(--sk-primary)] text-white"
-                  : "bg-[var(--sk-surface-strong)] text-[var(--sk-text-muted)]"
+              className={`px-3.5 py-1 rounded-full text-[11px] font-black shrink-0 transition-all ${
+                shiftReminderOn ? "sk-pill-glass-on" : "sk-pill-glass-off"
               }`}
             >
               {shiftReminderOn ? "روشن" : "خاموش"}
@@ -842,10 +838,8 @@ export function SettingsView({
               </div>
             </div>
             <span
-              className={`px-3 py-1 rounded-full text-[11px] font-black shrink-0 ${
-                noteReminderOn
-                  ? "bg-[var(--sk-primary)] text-white"
-                  : "bg-[var(--sk-surface-strong)] text-[var(--sk-text-muted)]"
+              className={`px-3.5 py-1 rounded-full text-[11px] font-black shrink-0 transition-all ${
+                noteReminderOn ? "sk-pill-glass-on" : "sk-pill-glass-off"
               }`}
             >
               {noteReminderOn ? "روشن" : "خاموش"}
@@ -989,22 +983,27 @@ export function SettingsView({
             <div className="text-[11.5px] font-bold text-[var(--sk-text-muted)]">
               اطلاعات آمادهٔ پشتیبان‌گیری در این دستگاه:
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {(
                 [
-                  `${toPersianDigits(notesCount)} یادداشت`,
-                  `${toPersianDigits(recordsCount)} ثبت اضافه‌کاری/جابه‌جایی`,
-                  `${toPersianDigits(employees.length)} همکار`,
+                  { count: toPersianDigits(notesCount), label: "یادداشت" },
+                  { count: toPersianDigits(recordsCount), label: "ثبت اضافه‌کاری" },
+                  { count: toPersianDigits(employees.length), label: "همکار" },
                 ] as const
-              ).map((badgeText) => (
+              ).map((item) => (
                 <div
-                  key={badgeText}
-                  className="rounded-xl bg-[var(--sk-primary-soft)] py-2 px-1.5 text-center text-[11px] font-black text-[var(--sk-primary)] truncate"
+                  key={item.label}
+                  className="rounded-xl bg-[var(--sk-primary-soft)] py-2 px-1.5 flex flex-col items-center justify-center text-center gap-0.5 shadow-[inset_0_1px_0_var(--sk-specular)]"
                   style={{
-                    border: "1px solid color-mix(in srgb, var(--sk-primary) 35%, transparent)",
+                    border: "1px solid color-mix(in srgb, var(--sk-primary) 42%, transparent)",
                   }}
                 >
-                  {badgeText}
+                  <span className="text-[13px] font-black text-[var(--sk-primary)] leading-none">
+                    {item.count}
+                  </span>
+                  <span className="text-[10px] sm:text-[10.5px] font-extrabold text-[var(--sk-text)] leading-tight whitespace-nowrap">
+                    {item.label}
+                  </span>
                 </div>
               ))}
             </div>
@@ -1014,7 +1013,7 @@ export function SettingsView({
             <button
               type="button"
               onClick={doExport}
-              className="py-3 rounded-2xl bg-[var(--sk-primary)] text-white text-[12.5px] font-bold flex items-center justify-center gap-1.5 shadow-[0_10px_24px_-8px_var(--sk-glow-a)] active:scale-[0.98] transition-transform"
+              className="py-3 rounded-2xl sk-btn-glass-primary text-[12.5px] font-extrabold flex items-center justify-center gap-1.5 active:scale-[0.98]"
             >
               <DownloadIcon size={16} />
               <span>ذخیرهٔ پشتیبان</span>
@@ -1069,7 +1068,7 @@ export function SettingsView({
               <button
                 type="button"
                 onClick={doRestoreFromText}
-                className="w-full py-2.5 rounded-xl bg-[var(--sk-primary)] text-white text-[12px] font-bold"
+                className="w-full py-2.5 rounded-xl sk-btn-glass-primary text-[12px] font-extrabold"
               >
                 اعمال و بازیابی متن پشتیبان
               </button>
